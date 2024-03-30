@@ -21,8 +21,59 @@ import { toast } from "react-toastify";
 function PageTest() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => ({ ...state }));
-  const token = user.user.token;
+  // const { user } = useSelector((state) => ({ ...state }));
+  // const token = user.user.token;
+  const { user } = useSelector((state) => state.user);
+  const token = user.token;
+  const location = useLocation();
+
+  //ข้อสอบมี 100 ข้อ
+  //รับ state จาก ContentPageDoTest ข้อมูล testInfo
+  //เวลาแสดงที่มุมบนซ้าย
+  //getquestionandchoicefrom tbindvform with indvtfrmcode (รหัสการจอง + เลขประจำตัวประชาชน)
+  const testreservcode = location.state.testresvcode;
+  let testresultcode;
+  if (typeof testreservcode !== "undefined") {
+    const pers_id = user?.pers_id;
+    if (typeof pers_id !== "undefined") {
+      testresultcode = testreservcode.toString() + "-" + pers_id.toString();
+    } else {
+      testresultcode = "DAE001-3333333333333";
+    }
+  } else {
+    testresultcode = "DAE001-3333333333333";
+  }
+  console.log(testresultcode);
+
+  const [QuestionIndvform, setQuestionIndvform] = useState(null);
+  //getquestion
+  const getQuestionFromIndv = async () => {
+    try {
+      const question = await axios
+        .get(process.env.REACT_APP_API_URL + `/getquestionindvform`, {
+          headers: {
+            authtoken: "bearer " + token,
+          },
+        })
+        .catch((error) => {
+          if (error.response.status === 401 || error.response.status === 404) {
+            dispatch(logout());
+            navigate("/notfound404", {
+              state: {
+                statusCode: error.response.status,
+                txt: error.response.data,
+              },
+            });
+          } else {
+            toast.error(error.response.data.message);
+          }
+        });
+      setQuestionIndvform(question);
+    } catch (error) {
+      console.log("Error", error.message);
+    }
+  };
+  //create backend
 
   //toggle button pagination
   //false -> Enable Button
@@ -279,12 +330,37 @@ function PageTest() {
     },
   }));
 
-  const location = useLocation();
+  //console.log(location);
   const [testResvCode, setTestResvCode] = useState("");
 
   return (
     <>
       <Navbar />
+      <Box
+        sx={{
+          flexGrow: 1,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          margin: "auto",
+          position: "fixed",
+        }}
+      >
+        <Card sx={{ minWidth: "150px", minHeight: "20px", boxShadow: 3 }}>
+          <Typography
+            variant="p"
+            sx={{ textAlign: "center", fontSize: "18px", fontWeight: "bold" }}
+            component="div"
+            gutterBottom
+          >
+            <Box>
+              เหลือเวลา {String(minutes).padStart(2, "0")}:
+              {String(seconds).padStart(2, "0")}{" "}
+            </Box>
+          </Typography>
+        </Card>
+      </Box>
+
       {/* <>
         <p style={{ fontWeight: "bold" }}>Demo Version</p>
       </> */}
@@ -533,7 +609,7 @@ function PageTest() {
                 component="div"
                 gutterBottom
               >
-                เลขประจำตัวข้าราชการ : {user.user.official_id}
+                เลขประจำตัวข้าราชการ : {user.official_id}
               </Typography>
             </Box>
             <Box sx={{ display: "flex", justifyContent: "space-between" }}>
@@ -543,8 +619,8 @@ function PageTest() {
                 component="div"
                 gutterBottom
               >
-                ชื่อ-นามสกุล : {user.user.rank}
-                {user.user.fname} {user.user.lname}
+                ชื่อ-นามสกุล : {user.rank}
+                {user.fname} {user.lname}
               </Typography>
             </Box>
             <Box

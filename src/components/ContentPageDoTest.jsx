@@ -24,7 +24,6 @@ import { useSelector, useDispatch } from "react-redux";
 import { finish, start } from "../store/TestInfoSlice";
 import { logout } from "../../src/store/userSilce";
 
-
 const style = {
   position: "absolute",
   top: "50%",
@@ -54,8 +53,10 @@ const theme = createTheme({
 function ContentPageDoTest() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => ({ ...state }));
-  const token = user.user.token;
+  // const { user } = useSelector((state) => ({ ...state }));
+  // const token = user.user.token;
+  const { user } = useSelector((state) => state.user);
+  const token = user.token;
 
   //create config
   const generateConfig = (method, endpoint) => {
@@ -85,6 +86,7 @@ function ContentPageDoTest() {
 
   //เรียกวิดีโอแนะนำการสอบจาก tbintrovideo
   const [videoUrl, setVideoUrl] = useState("");
+  //server/routes/video_doTest/index.js -> getvideo
   useEffect(() => {
     var config = generateConfig("GET", "/getvideo");
     axios(config)
@@ -95,15 +97,18 @@ function ContentPageDoTest() {
         handleError401and404(error);
       });
   }, []);
+  //console.log(videoUrl);
 
   //เรียกข้อมูลการจองสอบจาก tbtestreservation join with tbtestscoringcriteria
   //ตรวจสอบค่า pers_id
-  //const pers_id = user.user.pers_id;
+  //const pers_id = user.pers_id;
   const pers_id = "1111111111111";
 
   //เรียกข้อมูลการจองสอบจาก pers_id from testresult ผูกกับ testresvcode
   const [testResultInfo, setTestResultInfo] = useState([]);
-  //console.log(testResultInfo);
+  console.log(testResultInfo);
+
+  //server/routes/test_info/test.js -> gettestresult
   useEffect(() => {
     var config = generateConfig("GET", `/gettestresult?pers_id=${pers_id}`);
     axios(config)
@@ -117,6 +122,8 @@ function ContentPageDoTest() {
 
   //ข้อมูลการจองสอบ
   const [testReservationInfo, setTestReservationInfo] = useState([]);
+
+  //server/routes/test_info/test.js -> gettestreservationinfo
   useEffect(() => {
     var config = generateConfig("GET", "/gettestreservationinfo");
     axios(config)
@@ -127,14 +134,14 @@ function ContentPageDoTest() {
         handleError401and404(error);
       });
   }, []);
-  console.log(testReservationInfo);
+  //console.log(testReservationInfo);
 
   //เก็บข้อมูลรหัสการจองสอบทั้งหมด for validate การกรอกรหัสในการเข้าทดสอบ
   //const arrayOfAppvCode = testReservationInfo.map((obj) => obj.testappvcode);
 
   //เก็บข้อมูลการจองสอบจากการใส่รหัสจองสอบที่ถูกต้อง
   const [testInfo, setTestInfo] = useState([]);
-  
+
   //เก็บข้อมูลการกรอกรหัสในการเข้าทดสอบ
   const [appvCode, setAppvCode] = useState([]);
 
@@ -162,14 +169,15 @@ function ContentPageDoTest() {
         }
         handleOpenDialog();
       }
-    } else if(isTest) {
+    } else if (isTest) {
       toast.error("รหัสนี้ได้ดำเนินการทดสอบแล้ว");
-    } else{
+    } else {
       toast.error("รหัสไม่ถูกต้อง");
     }
   };
 
   const updateTestInfo = () => {
+    //ต้องลบออกจาก Redux
     dispatch(start(testInfo?.testresvcode));
     handleCloseDialog();
   };
