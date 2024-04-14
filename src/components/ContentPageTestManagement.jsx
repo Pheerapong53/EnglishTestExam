@@ -58,6 +58,7 @@ import {
   fetchTestFormByResvcode, //-----> added : 08-02-2024
   genHardCopyTestFormByResvcode
 } from '../store/TestMgmtSlice';
+import UploadMediaDialogBox from "./UploadMediaDialog"
 
 /*----------------------- Style ------------------*/
 const Item = styled(Paper)(({ theme }) => ({
@@ -1178,6 +1179,9 @@ function ContentPageTestManagement() {
 
   }
 
+  /*----------------- Upload Media added 10-03-2024 -----------------*/
+  const [openMediaDlg, setOpenMediaDlg] = useState(false);
+
   /*---------------------------------------------------*/
   /*------------------ return -------------------------*/
   /*---------------------------------------------------*/
@@ -1327,7 +1331,10 @@ function ContentPageTestManagement() {
               </Fragment>
             </Item>
             <Item elevation={0}>
-              <Button variant="contained">อัพโหลดวีดิโอแนะนำ</Button>
+              <Button 
+              variant="contained"
+              onClick={() => {setOpenMediaDlg(true);}}
+              >อัพโหลดวีดิโอแนะนำ</Button>
             </Item>
           </Stack>
         </Item>
@@ -1343,6 +1350,7 @@ function ContentPageTestManagement() {
           </ThemeProvider>
         </Item>
         <LabRoomSelection ref={labRoomSelectionRef} setLabRoomDlgState={setLabRoomDlgState} />
+        {openMediaDlg && <UploadMediaDialogBox action={{ openMediaDlg, setOpenMediaDlg }} />}
       </Stack>
     </ThemeProvider>
   );

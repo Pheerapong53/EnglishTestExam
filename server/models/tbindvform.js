@@ -91,6 +91,14 @@ module.exports = function (sequelize, DataTypes) {
     models.tbquestion.hasMany(tbindvform, { foreignKey: "question_code" });
     tbindvform.belongsTo(models.tbtestresult, { foreignKey: "testresultcode" });
     models.tbtestresult.hasMany(tbindvform, { foreignKey: "testresultcode" });
+    tbindvform.belongsTo(models.tbchoice, { foreignKey: "A", as: "fk_choiceA" });
+    models.tbchoice.hasMany(tbindvform, { foreignKey: "A", as: "fk_choiceA" });
+    tbindvform.belongsTo(models.tbchoice, { foreignKey: "B", as: "fk_choiceB" });
+    models.tbchoice.hasMany(tbindvform, { foreignKey: "B", as: "fk_choiceB" });
+    tbindvform.belongsTo(models.tbchoice, { foreignKey: "C", as: "fk_choiceC" });
+    models.tbchoice.hasMany(tbindvform, { foreignKey: "C", as: "fk_choiceC" });
+    tbindvform.belongsTo(models.tbchoice, { foreignKey: "D", as: "fk_choiceD" });
+    models.tbchoice.hasMany(tbindvform, { foreignKey: "D", as: "fk_choiceD" });
   }
 
   return tbindvform;

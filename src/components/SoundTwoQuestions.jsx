@@ -12,6 +12,7 @@ function SoundTwoQuestions({
   filepath1,
   filepath2,
   onFinish,
+  onStart,
   time,
 }) {
   const dispatch = useDispatch();
@@ -108,7 +109,8 @@ function SoundTwoQuestions({
           //controls
           type="audio/mpeg"
           onEnded={() => setTimeout(() => {
-            audioNum1.current.play()
+            onStart()
+            audioNum1.current.play();
           },0)}
         />
       ) : (
@@ -139,7 +141,7 @@ function SoundTwoQuestions({
           type="audio/mpeg"
           onEnded={() => setTimeout(() => {
             audioNum2.current.play()
-          },19000)}
+          },10000)}
         />
       ) : (
         <p>Loading audio...</p>
@@ -165,7 +167,7 @@ function SoundTwoQuestions({
           type="audio/mpeg"
           onEnded={() => setTimeout(() => {
             onFinish();
-          },19000)}
+          },16000)}
         />
       ) : (
         <p>Loading audio...</p>

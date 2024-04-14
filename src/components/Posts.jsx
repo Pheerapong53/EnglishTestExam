@@ -60,8 +60,7 @@ const Posts = ({
                 {QuestionNumber >= 0 && QuestionNumber <= 29 ? (
                   <FormLabel key={question.questioncode}>
                     <>
-                      {QuestionNumber + 1} : 
-                      {/* {question.questioncode} */}
+                      {QuestionNumber + 1} :{/* {question.questioncode} */}
                     </>
                     {question.questionText === "none" ||
                     question.questionText.includes("mp3") ? (
@@ -89,8 +88,7 @@ const Posts = ({
                 ) : QuestionNumber >= 30 && QuestionNumber <= 49 ? (
                   <FormLabel key={question.questioncode}>
                     <>
-                      {QuestionNumber + 1} : 
-                      {/* {question.questioncode} */}
+                      {QuestionNumber + 1} :{/* {question.questioncode} */}
                     </>
                     {question.questionText === "none" ||
                     question.questionText.includes("mp3") ? (
@@ -149,8 +147,7 @@ const Posts = ({
               <>
                 <FormLabel key={question.questioncode}>
                   <>
-                    {QuestionNumber + 1} : 
-                    {/* {question.questioncode} */}
+                    {QuestionNumber + 1} :{/* {question.questioncode} */}
                   </>
                   {question.questionText === "none" ||
                   question.questionText.includes("mp3") ? (
@@ -224,8 +221,7 @@ const Posts = ({
                 {QuestionNumber >= 51 && QuestionNumber <= 53 ? (
                   <FormLabel key={question.questioncode}>
                     <>
-                      {QuestionNumber + 1} : 
-                      {/* {question.questioncode} */}
+                      {QuestionNumber + 1} :{/* {question.questioncode} */}
                     </>
                     {question.questionText === "none" ||
                     question.questionText.includes("mp3") ? (
@@ -253,8 +249,7 @@ const Posts = ({
                 ) : QuestionNumber >= 54 && QuestionNumber <= 55 ? (
                   <FormLabel key={question.questioncode}>
                     <>
-                      {QuestionNumber + 1} : 
-                      {/* {question.questioncode} */}
+                      {QuestionNumber + 1} :{/* {question.questioncode} */}
                     </>
                     {question.questionText === "none" ||
                     question.questionText.includes("mp3") ? (
@@ -482,9 +477,7 @@ const Posts = ({
                   </>
                   {question.questionText === "none" ||
                   question.questionText.includes("mp3") ? (
-                    <>
-                      {/* <p>19 sec For Do Test</p> */}
-                    </>
+                    <>{/* <p>19 sec For Do Test</p> */}</>
                   ) : (
                     `${question.questionText}`
                   )}
@@ -530,9 +523,7 @@ const Posts = ({
                 </>
                 {question.questionText === "none" ||
                 question.questionText.includes("mp3") ? (
-                  <>
-                    {/* <p>13 sec For Do Test</p> */}
-                  </>
+                  <>{/* <p>13 sec For Do Test</p> */}</>
                 ) : (
                   `${question.questionText}`
                 )}

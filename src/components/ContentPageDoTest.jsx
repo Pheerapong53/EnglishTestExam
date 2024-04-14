@@ -13,13 +13,14 @@ import TextField from "@mui/material/TextField";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { blue, red, yellow } from "@mui/material/colors";
 import { Link, useNavigate } from "react-router-dom";
-import ReactPlayer from "react-player";
+//import ReactPlayer from "react-player";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogTitle from "@mui/material/DialogTitle";
+import CardMedia from "@mui/material/CardMedia";
 import { useSelector, useDispatch } from "react-redux";
 import { finish, start } from "../store/TestInfoSlice";
 import { logout } from "../../src/store/userSilce";
@@ -86,11 +87,13 @@ function ContentPageDoTest() {
 
   //เรียกวิดีโอแนะนำการสอบจาก tbintrovideo
   const [videoUrl, setVideoUrl] = useState("");
-  //server/routes/video_doTest/index.js -> getvideo
+  
   useEffect(() => {
-    var config = generateConfig("GET", "/getvideo");
+    // var config = generateConfig("GET", "/getvideo");
+    var config = generateConfig("GET","/testmgmt/introvideofiles")
     axios(config)
       .then((response) => {
+        console.log(response);
         setVideoUrl(response.data);
       })
       .catch((error) => {
@@ -101,12 +104,12 @@ function ContentPageDoTest() {
 
   //เรียกข้อมูลการจองสอบจาก tbtestreservation join with tbtestscoringcriteria
   //ตรวจสอบค่า pers_id
-  //const pers_id = user.pers_id;
+  //const pers_id = user?.pers_id;
   const pers_id = "1111111111111";
 
   //เรียกข้อมูลการจองสอบจาก pers_id from testresult ผูกกับ testresvcode
   const [testResultInfo, setTestResultInfo] = useState([]);
-  console.log(testResultInfo);
+  //console.log(testResultInfo);
 
   //server/routes/test_info/test.js -> gettestresult
   useEffect(() => {
@@ -250,8 +253,18 @@ function ContentPageDoTest() {
           {/* <ReactPlayer url="https://youtu.be/1lJDJFZ82R0" /> */}
 
           <>
-            {videoUrl ? (
-              <ReactPlayer url={videoUrl} />
+            {videoUrl?.length !== 0 ? (
+              // <ReactPlayer url={videoUrl} />
+              <CardMedia
+                component={"video"}
+                sx={{ height: 280 }}
+                src={
+                  // `${process.env.REACT_APP_API_URL}/testmgmt/singleintrovideofile/VDO-2576-435511.mp4`
+                  `${process.env.REACT_APP_API_URL}/introvideo`
+                }
+                autoPlay
+                controls
+              />
             ) : (
               <p>No Video available</p>
             )}

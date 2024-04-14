@@ -4,38 +4,43 @@ import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../src/store/userSilce";
 
-function TestSound({ form, filepath, onFinish, time }) {
+function TestSound({ form, filepath, order, onFinish, time }) {
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => ({ ...state }));
-  const token = user.user.token;
+  const { user } = useSelector((state) => state.user);
+  const token = user.token;
   const audioNum = useRef(null);
   const audioFile = useRef(null);
   const [audioUrl, setAudioUrl] = useState(null);
-  const [numUrl,setNumUrl] = useState(null);
+  const [numUrl, setNumUrl] = useState(null);
   // const [playSound, setPlaySound] = useState(false);
   // console.log(numUrl);
   // console.log(time);
+
   useEffect(() => {
     const axiosConfig = {
       baseURL: process.env.REACT_APP_API_URL,
-      headers: {authtoken: "bearer " + token},
+      headers: { authtoken: "bearer " + token },
     };
     const axiosInstance = axios.create(axiosConfig);
     const fetchData = async () => {
       try {
-        const Num = filepath.split("");
-        await axiosInstance.get(`/getfilesound/NO/${
-          Num[9] + Num[10] + Num[11]
-        }.mp3`).then((result) => {
-          setTimeout(() => {
-            //setNumUrl(urlNum);
-            setNumUrl(result.data);
-          }, time);
-        }).catch((error) => {
-          console.error("Error:", error);
-          // setPlaySound(true);
-          return
-        });
+        // const Num = filepath.split("");
+        // await axiosInstance.get(`/getfilesound/NO/${
+        //   Num[9] + Num[10] + Num[11]
+        // }.mp3`)
+        await axiosInstance
+          .get(`/getfilesound/NO/${order}.mp3`)
+          .then((result) => {
+            setTimeout(() => {
+              //setNumUrl(urlNum);
+              setNumUrl(result.data);
+            }, time);
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            // setPlaySound(true);
+            return;
+          });
         //const urlNum = responseNum.data;
 
         const response = await axiosInstance.get(
@@ -54,23 +59,29 @@ function TestSound({ form, filepath, onFinish, time }) {
   }, []);
   return (
     <div>
-      {numUrl ? (<audio
-            src={"data:audio/mp3;base64," + numUrl}
-            ref={audioNum}
-            autoPlay
-            //controls
-            type="audio/mpeg"
-            onEnded={() => audioFile.current.play()}
-          />) : ("")}
+      {numUrl ? (
+        <audio
+          src={"data:audio/mp3;base64," + numUrl}
+          ref={audioNum}
+          autoPlay
+          //controls
+          type="audio/mpeg"
+          onEnded={() => 
+            audioFile.current.play()
+          }
+        />
+      ) : (
+        ""
+      )}
       {audioUrl ? (
-          <audio
-            src={"data:audio/mp3;base64," + audioUrl}
-            ref={audioFile}
-            // autoPlay
-            //controls
-            type="audio/mpeg"
-            onEnded={onFinish}
-          />
+        <audio
+          src={"data:audio/mp3;base64," + audioUrl}
+          ref={audioFile}
+          // autoPlay
+          //controls
+          type="audio/mpeg"
+          onEnded={onFinish}
+        />
       ) : (
         <p>Loading audio...</p>
       )}
@@ -79,4 +90,3 @@ function TestSound({ form, filepath, onFinish, time }) {
 }
 
 export default TestSound;
-

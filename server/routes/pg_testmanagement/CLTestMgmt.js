@@ -1,6 +1,5 @@
-// const { lb } = require('date-fns/locale');
-// const { sequelize, Sequelize } = require('../../models');
-const { Op, where } = require('sequelize');
+const { sequelize } = require('../../models');
+const { Op } = require('sequelize');
 const ResrvModel = require('../../models')['tbtestreservation'];
 // const ScoringCriteriaModel = require('../../models')['tbtestscoringcriteria'];
 // const MemberModel = require('../../models')['tbmember'];
@@ -11,11 +10,15 @@ const TestResultModel = require('../../models')['tbtestresult'];
 const QuestionModel = require('../../models')['tbquestion'];
 const ChoiceModel = require('../../models')['tbchoice'];
 const IndvFormModel = require('../../models')['tbindvform'];
+const IntroFileModel = require('../../models')['tbintrovideo'];
+const fs = require('fs');
+var destroy = require('destroy');
+// var http = require('http');
+var onFinished = require('on-finished');
 const moment = require('moment');
-
+const path = require("path");
 
 const { RndSortFunc, questiongrp } = require('../../function/RandomFunc');
-// const { ContactSupportOutlined } = require('@mui/icons-material');
 
 const CLTestMgmt = {
 
@@ -527,9 +530,7 @@ const CLTestMgmt = {
                     let wholeform = [];
                     Object.keys(questiongrp).map((qn, i) => {
                         let grp = res.filter(el => el['questioncode'].includes(form.concat(qn)));
-                        //if (qn === 'L1A1' || qn === 'L1B1' || qn === 'L1B2' || qn === 'R1B2') {
                         wholeform = [...wholeform, ...RndSortFunc(grp, questiongrp[qn])];
-                        //}
                     });
 
                     let dataToInsert = wholeform.map(
@@ -568,6 +569,79 @@ const CLTestMgmt = {
         return success;
     },
 
+    /*-------------------------- added on 25-02-2024 -----------------------*/
+    randomQnAndChoiceForGrpTestFrm: async (form) => {
+        let success = new Promise(async (resolve, reject) => {
+            try {
+                await QuestionModel.findAll({
+                    attributes: [
+                        'questioncode',
+                        'formcode'
+                    ],
+                    include: [{
+                        model: ChoiceModel,
+                        attributes: [
+                            'choicecode'
+                        ],
+                    }],
+                    where: {
+                        'formcode': form
+                    },
+                    raw: true
+                }).then(res => {
+                    let wholeform = [];
+                    Object.keys(questiongrp).map((qn, i) => {
+                        let grp = res.filter(el => el['questioncode'].includes(form.concat(qn)));
+                        wholeform = [...wholeform, ...RndSortFunc(grp, questiongrp[qn])];
+                    });
+                    resolve({ 'status': wholeform });
+                });
+            } catch (err) {
+                console.log('Backend :: CLTestMgmt : randomQnAndChoiceForGrpTestFrm -> failed : ', err);
+                reject({ 'status': err });
+            }
+        });
+        return success;
+    },
+
+    genGrpTestFormWithRandomQnAndChoice: async (resvcode, persid, form) => {
+        let success = new Promise(async (resolve, reject) => {
+            try {
+                let dataToInsert = form.map(
+                    (el, i) => {
+                        let choice = [];
+                        if (Array.isArray(el)) {
+                            choice = el.map(e => {
+                                return (e['tbchoices.choicecode'])
+                            });
+
+                            return ({
+                                'indvtfrmcode': resvcode.concat('-', persid, '-', el[0]['questioncode']),
+                                'testresultcode': resvcode.concat('-', persid),
+                                'question_code': el[0]['questioncode'],
+                                'questionorder': i + 1,
+                                'A': choice[0],
+                                'B': choice[1],
+                                'C': choice[2],
+                                'D': choice[3],
+                                'frmcreatedate': moment().format('YYYY-MM-DD')
+                            });
+                        }
+                    } //end map
+                );
+
+                IndvFormModel.bulkCreate(dataToInsert)
+                    .then(res => resolve({ 'completed': true, 'status': res.length }));
+            } catch (err) {
+                console.log('Backend :: CLTestMgmt : genGrpTestFormWithRandomQnAndChoice-> failed : ', err);
+                reject({ 'completed': false, 'status': err });
+            }
+        });
+
+        return success;
+    },
+
+    /*------------------------------------------------------------------------*/
     fetchTestFormByResvcodePersid: async (resvcode_persid) => {
         let result = new Promise(async (resolve, reject) => {
             try {
@@ -639,10 +713,10 @@ const CLTestMgmt = {
                         };
                     } else {
                         //if (res_reduce?.length === 100) {
-                            res_obj = {
-                                'resvcode': resvcode,
-                                'form': res_reduce?.length === 0 ? 'กรุณาเลือกฟอร์ม' : 'คละฟอร์ม'
-                            };
+                        res_obj = {
+                            'resvcode': resvcode,
+                            'form': res_reduce?.length === 0 ? 'กรุณาเลือกฟอร์ม' : 'คละฟอร์ม'
+                        };
                         /*} else if (res_reduce?.length === 0) {
                             res_obj = {
                                 'resvcode': resvcode,
@@ -651,7 +725,7 @@ const CLTestMgmt = {
                         }*/
                     }
 
-                    console.log('res_reduce ===> ', sameelm, ' : ', res_reduce?.length, ' : ', res_obj);
+                    //console.log('res_reduce ===> ', sameelm, ' : ', res_reduce?.length, ' : ', res_obj);
                     resolve(res_obj);
                 });
 
@@ -675,7 +749,7 @@ const CLTestMgmt = {
                     },
                     raw: true
                 }).then(res => {
-                    console.log('delTestFormByResvcodePersid ---> res ', res);
+                    //console.log('delTestFormByResvcodePersid ---> res ', res);
                     resolve({ 'del_success': true });
                 });
 
@@ -688,7 +762,7 @@ const CLTestMgmt = {
     },
 
     delAllTestFormByResvcode: async (allfrmresvcode) => {
-        console.log('allfrmresvcode ---> ', allfrmresvcode);
+        //console.log('allfrmresvcode ---> ', allfrmresvcode);
         let del_result = new Promise(async (resolve, reject) => {
             try {
                 await IndvFormModel.destroy({
@@ -699,7 +773,7 @@ const CLTestMgmt = {
                     },
                     raw: true
                 }).then(res => {
-                    console.log('delAllTestFormByResvcode ---> res ', res);
+                    //console.log('delAllTestFormByResvcode ---> res ', res);
                     resolve({ 'del_success': true });
                 });
 
@@ -715,15 +789,60 @@ const CLTestMgmt = {
         let hardcopyfrm = new Promise(async (resolve, reject) => {
             try {
                 await IndvFormModel.findAll({
+                    include: [
+                        {
+                            model: QuestionModel,
+                            required: true,
+                        }, {
+                            model: ChoiceModel,
+                            required: true,
+                            as: "fk_choiceA",
+                            on: sequelize.where(
+                                sequelize.col('tbindvform.A'),
+                                Op.eq,
+                                sequelize.col('fk_choiceA.choicecode')
+                            )
+                        }, {
+                            model: ChoiceModel,
+                            required: true,
+                            as: "fk_choiceB",
+                            on: sequelize.where(
+                                sequelize.col('tbindvform.B'),
+                                Op.eq,
+                                sequelize.col('fk_choiceB.choicecode')
+                            )
+                        }, {
+                            model: ChoiceModel,
+                            required: true,
+                            as: "fk_choiceC",
+                            on: sequelize.where(
+                                sequelize.col('tbindvform.C'),
+                                Op.eq,
+                                sequelize.col('fk_choiceC.choicecode')
+                            )
+                        }, {
+                            model: ChoiceModel,
+                            required: true,
+                            as: "fk_choiceD",
+                            on: sequelize.where(
+                                sequelize.col('tbindvform.D'),
+                                Op.eq,
+                                sequelize.col('fk_choiceD.choicecode')
+                            )
+                        }
+                    ],
                     where: {
                         'indvtfrmcode': {
                             [Op.like]: `%${resvcode}%`
                         }
                     },
+                    order: [
+                        ['testresultcode', 'ASC'],
+                        ['questionorder', 'ASC'],
+                    ],
                     raw: true
                 }).then(res => {
-                    console.log('genHardCopyTestFormByResvcode ---> res ', res, ' : ', res.length);
-                    resolve({ 'hardcopyfrm_success': true });
+                    resolve(res);
                 });
 
             } catch (err) {
@@ -732,6 +851,156 @@ const CLTestMgmt = {
             }
         });
         return hardcopyfrm;
+    },
+
+    insertIntroFile: async (file) => {
+        let allintrovideo = await CLTestMgmt.getIntroVideoFiles();
+        const findMaxValueArr = () => {
+            let maxElmInArr = allintrovideo.map(el => {
+                return (parseInt(el['introvdoid'].split('-')[1]))
+            });
+
+            let maxElm = maxElmInArr.length === 0 ? 0 : Math.max(...maxElmInArr);
+            if (maxElm < 10) {
+                return '00'.concat(maxElm + 1);
+            } else if (maxElm < 100) {
+                return '0'.concat(maxElm + 1);
+            } else {
+                return (maxElm + 1);
+            }
+        }
+
+        let success = new Promise(async (resolve, reject) => {
+            try {
+                await IntroFileModel.create({
+                    'introvdoid': `INTRO-${findMaxValueArr()}`,
+                    'introvdotitle': file.filename,
+                    'introvdofilepath': file.destination.substring(file.destination.lastIndexOf('\\') + 1),
+                    'introvdouploaddate': moment().format('YYYY-MM-DD')
+                }).then(res => {
+                    resolve(res);
+                });
+            } catch (err) {
+                console.log('Backend :: CLTestMgmt : insertIntroFile -> failed : ', err);
+                reject({ 'insertintro_success': false });
+            }
+        });
+        return success;
+    },
+
+    getIntroVideoFiles: async () => {
+        let success = new Promise(async (resolve, reject) => {
+            try {
+                await IntroFileModel.findAll({
+                    attributes: [
+                        'introvdoid',
+                        'introvdotitle',
+                    ],
+                    raw: true
+                }).then(res => {
+                    resolve(res);
+                });
+            } catch (err) {
+                console.log('Backend :: CLTestMgmt : getIntroVideoFiles -> failed : ', err);
+                reject({ 'insertintro_success': false });
+            }
+        });
+        return success;
+    },
+
+    streamVideoFile: async (f_video, request, response) => {
+        let success = new Promise(async (resolve, reject) => {
+            try {
+                await IntroFileModel.findOne({
+                    attributes: [
+                        'introvdoid',
+                        'introvdotitle',
+                        'introvdofilepath'
+                    ],
+                    where: {
+                        'introvdotitle': f_video
+                    },
+                    raw: true,
+                }).then(res => {
+                    if (res !== null) {
+                        // const idx = __dirname.match(new RegExp('\\b' + 'backend' + '\\b')).index + ('backend'.length + 1);
+                        //const idx = __dirname.match(new RegExp('/server/'))?.index;
+                        const idx = __dirname.indexOf('/backend/');
+                        // const videoPath = __dirname.substring(0, idx).concat(res.introvdofilepath, '\\', res.introvdotitle);
+                        const videoPath = path.join(__dirname.substring(0, idx),res.introvdofilepath, res.introvdotitle);
+                        //const videoPath = __dirname.substring(0, idx).concat('/',res.introvdofilepath, '/', res.introvdotitle);
+                        const videoSize = fs.statSync(videoPath).size;
+                        let range = 'undefined' !== typeof request.headers.range ? request.headers.range : 'bytes=0-';
+
+                        console.log("path: ", videoPath);
+                        if (range) {
+                            const parts = range.replace(/bytes=/, '').split('-');
+                            const start = parseInt(parts[0], 10);
+                            const end = parts[1] ? parseInt(parts[1], 10) : videoSize - 1;
+                            const chunkSize = end - start + 1;
+                            const videoStream = fs.createReadStream(videoPath, { start, end });
+
+                            const headers = {
+                                'Content-Range': `bytes ${start}-${end}/${videoSize}`,
+                                'Accept-Ranges': 'bytes',
+                                'Content-Length': chunkSize,
+                                'Content-Type': 'video/mp4',
+                            };
+
+                            response.writeHead(206, headers);
+                            videoStream.pipe(response);
+                            onFinished(response, function () {
+                                destroy(videoStream);
+                            });
+                        } else {
+                            const headers = {
+                                'Content-Length': videoSize,
+                                'Content-Type': 'video/mp4',
+                            };
+
+                            response.writeHead(200, headers);
+                            fs.createReadStream(videoPath).pipe(response);
+                            onFinished(response, function () {
+                                destroy(fs.createReadStream(videoPath));
+                            });
+                        }
+                    }
+
+                    resolve(response);
+                });
+            } catch (err) {
+                console.log('Backend :: CLTestMgmt : streamVideoFile -> failed : ', err);
+                reject({ 'stream_success': false });
+            }
+        });
+        return success;
+    },
+
+    delVideoFile: async (singlevideo) => {
+        let success = new Promise(async (resolve, reject) => {
+            try {
+                await IntroFileModel.findOne({
+                    where: {
+                        'introvdoid': singlevideo
+                    },
+                    raw: true,
+                }).then(async res => {
+                    if (res !== null) {
+                        await IntroFileModel.destroy({
+                            where: {
+                                'introvdoid': singlevideo
+                            },
+                            raw: true,
+                        });
+                        resolve({ 'stream_success': true });
+                    }
+                });
+            } catch (err) {
+                console.log('Backend :: CLTestMgmt : delVideoFile -> failed : ', err);
+                reject({ 'stream_success': false });
+            }
+        });
+        return success;
     }
 
 }

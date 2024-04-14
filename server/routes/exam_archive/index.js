@@ -6,10 +6,12 @@ const exam = require("./exam");
 const {verifyToken} = require("../../middleware/VerifyToken");
 //const upload = multer({dest:'../fileexam/'});
 
-routes.get("/indvform",async(req,res) => {
-  res.send(await exam.getindvform());
-})
-
+routes.get("/indvform",verifyToken,async(req,res) => {
+  res.send(await exam.getindvform(req));
+});
+routes.get('/introvideo',async(req, res) => {
+  await exam.introVideo(req, res);
+});
 routes.get("/getquestion", async(req, res) =>{
   res.send(await exam.getquestion());
 });

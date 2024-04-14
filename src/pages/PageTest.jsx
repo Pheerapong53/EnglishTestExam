@@ -15,6 +15,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../src/store/userSilce";
 import Posts from "../components/Posts";
 import Pagination from "../components/Pagination";
+import PostIndvForm from "../components/PostIndvForm";
 import SoundDir from "../components/SoundDir";
 import { toast } from "react-toastify";
 
@@ -31,30 +32,38 @@ function PageTest() {
   //รับ state จาก ContentPageDoTest ข้อมูล testInfo
   //เวลาแสดงที่มุมบนซ้าย
   //getquestionandchoicefrom tbindvform with indvtfrmcode (รหัสการจอง + เลขประจำตัวประชาชน)
-  const testreservcode = location.state.testresvcode;
+  const testreservcode = location?.state.testresvcode;
   let testresultcode;
   if (typeof testreservcode !== "undefined") {
     const pers_id = user?.pers_id;
     if (typeof pers_id !== "undefined") {
-      testresultcode = testreservcode.toString() + "-" + pers_id.toString();
+      //testresultcode = testreservcode.toString() + "-" + pers_id.toString();
+      testresultcode = "SWC002-1111111111111";
     } else {
-      testresultcode = "DAE001-3333333333333";
+      testresultcode = "SWC002-1111111111111";
     }
   } else {
-    testresultcode = "DAE001-3333333333333";
+    testresultcode = "SWC002-1111111111111";
   }
   console.log(testresultcode);
 
   const [QuestionIndvform, setQuestionIndvform] = useState(null);
+  console.log(QuestionIndvform);
+
   //getquestion
+  //server/routes/exam_archieve/exam.js -> getindvform
   const getQuestionFromIndv = async () => {
     try {
       const question = await axios
-        .get(process.env.REACT_APP_API_URL + `/getquestionindvform`, {
-          headers: {
-            authtoken: "bearer " + token,
-          },
-        })
+        .get(
+          process.env.REACT_APP_API_URL +
+            `/indvform?testresultcode=${testresultcode}`,
+          {
+            headers: {
+              authtoken: "bearer " + token,
+            },
+          }
+        )
         .catch((error) => {
           if (error.response.status === 401 || error.response.status === 404) {
             dispatch(logout());
@@ -68,18 +77,56 @@ function PageTest() {
             toast.error(error.response.data.message);
           }
         });
-      setQuestionIndvform(question);
+      const compareNumericStrings = (a, b) => {
+        return parseInt(a.questionorder, 10) - parseInt(b.questionorder, 10);
+      };
+
+      setQuestionIndvform(
+        question.data.sort(compareNumericStrings).map((question) => ({
+          order: question.questionorder,
+          questioncode: question.question_code,
+          filepath: question["tbquestion.problem"],
+          questionText: question["tbquestion.question"],
+          cerfcode: question["tbquestion.cerfcode"],
+          form: question["tbquestion.formcode"],
+          onSelect: false,
+          onAnswer: null,
+          Score: 0,
+          time:
+            question["tbquestion.cerfcode"] === "L1A1" ||
+            question["tbquestion.cerfcode"] === "L1A2" ||
+            question["tbquestion.cerfcode"] === "L1B1"
+              ? 13000
+              : question["tbquestion.cerfcode"] === "L1B2" ||
+                question["tbquestion.cerfcode"] === "L1C1" ||
+                question["tbquestion.cerfcode"] === "L2A1" ||
+                question["tbquestion.cerfcode"] === "L2A2"
+              ? 15000
+              : 19000,
+          A_choicecode: question["fk_choiceA.choicecode"],
+          A_choicetext: question["fk_choiceA.choicetext"],
+          A_answer: question["fk_choiceA.answer"],
+          B_choicecode: question["fk_choiceB.choicecode"],
+          B_choicetext: question["fk_choiceB.choicetext"],
+          B_answer: question["fk_choiceB.answer"],
+          C_choicecode: question["fk_choiceC.choicecode"],
+          C_choicetext: question["fk_choiceC.choicetext"],
+          C_answer: question["fk_choiceC.answer"],
+          D_choicecode: question["fk_choiceD.choicecode"],
+          D_choicetext: question["fk_choiceD.choicetext"],
+          D_answer: question["fk_choiceD.answer"],
+        }))
+      );
     } catch (error) {
       console.log("Error", error.message);
     }
   };
-  //create backend
 
   //toggle button pagination
   //false -> Enable Button
   //True -> Disable Button
   //For Test useState(false)
-  const [isReading, setIsReading] = useState(true);
+  const [isReading, setIsReading] = useState(false);
 
   //toggle for Sound File
   //false -> Play DIR_1_50
@@ -231,7 +278,11 @@ function PageTest() {
       setIsSendExam(true);
       //Remaining Time
       setTime(location.state.data.time);
+      getQuestionFromIndv();
     } else {
+      //get from indvform
+      getQuestionFromIndv();
+      //get from bquestion and choice
       getQuestionAndChoice();
       setTestResvCode(location.state);
     }
@@ -286,8 +337,13 @@ function PageTest() {
   );
 
   //Count Time Func
-  const [time, setTime] = useState(60 * 60);
-  const [isCounting, setIsCounting] = useState(true);
+  const [time, setTime] = useState(65 * 60);
+  const [isCounting, setIsCounting] = useState(false);
+  // if(QuestionNumber > 60){
+  //   setIsCounting(true);
+  // }else{
+  //   setIsCounting(false);
+  // }
   //const [timeUp, setTimeUp] = useState(false);
 
   const minutes = Math.floor(time / 60);
@@ -562,29 +618,52 @@ function PageTest() {
           }}
           elevation={6}
         >
-          <Box sx={{ display: "flex", justifyContent: "center", margin: "8%" }}>
-            <Box sx={{ display: "flex", flexDirection: "column" }}>
-              {isStart ? (
-                <Posts
-                  QuestionAndChoice={QuestionAndChoicesFromDB}
-                  QuestionNumber={QuestionNumber}
-                  EndOfListenning={(i) => setQuestionNumber(i)}
-                  TogglePagination={(bool) => setIsReading(bool)}
-                  OnAnswerSelect={(e, value) => {
-                    updateStatusOnAnswer(e.target.name, value);
-                  }}
-                  showSound={isSendExam}
-                  handleDirEnd={(bool) => setIsSendExam(bool)}
-                />
-              ) : (
+          {false ? (
+            <Box
+              sx={{ display: "flex", justifyContent: "center", margin: "8%" }}
+            >
+              <Box sx={{ display: "flex", flexDirection: "column" }}>
+                {isStart ? (
+                  <Posts
+                    QuestionAndChoice={QuestionAndChoicesFromDB}
+                    QuestionNumber={QuestionNumber}
+                    EndOfListenning={(i) => setQuestionNumber(i)}
+                    TogglePagination={(bool) => setIsReading(bool)}
+                    OnAnswerSelect={(e, value) => {
+                      updateStatusOnAnswer(e.target.name, value);
+                    }}
+                    showSound={isSendExam}
+                    handleDirEnd={(bool) => setIsSendExam(bool)}
+                  />
+                ) : (
+                  <SoundDir
+                    dir="Dir_1_50.mp3"
+                    onFinish={() => handleStart(true)}
+                    time={0}
+                  />
+                )}
+              </Box>
+            </Box>
+          ) : (
+            <Box
+              sx={{ display: "flex", justifyContent: "center", margin: "8%" }}
+            >
+              <Box sx={{ display: "flex", flexDirection: "column" }}>
                 <SoundDir
                   dir="Dir_1_50.mp3"
                   onFinish={() => handleStart(true)}
                   time={0}
                 />
-              )}
+                {isStart && (
+                  <PostIndvForm
+                    QuestionAndChoice={QuestionIndvform}
+                    QuestionNumber={QuestionNumber+1}
+                    EndOfListenning={(i) => setQuestionNumber(i)}
+                  />
+                )}
+              </Box>
             </Box>
-          </Box>
+          )}
         </Card>
 
         <Card
@@ -657,7 +736,7 @@ function PageTest() {
                   });
                 }}
               >
-                Finish attempt
+                จบการทำแบบทดสอบ
               </Button>
             </Box>
             <br />

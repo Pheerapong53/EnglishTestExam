@@ -96,7 +96,6 @@ export const fetchTestResultByDateTimeLabroom = createAsyncThunk('fetchTestResul
         } catch (err) {
             console.log('testMgmtSlice : fetchTestResultByDateTimeLabroom -> error : ', err);
         };
-
     });
 
 /*-----------------------------------------------------------------------------*/
@@ -167,7 +166,7 @@ export const updateIndvTestForm = createAsyncThunk('updateIndvTestForm', async (
         //console.log('res---->', res);
         return res.data;
     } catch (err) {
-        console.log('testMgmtSlice : fetchAllTestForm -> error : ', err);
+        console.log('testMgmtSlice : updateIndvTestForm -> error : ', err);
     };
 });
 
@@ -223,18 +222,88 @@ export const delAllTestFormByResvcode = createAsyncThunk('delAllTestFormByResvco
 
 export const genHardCopyTestFormByResvcode = createAsyncThunk('genHardCopyTestFormByResvcode',
     async ({ resvcode }) => {
-        console.log('resvcode ---> ', resvcode)
+        //console.log('resvcode ---> ', resvcode)
         try {
             let res = await axios.get(
-                `${process.env.REACT_APP_API_URL}/testmgmt/genhardcopytestformbyresvcode/resvcode/${resvcode}`);
-            console.log('res---->', res);
+                `${process.env.REACT_APP_API_URL}/testmgmt/genhardcopytestformbyresvcode/resvcode/${resvcode}`
+            );
+            //console.log('res---->', res.data);
             return res.data;
         } catch (err) {
             console.log('testMgmtSlice : genHardCopyTestFormByResvcode -> error : ', err);
         };
     });
 
+export const updateGrpTestForm = createAsyncThunk('updateGrpTestForm',
+    async ({ resvcode, persid, form }) => {
+        try {
+            let res = await axios.put(
+                `${process.env.REACT_APP_API_URL}/testmgmt/grptestfrm/resvcode`, { resvcode, persid, form }
+            );
+            //console.log('res---->', res.data);
+            return res.data;
+        } catch (err) {
+            console.log('testMgmtSlice : updateGrpTestForm -> error : ', err);
+        };
+    });
 
+export const createGrpTestForm = createAsyncThunk('createGrpTestForm',
+    async (form) => {
+        //console.log('createGrpTestForm ---> ', form);
+        try {
+            let res = await axios.get(
+                `${process.env.REACT_APP_API_URL}/testmgmt/creategrptestfrm/form/${form}`
+            );
+            //console.log('res---->', res.data);
+            return res.data;
+        } catch (err) {
+            console.log('testMgmtSlice : genHardCopyTestFormByResvcode -> error : ', err);
+        };
+    });
+
+export const getIntroVideoFiles = createAsyncThunk('getIntroVideoFile',
+    async () => {
+        try {
+            let res = await axios.get(
+                `${process.env.REACT_APP_API_URL}/testmgmt/introvideofiles`
+            );
+            //console.log('res---->', res.data);
+            return res.data;
+        } catch (err) {
+            console.log('testMgmtSlice : getIntroVideoFile -> error : ', err);
+        }
+
+    });
+
+export const getSingleIntroVideoFile = createAsyncThunk('getSingleIntroVideoFile',
+    async (singlevideo) => {
+        try {
+            let res = await axios.get(
+                `${process.env.REACT_APP_API_URL}/testmgmt/singleintrovideofile/${singlevideo}`,
+            );
+
+            //console.log('getSingleIntroVideoFile --> res ', res);
+            return res;
+        } catch (err) {
+            console.log('testMgmtSlice : getSingleIntroVideoFile -> error : ', err);
+        }
+
+    });
+
+export const delSingleIntroVideoFile = createAsyncThunk('delSingleIntroVideoFile',
+    async (singlevideo) => {
+        try {
+            let res = await axios.delete(
+                `${process.env.REACT_APP_API_URL}/testmgmt/delintrovideofile`,
+                { data: singlevideo }
+            );
+
+            //console.log('Slice delSingleIntroVideoFile ---> ', res);
+            return res;
+        } catch (err) {
+            console.log('testMgmtSlice : delSingleIntroVideoFile -> error : ', err);
+        }
+    });
 /*-------------------------------------------------------------------------*/
 /*-------------------------------- CreateSlice ----------------------------*/
 /*-------------------------------------------------------------------------*/
@@ -247,12 +316,14 @@ export const testMgmtSlice = createSlice({
         updatelabroomarr: null, //added on 08-11-2023
         questionform: null, //added on 24-12-2023
         indvquestionform: null, //added on 12-01-2024
+        printgrptestform: null, //---------->added on 22-02-2024
         testresultarr: null,
         testresultdtlbarr: null,
         invigilator: null,
         testtype: null,
         indvtesttype: null,
         locationInvigilator: null,
+        introvideofiles: null, //-------------> added on 14-03-2024
         isLoading: false,
         error: null,
     },
@@ -415,11 +486,37 @@ export const testMgmtSlice = createSlice({
             state.isLoading = true;
         })
         builder.addCase(updateIndvTestForm.fulfilled, (state, action) => {
-            //console.log('fetchAllTestForm ---> ', action.payload);
+            //console.log('updateIndvTestForm ---> ', action.payload);
             state.isLoading = false;
             //state.questionform = action.payload;
         })
         builder.addCase(updateIndvTestForm.rejected, (state, action) => {
+            state.isLoading = false;
+            state.error = action.error.message;
+        })
+
+        /*------------------- updateGrpTestForm added on 25-02-2024 ---------------------*/
+        builder.addCase(updateGrpTestForm.pending, (state) => {
+            state.isLoading = true;
+        })
+        builder.addCase(updateGrpTestForm.fulfilled, (state, action) => {
+            state.isLoading = false;
+            //state.questionform = action.payload;
+        })
+        builder.addCase(updateGrpTestForm.rejected, (state, action) => {
+            state.isLoading = false;
+            state.error = action.error.message;
+        })
+
+        /*------------------- createGrpTestForm added on 25-02-2024 ---------------------*/
+        builder.addCase(createGrpTestForm.pending, (state) => {
+            state.isLoading = true;
+        })
+        builder.addCase(createGrpTestForm.fulfilled, (state, action) => {
+            state.isLoading = false;
+            //state.questionform = action.payload;
+        })
+        builder.addCase(createGrpTestForm.rejected, (state, action) => {
             state.isLoading = false;
             state.error = action.error.message;
         })
@@ -443,7 +540,7 @@ export const testMgmtSlice = createSlice({
             state.isLoading = true;
         })
         builder.addCase(fetchTestFormByResvcode.fulfilled, (state, action) => {
-            console.log('TestMgmt :: fetchTestFormByResvcode ---> ', action.payload);
+            //console.log('TestMgmt :: fetchTestFormByResvcode ---> ', action.payload);
             state.isLoading = false;
             state.indvquestionform = action.payload;
         })
@@ -485,11 +582,49 @@ export const testMgmtSlice = createSlice({
             state.isLoading = true;
         })
         builder.addCase(genHardCopyTestFormByResvcode.fulfilled, (state, action) => {
-            //console.log('fetchTestFormByResvcodePersid ---> ', action.payload);
+            //console.log('genHardCopyTestFormByResvcode ---> ', action.payload);
             state.isLoading = false;
-            //state.indvquestionform = action.payload;
+            state.printgrptestform = action.payload;
         })
         builder.addCase(genHardCopyTestFormByResvcode.rejected, (state, action) => {
+            state.isLoading = false;
+            state.error = action.error.message;
+        })
+
+        /*---------------------- getIntroVideoFile ------------------*/
+        builder.addCase(getIntroVideoFiles.pending, (state) => {
+            state.isLoading = true;
+        })
+        builder.addCase(getIntroVideoFiles.fulfilled, (state, action) => {
+            state.isLoading = false;
+            state.introvideofiles = action.payload;
+        })
+        builder.addCase(getIntroVideoFiles.rejected, (state, action) => {
+            state.isLoading = false;
+            state.error = action.error.message;
+        })
+
+        /*------------------ getSingleIntroVideoFile ----------------*/
+        builder.addCase(getSingleIntroVideoFile.pending, (state) => {
+            state.isLoading = true;
+        })
+        builder.addCase(getSingleIntroVideoFile.fulfilled, (state, action) => {
+            state.isLoading = false;
+            //state.introvideofiles = action.payload;
+        })
+        builder.addCase(getSingleIntroVideoFile.rejected, (state, action) => {
+            state.isLoading = false;
+            state.error = action.error.message;
+        })
+
+        /*------------------------------ delSingleIntroVideoFile ------------------*/
+        builder.addCase(delSingleIntroVideoFile.pending, (state) => {
+            state.isLoading = true;
+        })
+        builder.addCase(delSingleIntroVideoFile.fulfilled, (state, action) => {
+            state.isLoading = false;
+        })
+        builder.addCase(delSingleIntroVideoFile.rejected, (state, action) => {
             state.isLoading = false;
             state.error = action.error.message;
         })
