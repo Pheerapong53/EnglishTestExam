@@ -16,8 +16,8 @@ function SoundTwoQuestions({
   time,
 }) {
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => ({ ...state }));
-  const token = user.user.token;
+  const { user } = useSelector((state) => state.user);
+  const token = user.token;
 
   const audioNum1 = useRef(null);
   const audioNum2 = useRef(null);
@@ -167,7 +167,7 @@ function SoundTwoQuestions({
           type="audio/mpeg"
           onEnded={() => setTimeout(() => {
             onFinish();
-          },16000)}
+          },15000)}
         />
       ) : (
         <p>Loading audio...</p>

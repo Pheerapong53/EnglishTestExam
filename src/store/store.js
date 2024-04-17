@@ -21,6 +21,7 @@ import testResvInfoReducer from './TestReservationSlice';
 import testResultInfoReducer from './TestResultSlice';
 import testmgmtstateReducer from './TestMgmtSlice';
 import TestInfoSliceReducer from "./TestInfoSlice";
+import ExamInfoSliceReducer from "./ExamInfoSlice";
 
 const reducers = combineReducers({
   user: userSilce,
@@ -32,7 +33,7 @@ const reducers = combineReducers({
   testresultstate: testResultInfoReducer,
   testmgmtstate: testmgmtstateReducer,
   testinfo: TestInfoSliceReducer,
-
+  examinfo: ExamInfoSliceReducer,
 });
 
 // const store = configureStore({

@@ -283,7 +283,7 @@ function ContentPageDoTest() {
             color="text.secondary"
             gutterBottom
           >
-            คุณมีเวลา 60 นาที
+            คุณมีเวลา 90 นาที
           </Typography>
         </CardContent>
 

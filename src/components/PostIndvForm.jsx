@@ -18,6 +18,9 @@ const PostIndvForm = ({
   QuestionAndChoice,
   QuestionNumber,
   EndOfListenning,
+  ToggleCountDown,
+  TogglePagination,
+  OnAnswerSelect,
 }) => {
   //CountDown Timer
   const [timeRemaining, setTimeRemaining] = useState(0);
@@ -29,6 +32,8 @@ const PostIndvForm = ({
   const [isEnd, setEnd] = useState(false);
   const [showSound, setShowSound] = useState(true);
   //console.log(QuestionNumber);
+
+  //Time Count Down
   useEffect(() => {
     let timer;
     if (isCounting) {
@@ -47,35 +52,37 @@ const PostIndvForm = ({
 
   const CounntdownProgressBar = ({ timeRemaining, timeDiv, showSound }) => {
     return (
-      (showSound && <Box sx={{ position: "relative", display: "inline-flex" }}>
-        <CircularProgress
-          variant="determinate"
-          value={(timeRemaining / timeDiv) * 100}
-        />
-        <Box
-          sx={{
-            width: "100%",
-            height: "100%",
-            top: 0,
-            left: 2,
-            bottom: 0,
-            right: 2,
-            position: "absolute",
-            display: "flex",
-            alignItems: "center",
-            // justifyContent: "center",
-          }}
-        >
-          <Typography
-            variant="caption"
-            component="div"
-            color="red"
-            fontSize={15}
+      showSound && (
+        <Box sx={{ position: "relative", display: "inline-flex" }}>
+          <CircularProgress
+            variant="determinate"
+            value={(timeRemaining / timeDiv) * 100}
+          />
+          <Box
+            sx={{
+              width: "100%",
+              height: "100%",
+              top: 0,
+              left: 2,
+              bottom: 0,
+              right: 2,
+              position: "absolute",
+              display: "flex",
+              alignItems: "center",
+              // justifyContent: "center",
+            }}
           >
-            {timeRemaining ? `${timeRemaining / 1000} s` : ""}
-          </Typography>
+            <Typography
+              variant="caption"
+              component="div"
+              color="red"
+              fontSize={15}
+            >
+              {timeRemaining ? `${timeRemaining / 1000} s` : ""}
+            </Typography>
+          </Box>
         </Box>
-      </Box>)
+      )
     );
   };
 
@@ -86,11 +93,13 @@ const PostIndvForm = ({
         QuestionNumber <= 56 &&
         (QuestionNumber === 51 ? (
           <>
-            {showSound && <SoundDir
-              dir="Dir_51_56.mp3"
-              onFinish={() => setFiftyOne(true)}
-              time={0}
-            />}
+            {showSound && (
+              <SoundDir
+                dir="Dir_51_56.mp3"
+                onFinish={() => setFiftyOne(true)}
+                time={0}
+              />
+            )}
             {isFiftyOne && (
               <FormControl>
                 {QuestionAndChoice?.filter(
@@ -116,27 +125,35 @@ const PostIndvForm = ({
                         {question["questionText"] === "none" ||
                         question["questionText"].includes("mp3") ? (
                           <>
-                            {showSound && (<TestSound
-                              form={question["form"]}
-                              filepath={question["filepath"]}
-                              order={question["order"].padStart(3, "0")}
-                              time={5000}
-                              onFinish={() => {
-                                setTimeDiv(question["time"]);
-                                setTimeRemaining(question["time"]);
-                                setTimeout(() => {
-                                  setTimeRemaining(0);
-                                  EndOfListenning(QuestionNumber++);
-                                }, question["time"]);
-                              }}
-                            />)}
+                            {showSound && (
+                              <TestSound
+                                form={question["form"]}
+                                filepath={question["filepath"]}
+                                order={question["order"].padStart(3, "0")}
+                                time={5000}
+                                onFinish={() => {
+                                  setTimeDiv(question["time"]);
+                                  setTimeRemaining(question["time"]);
+                                  setTimeout(() => {
+                                    setTimeRemaining(0);
+                                    EndOfListenning(QuestionNumber++);
+                                  }, question["time"]);
+                                }}
+                              />
+                            )}
                           </>
                         ) : (
                           `${question["questionText"]}`
                         )}
                       </FormLabel>
 
-                      <RadioGroup>
+                      <RadioGroup
+                        key={question.order}
+                        name={question.questioncode}
+                        onChange={(e) => {
+                          OnAnswerSelect(e, e.target.value);
+                        }}
+                      >
                         {["A", "B", "C", "D"].map((choice) => (
                           <FormControlLabel
                             key={question[`${choice}_choicecode`]}
@@ -145,6 +162,10 @@ const PostIndvForm = ({
                             label={`${choice}.${
                               question[`${choice}_choicetext`]
                             }`}
+                            checked={
+                              question.onAnswer ===
+                              question[`${choice}_choicetext`]
+                            }
                           />
                         ))}
                       </RadioGroup>
@@ -186,33 +207,44 @@ const PostIndvForm = ({
                     {question["questionText"] === "none" ||
                     question["questionText"].includes("mp3") ? (
                       <>
-                        {showSound && (<TestSound
-                              form={question["form"]}
-                              filepath={question["filepath"]}
-                              order={question["order"].padStart(3, "0")}
-                              time={5000}
-                              onFinish={() => {
-                                setTimeDiv(question["time"]);
-                                setTimeRemaining(question["time"]);
-                                setTimeout(() => {
-                                  setTimeRemaining(0);
-                                  EndOfListenning(QuestionNumber++);
-                                }, question["time"]);
-                              }}
-                        />)}
+                        {showSound && (
+                          <TestSound
+                            form={question["form"]}
+                            filepath={question["filepath"]}
+                            order={question["order"].padStart(3, "0")}
+                            time={5000}
+                            onFinish={() => {
+                              setTimeDiv(question["time"]);
+                              setTimeRemaining(question["time"]);
+                              setTimeout(() => {
+                                setTimeRemaining(0);
+                                EndOfListenning(QuestionNumber++);
+                              }, question["time"]);
+                            }}
+                          />
+                        )}
                       </>
                     ) : (
                       `${question["questionText"]}`
                     )}
                   </FormLabel>
 
-                  <RadioGroup>
+                  <RadioGroup
+                    key={question.order}
+                    name={question.questioncode}
+                    onChange={(e) => {
+                      OnAnswerSelect(e, e.target.value);
+                    }}
+                  >
                     {["A", "B", "C", "D"].map((choice) => (
                       <FormControlLabel
                         key={question[`${choice}_choicecode`]}
                         value={question[`${choice}_choicetext`]}
                         control={<Radio />}
                         label={`${choice}.${question[`${choice}_choicetext`]}`}
+                        checked={
+                          question.onAnswer === question[`${choice}_choicetext`]
+                        }
                       />
                     ))}
                   </RadioGroup>
@@ -231,8 +263,8 @@ const PostIndvForm = ({
 
       {QuestionNumber >= 57 && QuestionNumber <= 58 && (
         <>
-          {!isFiftySeven && (
-            showSound && <SoundDir
+          {!isFiftySeven && showSound && (
+            <SoundDir
               dir="Dir_57_58.mp3"
               onFinish={() => setFiftySeven(true)}
               time={0}
@@ -257,41 +289,47 @@ const PostIndvForm = ({
                         {question["questionText"] === "none" ||
                         question["questionText"].includes("mp3") ? (
                           <>
-                            {question.order === "57" ? (
-                              showSound && (<SoundTwoQuestions
-                                form={question["form"]}
-                                filepath={question["filepath"]}
-                                Num1="057"
-                                Num2="058"
-                                filepath1={
-                                  question["questioncode"].includes("057")
-                                    ? `${question.questioncode}_57`
-                                    : `${question.questioncode}_58`
-                                }
-                                filepath2={
-                                  question["questioncode"].includes("057")
-                                    ? `${question.questioncode}_58`
-                                    : `${question.questioncode}_57`
-                                }
-                                onStart={() => {
-                                  setTimeDiv(38000);
-                                  setTimeRemaining(38000);
-                                }}
-                                onFinish={() =>
-                                  setTimeout(() => {
-                                    EndOfListenning((QuestionNumber += 2));
-                                  }, 0)
-                                }
-                              />)
-                            ) : (
-                              ""
-                            )}
+                            {question.order === "57"
+                              ? showSound && (
+                                  <SoundTwoQuestions
+                                    form={question["form"]}
+                                    filepath={question["filepath"]}
+                                    Num1="057"
+                                    Num2="058"
+                                    filepath1={
+                                      question["questioncode"].includes("057")
+                                        ? `${question.questioncode}_57`
+                                        : `${question.questioncode}_58`
+                                    }
+                                    filepath2={
+                                      question["questioncode"].includes("057")
+                                        ? `${question.questioncode}_58`
+                                        : `${question.questioncode}_57`
+                                    }
+                                    onStart={() => {
+                                      setTimeDiv(38000);
+                                      setTimeRemaining(38000);
+                                    }}
+                                    onFinish={() =>
+                                      setTimeout(() => {
+                                        EndOfListenning((QuestionNumber += 2));
+                                      }, 0)
+                                    }
+                                  />
+                                )
+                              : ""}
                           </>
                         ) : (
                           `${question["questionText"]}`
                         )}
                       </FormLabel>
-                      <RadioGroup>
+                      <RadioGroup
+                        key={question.order}
+                        name={question.questioncode}
+                        onChange={(e) => {
+                          OnAnswerSelect(e, e.target.value);
+                        }}
+                      >
                         {["A", "B", "C", "D"].map((choice) => (
                           <FormControlLabel
                             key={question[`${choice}_choicecode`]}
@@ -300,6 +338,10 @@ const PostIndvForm = ({
                             label={`${choice}.${
                               question[`${choice}_choicetext`]
                             }`}
+                            checked={
+                              question.onAnswer ===
+                              question[`${choice}_choicetext`]
+                            }
                           />
                         ))}
                       </RadioGroup>
@@ -320,8 +362,8 @@ const PostIndvForm = ({
 
       {QuestionNumber >= 59 && QuestionNumber <= 60 && (
         <>
-          {!isFiftyNine && (
-            showSound && <SoundDir
+          {!isFiftyNine && showSound && (
+            <SoundDir
               dir="Dir_59_60.mp3"
               onFinish={() => setFiftyNine(true)}
               time={0}
@@ -346,37 +388,39 @@ const PostIndvForm = ({
                         {question["questionText"] === "none" ||
                         question["questionText"].includes("mp3") ? (
                           <>
-                            {question.order === "59" ? (
-                              showSound && (<SoundTwoQuestions
-                                form={question["form"]}
-                                filepath={question["filepath"]}
-                                Num1="059"
-                                Num2="060"
-                                filepath1={
-                                  question["questioncode"].includes("059")
-                                    ? `${question.questioncode}_59`
-                                    : `${question.form}${question.cerfcode}059_60`
-                                }
-                                filepath2={
-                                  question["questioncode"].includes("059")
-                                    ? `${question.questioncode}_60`
-                                    : `${question.form}${question.cerfcode}059_59`
-                                }
-                                onStart={() => {
-                                  setTimeDiv(38000);
-                                  setTimeRemaining(38000);
-                                }}
-                                onFinish={() => setEnd(true)}
-                              />)
-                            ) : (
-                              ""
-                            )}
+                            {question.order === "59"
+                              ? showSound && (
+                                  <SoundTwoQuestions
+                                    form={question["form"]}
+                                    filepath={question["filepath"]}
+                                    Num1="059"
+                                    Num2="060"
+                                    filepath1={
+                                      question["questioncode"].includes("059")
+                                        ? `${question.questioncode}_59`
+                                        : `${question.form}${question.cerfcode}059_60`
+                                    }
+                                    filepath2={
+                                      question["questioncode"].includes("059")
+                                        ? `${question.questioncode}_60`
+                                        : `${question.form}${question.cerfcode}059_59`
+                                    }
+                                    onStart={() => {
+                                      setTimeDiv(38000);
+                                      setTimeRemaining(38000);
+                                    }}
+                                    onFinish={() => setEnd(true)}
+                                  />
+                                )
+                              : ""}
                             {isEnd && showSound && (
                               <SoundDir
                                 dir="END.mp3"
                                 onFinish={() =>
                                   setTimeout(() => {
                                     setShowSound(false);
+                                    ToggleCountDown(true);
+                                    TogglePagination(false);
                                     EndOfListenning((QuestionNumber += 2));
                                   }, 0)
                                 }
@@ -388,7 +432,13 @@ const PostIndvForm = ({
                           `${question["questionText"]}`
                         )}
                       </FormLabel>
-                      <RadioGroup>
+                      <RadioGroup
+                        key={question.order}
+                        name={question.questioncode}
+                        onChange={(e) => {
+                          OnAnswerSelect(e, e.target.value);
+                        }}
+                      >
                         {["A", "B", "C", "D"].map((choice) => (
                           <FormControlLabel
                             key={question[`${choice}_choicecode`]}
@@ -397,6 +447,10 @@ const PostIndvForm = ({
                             label={`${choice}.${
                               question[`${choice}_choicetext`]
                             }`}
+                            checked={
+                              question.onAnswer ===
+                              question[`${choice}_choicetext`]
+                            }
                           />
                         ))}
                       </RadioGroup>
@@ -438,13 +492,22 @@ const PostIndvForm = ({
                       ? " "
                       : `${question["questionText"]}`}
                   </FormLabel>
-                  <RadioGroup>
+                  <RadioGroup
+                    key={question.order}
+                    name={question.questioncode}
+                    onChange={(e) => {
+                      OnAnswerSelect(e, e.target.value);
+                    }}
+                  >
                     {["A", "B", "C", "D"].map((choice) => (
                       <FormControlLabel
                         key={question[`${choice}_choicecode`]}
                         value={question[`${choice}_choicetext`]}
                         control={<Radio />}
                         label={`${choice}.${question[`${choice}_choicetext`]}`}
+                        checked={
+                          question.onAnswer === question[`${choice}_choicetext`]
+                        }
                       />
                     ))}
                   </RadioGroup>
@@ -479,13 +542,22 @@ const PostIndvForm = ({
                       `${question["questionText"]}`
                     )}
                   </FormLabel>
-                  <RadioGroup>
+                  <RadioGroup
+                    key={question.order}
+                    name={question.questioncode}
+                    onChange={(e) => {
+                      OnAnswerSelect(e, e.target.value);
+                    }}
+                  >
                     {["A", "B", "C", "D"].map((choice) => (
                       <FormControlLabel
                         key={question[`${choice}_choicecode`]}
                         value={question[`${choice}_choicetext`]}
                         control={<Radio />}
                         label={`${choice}.${question[`${choice}_choicetext`]}`}
+                        checked={
+                          question.onAnswer === question[`${choice}_choicetext`]
+                        }
                       />
                     ))}
                   </RadioGroup>
@@ -520,13 +592,22 @@ const PostIndvForm = ({
                       `${question["questionText"]}`
                     )}
                   </FormLabel>
-                  <RadioGroup>
+                  <RadioGroup
+                    key={question.order}
+                    name={question.questioncode}
+                    onChange={(e) => {
+                      OnAnswerSelect(e, e.target.value);
+                    }}
+                  >
                     {["A", "B", "C", "D"].map((choice) => (
                       <FormControlLabel
                         key={question[`${choice}_choicecode`]}
                         value={question[`${choice}_choicetext`]}
                         control={<Radio />}
                         label={`${choice}.${question[`${choice}_choicetext`]}`}
+                        checked={
+                          question.onAnswer === question[`${choice}_choicetext`]
+                        }
                       />
                     ))}
                   </RadioGroup>
@@ -561,13 +642,22 @@ const PostIndvForm = ({
                       `${question["questionText"]}`
                     )}
                   </FormLabel>
-                  <RadioGroup>
+                  <RadioGroup
+                    key={question.order}
+                    name={question.questioncode}
+                    onChange={(e) => {
+                      OnAnswerSelect(e, e.target.value);
+                    }}
+                  >
                     {["A", "B", "C", "D"].map((choice) => (
                       <FormControlLabel
                         key={question[`${choice}_choicecode`]}
                         value={question[`${choice}_choicetext`]}
                         control={<Radio />}
                         label={`${choice}.${question[`${choice}_choicetext`]}`}
+                        checked={
+                          question.onAnswer === question[`${choice}_choicetext`]
+                        }
                       />
                     ))}
                   </RadioGroup>
@@ -602,13 +692,22 @@ const PostIndvForm = ({
                       `${question["questionText"]}`
                     )}
                   </FormLabel>
-                  <RadioGroup>
+                  <RadioGroup
+                    key={question.order}
+                    name={question.questioncode}
+                    onChange={(e) => {
+                      OnAnswerSelect(e, e.target.value);
+                    }}
+                  >
                     {["A", "B", "C", "D"].map((choice) => (
                       <FormControlLabel
                         key={question[`${choice}_choicecode`]}
                         value={question[`${choice}_choicetext`]}
                         control={<Radio />}
                         label={`${choice}.${question[`${choice}_choicetext`]}`}
+                        checked={
+                          question.onAnswer === question[`${choice}_choicetext`]
+                        }
                       />
                     ))}
                   </RadioGroup>
@@ -643,13 +742,22 @@ const PostIndvForm = ({
                       `${question["questionText"]}`
                     )}
                   </FormLabel>
-                  <RadioGroup>
+                  <RadioGroup
+                    key={question.order}
+                    name={question.questioncode}
+                    onChange={(e) => {
+                      OnAnswerSelect(e, e.target.value);
+                    }}
+                  >
                     {["A", "B", "C", "D"].map((choice) => (
                       <FormControlLabel
                         key={question[`${choice}_choicecode`]}
                         value={question[`${choice}_choicetext`]}
                         control={<Radio />}
                         label={`${choice}.${question[`${choice}_choicetext`]}`}
+                        checked={
+                          question.onAnswer === question[`${choice}_choicetext`]
+                        }
                       />
                     ))}
                   </RadioGroup>

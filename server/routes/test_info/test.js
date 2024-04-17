@@ -69,7 +69,7 @@ const test = {
 
         res
           .status(StatusCodes.CREATED)
-          .json({ msg: "TestResult has been update" });
+          .json({ msg: "ส่งคำตอบสำเร็จ รอการอนุมัติผลสอบ" });
       } else {
         const addRealScore = await tbtestresult.create({
           testresultcode: testresultcode.toString(),

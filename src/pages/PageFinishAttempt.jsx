@@ -198,7 +198,7 @@ function PageFinishAttempt() {
                       </StyledTableCell>
                       {row.status !== null ? (
                         <StyledTableCell align="right" sx={{ color: "green" }}>
-                          {row.status}
+                          {"เลือกคำตอบแล้ว"}
                         </StyledTableCell>
                       ) : (
                         <StyledTableCell align="right" sx={{ color: "red" }}>
@@ -242,7 +242,7 @@ function PageFinishAttempt() {
             {/* </Link> */}
             <p style={{ marginTop: "10px" }}>
               ยืนยันคำตอบ ภายใน {String(minutes).padStart(2, "0")}:
-              {String(seconds).padStart(2, "0")} กดปุ่ม Submit เพื่อส่งคำตอบ
+              {String(seconds).padStart(2, "0")} กดปุ่ม "ส่งคำตอบทั้งหมด" เพื่อส่งคำตอบ
             </p>
     
             <Button
@@ -250,7 +250,7 @@ function PageFinishAttempt() {
               onClick={handleClickOpen}
               sx={{ marginTop: "10px" }}
             >
-              Submit
+              ส่งคำตอบทั้งหมด
             </Button>
             <Dialog
               open={open}
@@ -266,9 +266,9 @@ function PageFinishAttempt() {
                   sx={{ textAlign: "center" }}
                   id="alert-dialog-description"
                 >
-                  คุณกำลังจะออกจากการทำแบบทดสอบ
+                  หากกดปุ่ม "ยืนยัน" จะไม่สามารถเปลี่ยนแปลงคำตอบ ระบบส่งคำตอบทั้งหมด และสิ้นสุดการทำแบบทดสอบทันที
                   <br />
-                  หากออกจากการทำแบบทดสอบแล้วคุณจะไม่สามารถเปลี่ยนแปลงคำตอบได้
+                  ถ้าต้องการเปลี่ยนแปลงคำตอบให้กดปุ่ม "ยกเลิก" เพื่อย้อนกลับไปเปลี่ยนคำตอบใหม่อีกครั้ง
                 </DialogContentText>
               </DialogContent>
               <DialogActions>

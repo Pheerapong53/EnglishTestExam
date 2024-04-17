@@ -18,6 +18,8 @@ import Pagination from "../components/Pagination";
 import PostIndvForm from "../components/PostIndvForm";
 import SoundDir from "../components/SoundDir";
 import { toast } from "react-toastify";
+import {start, finish} from "../store/ExamInfoSlice";
+import { fetchQuestions } from "../store/ExamInfoSlice";
 
 function PageTest() {
   const navigate = useNavigate();
@@ -27,6 +29,9 @@ function PageTest() {
   const { user } = useSelector((state) => state.user);
   const token = user.token;
   const location = useLocation();
+
+  const questionRedux = useSelector((state) => state.examinfo);
+  console.log(questionRedux);
 
   //ข้อสอบมี 100 ข้อ
   //รับ state จาก ContentPageDoTest ข้อมูล testInfo
@@ -46,6 +51,14 @@ function PageTest() {
     testresultcode = "SWC002-1111111111111";
   }
   console.log(testresultcode);
+
+  useEffect(() => {
+    dispatch(fetchQuestions({testresultcode,token})).then((data) => {
+      dispatch(start(data));
+    }).catch((error) => {
+      console.error("Error fetching questions: ", error);
+    })
+  }, [dispatch]);
 
   const [QuestionIndvform, setQuestionIndvform] = useState(null);
   console.log(QuestionIndvform);
@@ -81,42 +94,88 @@ function PageTest() {
         return parseInt(a.questionorder, 10) - parseInt(b.questionorder, 10);
       };
 
-      setQuestionIndvform(
-        question.data.sort(compareNumericStrings).map((question) => ({
-          order: question.questionorder,
-          questioncode: question.question_code,
-          filepath: question["tbquestion.problem"],
-          questionText: question["tbquestion.question"],
-          cerfcode: question["tbquestion.cerfcode"],
-          form: question["tbquestion.formcode"],
-          onSelect: false,
-          onAnswer: null,
-          Score: 0,
-          time:
-            question["tbquestion.cerfcode"] === "L1A1" ||
-            question["tbquestion.cerfcode"] === "L1A2" ||
-            question["tbquestion.cerfcode"] === "L1B1"
-              ? 13000
-              : question["tbquestion.cerfcode"] === "L1B2" ||
-                question["tbquestion.cerfcode"] === "L1C1" ||
-                question["tbquestion.cerfcode"] === "L2A1" ||
-                question["tbquestion.cerfcode"] === "L2A2"
-              ? 15000
-              : 19000,
-          A_choicecode: question["fk_choiceA.choicecode"],
-          A_choicetext: question["fk_choiceA.choicetext"],
-          A_answer: question["fk_choiceA.answer"],
-          B_choicecode: question["fk_choiceB.choicecode"],
-          B_choicetext: question["fk_choiceB.choicetext"],
-          B_answer: question["fk_choiceB.answer"],
-          C_choicecode: question["fk_choiceC.choicecode"],
-          C_choicetext: question["fk_choiceC.choicetext"],
-          C_answer: question["fk_choiceC.answer"],
-          D_choicecode: question["fk_choiceD.choicecode"],
-          D_choicetext: question["fk_choiceD.choicetext"],
-          D_answer: question["fk_choiceD.answer"],
-        }))
+      const axiosConfig = {
+        baseURL: process.env.REACT_APP_API_URL,
+        headers: { authtoken: "bearer " + token },
+      };
+      const axiosInstance = axios.create(axiosConfig);
+
+      const fetchFileText = (index, form, filepath) => {
+        const rangeMappings = [
+          { range: [60, 67], stateSetter: setFileTextSixtyOne },
+          { range: [68, 75], stateSetter: setFileTextSixtyNine },
+          { range: [76, 79], stateSetter: setFileTextSeventySeven },
+          { range: [80, 83], stateSetter: setFileTextEightyOne },
+          { range: [84, 90], stateSetter: setFileTextEightyFive },
+          { range: [91, 99], stateSetter: setFileTextNinetyTwo },
+        ];
+
+        const mapping = rangeMappings.find(
+          (mapping) => index >= mapping.range[0] && index <= mapping.range[1]
+        );
+
+        if (mapping) {
+          axiosInstance
+            .get(`getfiletext/${form}/${filepath}`)
+            .then((result) => {
+              mapping.stateSetter(result.data);
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+            });
+        }
+      };
+
+      const questions = await Promise.all(
+        question.data.sort(compareNumericStrings).map(async (question, i) => {
+          try {
+            await fetchFileText(
+              i,
+              question["tbquestion.formcode"],
+              question["tbquestion.problem"]
+            );
+
+            return {
+              order: question.questionorder,
+              questioncode: question.question_code,
+              filepath: question["tbquestion.problem"],
+              questionText: question["tbquestion.question"],
+              cerfcode: question["tbquestion.cerfcode"],
+              form: question["tbquestion.formcode"],
+              onSelect: false,
+              onAnswer: null,
+              Score: 0,
+              time:
+                question["tbquestion.cerfcode"] === "L1A1" ||
+                question["tbquestion.cerfcode"] === "L1A2" ||
+                question["tbquestion.cerfcode"] === "L1B1"
+                  ? 13000
+                  : question["tbquestion.cerfcode"] === "L1B2" ||
+                    question["tbquestion.cerfcode"] === "L1C1" ||
+                    question["tbquestion.cerfcode"] === "L2A1" ||
+                    question["tbquestion.cerfcode"] === "L2A2"
+                  ? 15000
+                  : 19000,
+              A_choicecode: question["fk_choiceA.choicecode"],
+              A_choicetext: question["fk_choiceA.choicetext"],
+              A_answer: question["fk_choiceA.answer"],
+              B_choicecode: question["fk_choiceB.choicecode"],
+              B_choicetext: question["fk_choiceB.choicetext"],
+              B_answer: question["fk_choiceB.answer"],
+              C_choicecode: question["fk_choiceC.choicecode"],
+              C_choicetext: question["fk_choiceC.choicetext"],
+              C_answer: question["fk_choiceC.answer"],
+              D_choicecode: question["fk_choiceD.choicecode"],
+              D_choicetext: question["fk_choiceD.choicetext"],
+              D_answer: question["fk_choiceD.answer"],
+            };
+          } catch (error) {
+            console.error("Error:", error);
+          }
+        })
       );
+
+      setQuestionIndvform(questions);
     } catch (error) {
       console.log("Error", error.message);
     }
@@ -188,53 +247,53 @@ function PageTest() {
           }
         });
 
-      const axiosConfig = {
-        baseURL: process.env.REACT_APP_API_URL,
-        headers: { authtoken: "bearer " + token },
-      };
-      const axiosInstance = axios.create(axiosConfig);
+      // const axiosConfig = {
+      //   baseURL: process.env.REACT_APP_API_URL,
+      //   headers: { authtoken: "bearer " + token },
+      // };
+      // const axiosInstance = axios.create(axiosConfig);
 
-      const fetchFileText = (index, form, filepath) => {
-        const rangeMappings = [
-          { range: [60, 67], stateSetter: setFileTextSixtyOne },
-          { range: [68, 75], stateSetter: setFileTextSixtyNine },
-          { range: [76, 79], stateSetter: setFileTextSeventySeven },
-          { range: [80, 83], stateSetter: setFileTextEightyOne },
-          { range: [84, 90], stateSetter: setFileTextEightyFive },
-          { range: [91, 99], stateSetter: setFileTextNinetyTwo },
-        ];
+      // const fetchFileText = (index, form, filepath) => {
+      //   const rangeMappings = [
+      //     { range: [60, 67], stateSetter: setFileTextSixtyOne },
+      //     { range: [68, 75], stateSetter: setFileTextSixtyNine },
+      //     { range: [76, 79], stateSetter: setFileTextSeventySeven },
+      //     { range: [80, 83], stateSetter: setFileTextEightyOne },
+      //     { range: [84, 90], stateSetter: setFileTextEightyFive },
+      //     { range: [91, 99], stateSetter: setFileTextNinetyTwo },
+      //   ];
 
-        const mapping = rangeMappings.find(
-          (mapping) => index >= mapping.range[0] && index <= mapping.range[1]
-        );
+      //   const mapping = rangeMappings.find(
+      //     (mapping) => index >= mapping.range[0] && index <= mapping.range[1]
+      //   );
 
-        if (mapping) {
-          axiosInstance
-            .get(`getfiletext/${form}/${filepath}`)
-            .then((result) => {
-              mapping.stateSetter(result.data);
-            })
-            .catch((error) => {
-              console.error("Error:", error);
-            });
-        }
-      };
+      //   if (mapping) {
+      //     axiosInstance
+      //       .get(`getfiletext/${form}/${filepath}`)
+      //       .then((result) => {
+      //         mapping.stateSetter(result.data);
+      //       })
+      //       .catch((error) => {
+      //         console.error("Error:", error);
+      //       });
+      //   }
+      // };
 
       setQuestionAndChoiceFromDB(
         questions.data.map((question, i) => {
-          function fetchData() {
-            try {
-              const result = fetchFileText(
-                i,
-                question.formcode,
-                question.problem
-              );
-              return result;
-            } catch (error) {
-              console.error("Error:", error);
-            }
-          }
-          const fileCallFuction = fetchData();
+          // function fetchData() {
+          //   try {
+          //     const result = fetchFileText(
+          //       i,
+          //       question.formcode,
+          //       question.problem
+          //     );
+          //     return result;
+          //   } catch (error) {
+          //     console.error("Error:", error);
+          //   }
+          // }
+          // const fileCallFuction = fetchData();
 
           return {
             questioncode: question.questioncode,
@@ -300,7 +359,7 @@ function PageTest() {
   };
 
   const checkIfAnswerIsCorrect = (id, newStatus) => {
-    const question = QuestionAndChoicesFromDB?.find(
+    const question = QuestionIndvform?.find(
       (question) => question.questioncode === id
     );
     if (question) {
@@ -331,7 +390,41 @@ function PageTest() {
     setQuestionAndChoiceFromDB(updatedAnswer);
   };
 
-  const score = QuestionAndChoicesFromDB?.reduce(
+  const checkIfAnswerIsCorrectIndv = (id, newStatus) => {
+    const question = QuestionIndvform?.find(
+      (question) => question.questioncode === id
+    );
+
+    if (question) {
+      const selectedChoice = ["A", "B", "C", "D"].find((choice) => {
+        return question[`${choice}_choicetext`] === newStatus;
+      });
+
+      if (selectedChoice) {
+        return question[`${selectedChoice}_answer`];
+      }
+    }
+
+    return null;
+  };
+
+  const updateStatusOnAnswerIndv = (id, newStatus) => {
+    const updatedAnswer = QuestionIndvform?.map((question) => {
+      if (question.questioncode === id) {
+        const isCorrect = checkIfAnswerIsCorrectIndv(id, newStatus);
+        return {
+          ...question,
+          onAnswer: newStatus,
+          onSelect: true,
+          Score: isCorrect ? 1 : 0,
+        };
+      }
+      return question;
+    });
+    setQuestionIndvform(updatedAnswer);
+  };
+
+  const score = QuestionIndvform?.reduce(
     (total, question) => total + question.Score,
     0
   );
@@ -409,10 +502,12 @@ function PageTest() {
             component="div"
             gutterBottom
           >
-            <Box>
-              เหลือเวลา {String(minutes).padStart(2, "0")}:
-              {String(seconds).padStart(2, "0")}{" "}
-            </Box>
+            {isCounting && (
+              <Box>
+                เหลือเวลา {String(minutes).padStart(2, "0")}:
+                {String(seconds).padStart(2, "0")}{" "}
+              </Box>
+            )}
           </Typography>
         </Card>
       </Box>
@@ -425,58 +520,52 @@ function PageTest() {
       {QuestionNumber >= 60 ? (
         <Box sx={{ margin: "20px", display: "flex" }}>
           <Box sx={{ margin: "0px 5px " }}>
-            <Link
+            <ColorButton
               onClick={() => setQuestionNumber(60)}
-              to="#"
-              style={{ textDecoration: "none" }}
+              variant="contained"
             >
-              <ColorButton variant="contained">61-68</ColorButton>
-            </Link>
+              61-68
+            </ColorButton>
           </Box>
           <Box sx={{ margin: "0px 5px " }}>
-            <Link
+            <ColorButton
               onClick={() => setQuestionNumber(68)}
-              to="#"
-              style={{ textDecoration: "none" }}
+              variant="contained"
             >
-              <ColorButton variant="contained">69-76</ColorButton>
-            </Link>
+              69-76
+            </ColorButton>
           </Box>
           <Box sx={{ margin: "0px 5px " }}>
-            <Link
+            <ColorButton
               onClick={() => setQuestionNumber(76)}
-              to="#"
-              style={{ textDecoration: "none" }}
+              variant="contained"
             >
-              <ColorButton variant="contained">77-80</ColorButton>
-            </Link>
+              77-80
+            </ColorButton>
           </Box>
           <Box sx={{ margin: "0px 5px " }}>
-            <Link
+            <ColorButton
               onClick={() => setQuestionNumber(80)}
-              to="#"
-              style={{ textDecoration: "none" }}
+              variant="contained"
             >
-              <ColorButton variant="contained">81-84</ColorButton>
-            </Link>
+              81-84
+            </ColorButton>
           </Box>
           <Box sx={{ margin: "0px 5px " }}>
-            <Link
+            <ColorButton
               onClick={() => setQuestionNumber(84)}
-              to="#"
-              style={{ textDecoration: "none" }}
+              variant="contained"
             >
-              <ColorButton variant="contained">85-91</ColorButton>
-            </Link>
+              85-91
+            </ColorButton>
           </Box>
           <Box sx={{ margin: "0px 5px " }}>
-            <Link
+            <ColorButton
               onClick={() => setQuestionNumber(91)}
-              to="#"
-              style={{ textDecoration: "none" }}
+              variant="contained"
             >
-              <ColorButton variant="contained">92-100</ColorButton>
-            </Link>
+              92-100
+            </ColorButton>
           </Box>
         </Box>
       ) : (
@@ -657,8 +746,13 @@ function PageTest() {
                 {isStart && (
                   <PostIndvForm
                     QuestionAndChoice={QuestionIndvform}
-                    QuestionNumber={QuestionNumber+1}
+                    QuestionNumber={QuestionNumber + 1}
                     EndOfListenning={(i) => setQuestionNumber(i)}
+                    ToggleCountDown={(bool) => setIsCounting(bool)}
+                    TogglePagination={(bool) => setIsReading(bool)}
+                    OnAnswerSelect={(e, value) => {
+                      updateStatusOnAnswerIndv(e.target.name, value);
+                    }}
                   />
                 )}
               </Box>
@@ -713,7 +807,7 @@ function PageTest() {
             >
               <Box>
                 <Pagination
-                  QuestionAndChoice={QuestionAndChoicesFromDB}
+                  QuestionAndChoice={QuestionIndvform}
                   onPress={handleQuestionNumber}
                   isRead={isReading}
                 />
@@ -728,7 +822,7 @@ function PageTest() {
                 onClick={() => {
                   navigate("/PageFinishAttempt", {
                     state: {
-                      data: QuestionAndChoicesFromDB,
+                      data: QuestionIndvform,
                       testResvCode: testResvCode,
                       realScore: score,
                       time: time,
@@ -747,10 +841,12 @@ function PageTest() {
                 component="div"
                 gutterBottom
               >
-                <Box>
-                  เหลือเวลา {String(minutes).padStart(2, "0")}:
-                  {String(seconds).padStart(2, "0")}{" "}
-                </Box>
+                {isCounting && (
+                  <Box>
+                    เหลือเวลา {String(minutes).padStart(2, "0")}:
+                    {String(seconds).padStart(2, "0")}{" "}
+                  </Box>
+                )}
               </Typography>
             </Box>
           </Box>
