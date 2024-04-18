@@ -10,12 +10,12 @@ export const ExamInfoSlice = createSlice({
     initialState,
     reducers: {
         start : (state, action) => {
-            return action.payload;
-            // state.exam = action.payload;
+            
+            state.exam = action.payload;
         },
         finish : (state) => {
             state.exam = [];
-        },
+        }
     }
 })
 

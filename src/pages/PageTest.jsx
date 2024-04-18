@@ -18,7 +18,9 @@ import Pagination from "../components/Pagination";
 import PostIndvForm from "../components/PostIndvForm";
 import SoundDir from "../components/SoundDir";
 import { toast } from "react-toastify";
-import {start, finish} from "../store/ExamInfoSlice";
+
+//Test Redux
+import { start, finish } from "../store/ExamInfoSlice";
 import { fetchQuestions } from "../store/ExamInfoSlice";
 
 function PageTest() {
@@ -30,12 +32,67 @@ function PageTest() {
   const token = user.token;
   const location = useLocation();
 
-  const questionRedux = useSelector((state) => state.examinfo);
-  console.log(questionRedux);
+  const saveToLocalStorage = (key, data) => {
+    localStorage.setItem(key, JSON.stringify(data));
+  };
+
+  const loadFromLocalStorage = (key) => {
+    const data = localStorage.getItem(key);
+    return data ? JSON.parse(data) : null;
+  };
+
+  const initializeStateFromLocalStorage = (setState, key) => {
+    const savedValue = loadFromLocalStorage(key);
+    if (savedValue !== null) {
+      setState(savedValue);
+    }
+  }
+
+  useEffect(() => {
+    initializeStateFromLocalStorage(setQuestionNumber, "questionNumber");
+    initializeStateFromLocalStorage(setIsStart, "startBool");
+    initializeStateFromLocalStorage(setIsReading, "readBool");
+    initializeStateFromLocalStorage(setTime, "time");
+
+    const savedAnswers = loadFromLocalStorage("answers");
+    if (savedAnswers !== null) {
+      setQuestionIndvform(savedAnswers);
+      getFileText();
+    } else {
+      getQuestionFromIndv();
+    }
+
+  }, []);
+
+  const [QuestionNumber, setQuestionNumber] = useState(0);
+  const [QuestionIndvform, setQuestionIndvform] = useState(null);
+  console.log(QuestionIndvform);
+  //toggle for Sound File
+  //false -> Play DIR_1_50
+  const [isStart, setIsStart] = useState(false);
+
+  //toggle button pagination
+  //false -> Enable Button
+  //True -> Disable Button
+  //For Test useState(false)
+  const [isReading, setIsReading] = useState(false);
+
+   //Count Time Func
+   const [time, setTime] = useState(65 * 60);
+   const [isCounting, setIsCounting] = useState(false);
+   const minutes = Math.floor(time / 60);
+   const seconds = time % 60;
+
+  useEffect(() => {
+    saveToLocalStorage("questionNumber", QuestionNumber);
+    saveToLocalStorage("answers", QuestionIndvform);
+    saveToLocalStorage("startBool", isStart);
+    saveToLocalStorage("readBool",isReading);
+    saveToLocalStorage("time",time)
+  }, [QuestionNumber, QuestionIndvform, isStart,isReading,time]);
 
   //ข้อสอบมี 100 ข้อ
   //รับ state จาก ContentPageDoTest ข้อมูล testInfo
-  //เวลาแสดงที่มุมบนซ้าย
   //getquestionandchoicefrom tbindvform with indvtfrmcode (รหัสการจอง + เลขประจำตัวประชาชน)
   const testreservcode = location?.state.testresvcode;
   let testresultcode;
@@ -52,19 +109,94 @@ function PageTest() {
   }
   console.log(testresultcode);
 
+  //Test Redux
+  const questionRedux = useSelector((state) => state.examinfo);
+  console.log(questionRedux);
   useEffect(() => {
-    dispatch(fetchQuestions({testresultcode,token})).then((data) => {
-      dispatch(start(data));
-    }).catch((error) => {
-      console.error("Error fetching questions: ", error);
-    })
+    dispatch(fetchQuestions({ testresultcode, token }))
+      .then((data) => {
+        dispatch(start());
+      })
+      .catch((error) => {
+        console.error("Error fetching questions: ", error);
+      });
   }, [dispatch]);
-
-  const [QuestionIndvform, setQuestionIndvform] = useState(null);
-  console.log(QuestionIndvform);
 
   //getquestion
   //server/routes/exam_archieve/exam.js -> getindvform
+  const getFileText = async () => {
+    try {
+      const question = await axios
+        .get(
+          process.env.REACT_APP_API_URL +
+            `/indvform?testresultcode=${testresultcode}`,
+          {
+            headers: {
+              authtoken: "bearer " + token,
+            },
+          }
+        )
+        .catch((error) => {
+          if (error.response.status === 401 || error.response.status === 404) {
+            dispatch(logout());
+            navigate("/notfound404", {
+              state: {
+                statusCode: error.response.status,
+                txt: error.response.data,
+              },
+            });
+          } else {
+            toast.error(error.response.data.message);
+          }
+        });
+      const compareNumericStrings = (a, b) => {
+        return parseInt(a.questionorder, 10) - parseInt(b.questionorder, 10);
+      };
+
+      const axiosConfig = {
+        baseURL: process.env.REACT_APP_API_URL,
+        headers: { authtoken: "bearer " + token },
+      };
+      const axiosInstance = axios.create(axiosConfig);
+
+      const fetchFileText = (index, form, filepath) => {
+        const rangeMappings = [
+          { range: [60, 67], stateSetter: setFileTextSixtyOne },
+          { range: [68, 75], stateSetter: setFileTextSixtyNine },
+          { range: [76, 79], stateSetter: setFileTextSeventySeven },
+          { range: [80, 83], stateSetter: setFileTextEightyOne },
+          { range: [84, 90], stateSetter: setFileTextEightyFive },
+          { range: [91, 99], stateSetter: setFileTextNinetyTwo },
+        ];
+
+        const mapping = rangeMappings.find(
+          (mapping) => index >= mapping.range[0] && index <= mapping.range[1]
+        );
+
+        if (mapping) {
+          axiosInstance
+            .get(`getfiletext/${form}/${filepath}`)
+            .then((result) => {
+              mapping.stateSetter(result.data);
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+            });
+        }
+      };
+
+      question.data.sort(compareNumericStrings).map(async (question, i) => {
+        await fetchFileText(
+          i,
+          question["tbquestion.formcode"],
+          question["tbquestion.problem"]
+        );
+      });
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
   const getQuestionFromIndv = async () => {
     try {
       const question = await axios
@@ -181,21 +313,8 @@ function PageTest() {
     }
   };
 
-  //toggle button pagination
-  //false -> Enable Button
-  //True -> Disable Button
-  //For Test useState(false)
-  const [isReading, setIsReading] = useState(false);
-
-  //toggle for Sound File
-  //false -> Play DIR_1_50
-  const [isStart, setIsStart] = useState(false);
   //false -> Play Sound Question
   const [isSendExam, setIsSendExam] = useState(false);
-
-  const [QuestionAndChoicesFromDB, setQuestionAndChoiceFromDB] = useState(null);
-
-  const [QuestionNumber, setQuestionNumber] = useState(0);
 
   //FileTextFromServer
   const [FileTextSixtyOne, setFileTextSixtyOne] = useState(null);
@@ -205,6 +324,8 @@ function PageTest() {
   const [FileTextEightyFive, setFileTextEightyFive] = useState(null);
   const [FileTextNinetyTwo, setFileTextNinetyTwo] = useState(null);
 
+  //Old Pattern of Question
+  const [QuestionAndChoicesFromDB, setQuestionAndChoiceFromDB] = useState(null);
   const getQuestionAndChoice = async () => {
     try {
       const choices = await axios
@@ -328,6 +449,7 @@ function PageTest() {
       location.state.data.data != null
     ) {
       setQuestionAndChoiceFromDB(location.state.data.data);
+      setQuestionIndvform(location.state.data.data);
       setTestResvCode(location.state.data.testResvCode);
       //Disable DIR_1_50
       setIsStart(true);
@@ -337,10 +459,10 @@ function PageTest() {
       setIsSendExam(true);
       //Remaining Time
       setTime(location.state.data.time);
-      getQuestionFromIndv();
+      //getQuestionFromIndv();
     } else {
       //get from indvform
-      getQuestionFromIndv();
+      //getQuestionFromIndv();
       //get from bquestion and choice
       getQuestionAndChoice();
       setTestResvCode(location.state);
@@ -390,6 +512,7 @@ function PageTest() {
     setQuestionAndChoiceFromDB(updatedAnswer);
   };
 
+  //For QuestionIndvform
   const checkIfAnswerIsCorrectIndv = (id, newStatus) => {
     const question = QuestionIndvform?.find(
       (question) => question.questioncode === id
@@ -429,18 +552,7 @@ function PageTest() {
     0
   );
 
-  //Count Time Func
-  const [time, setTime] = useState(65 * 60);
-  const [isCounting, setIsCounting] = useState(false);
-  // if(QuestionNumber > 60){
-  //   setIsCounting(true);
-  // }else{
-  //   setIsCounting(false);
-  // }
-  //const [timeUp, setTimeUp] = useState(false);
-
-  const minutes = Math.floor(time / 60);
-  const seconds = time % 60;
+ 
 
   useEffect(() => {
     let timer;
@@ -463,7 +575,7 @@ function PageTest() {
   const handleTimeUp = () => {
     navigate("/PageFinishAttempt", {
       state: {
-        data: QuestionAndChoicesFromDB,
+        data: QuestionIndvform,
         testResvCode: testResvCode,
         realScore: score,
         time: time,
@@ -471,6 +583,7 @@ function PageTest() {
     });
   };
 
+  //Button For Reading Exam
   const ColorButton = styled(Button)(({ theme }) => ({
     color: theme.palette.getContrastText(blue[500]),
     backgroundColor: blue[500],
@@ -479,7 +592,6 @@ function PageTest() {
     },
   }));
 
-  //console.log(location);
   const [testResvCode, setTestResvCode] = useState("");
 
   return (
@@ -738,11 +850,13 @@ function PageTest() {
               sx={{ display: "flex", justifyContent: "center", margin: "8%" }}
             >
               <Box sx={{ display: "flex", flexDirection: "column" }}>
-                <SoundDir
-                  dir="Dir_1_50.mp3"
-                  onFinish={() => handleStart(true)}
-                  time={0}
-                />
+                {!isStart && (
+                  <SoundDir
+                    dir="Dir_1_50.mp3"
+                    onFinish={() => handleStart(true)}
+                    time={0}
+                  />
+                )}
                 {isStart && (
                   <PostIndvForm
                     QuestionAndChoice={QuestionIndvform}
