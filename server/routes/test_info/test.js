@@ -36,6 +36,7 @@ const test = {
       const realscore = req.body.realscore;
       const realscoredate = req.body.realscoredate;
       const realscorerecorder = req.body.realscorerecorder;
+      const submittime = req.body.submittime;
 
       const meminfo_id = await tbmemberinfo.findOne({
         where: {
@@ -59,6 +60,7 @@ const test = {
             realscore: realscore,
             realscoredate: realscoredate,
             realscorerecorder: realscorerecorder,
+            submittime: submittime,
           },
           {
             where: {
@@ -79,11 +81,12 @@ const test = {
           realscore: realscore,
           realscoredate: realscoredate,
           realscorerecorder: realscorerecorder,
+          submittime: submittime,
         });
 
         res
           .status(StatusCodes.CREATED)
-          .json({ msg: "TestResult has been insert" });
+          .json({ msg: "ส่งคำตอบสำเร็จ รอการอนุมัติผลสอบ" });
       }
     } catch (error) {
       return next(

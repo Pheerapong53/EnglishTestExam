@@ -86,6 +86,38 @@ const PostIndvForm = ({
     );
   };
 
+  const saveToLocalStorage = (key, data) => {
+    localStorage.setItem(key, JSON.stringify(data));
+  };
+
+  const loadFromLocalStorage = (key) => {
+    const data = localStorage.getItem(key);
+    return data ? JSON.parse(data) : null;
+  };
+
+  const initializeStateFromLocalStorage = (setState, key) => {
+    const savedValue = loadFromLocalStorage(key);
+    if (savedValue !== null) {
+      setState(savedValue);
+    }
+  }
+
+  useEffect(() => {
+    initializeStateFromLocalStorage(setShowSound, "soundBool");
+    initializeStateFromLocalStorage(setFiftyOne, "51");
+    initializeStateFromLocalStorage(setFiftySeven, "57");
+    initializeStateFromLocalStorage(setFiftyNine, "59");
+    initializeStateFromLocalStorage(setEnd, "endBool");
+  }, []);
+
+  useEffect(() => {
+    saveToLocalStorage("soundBool", showSound);
+    saveToLocalStorage("51", isFiftyOne);
+    saveToLocalStorage("57", isFiftySeven);
+    saveToLocalStorage("59",isFiftyNine);
+    saveToLocalStorage("endBool",isEnd);
+  }, [showSound, isFiftyOne, isFiftySeven,isFiftyNine,isEnd]);
+
   return (
     <>
       {QuestionAndChoice != null &&

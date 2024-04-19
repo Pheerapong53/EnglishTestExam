@@ -104,8 +104,8 @@ function ContentPageDoTest() {
 
   //เรียกข้อมูลการจองสอบจาก tbtestreservation join with tbtestscoringcriteria
   //ตรวจสอบค่า pers_id
-  //const pers_id = user?.pers_id;
-  const pers_id = "1111111111111";
+  const pers_id = user?.pers_id;
+  // const pers_id = "1111111111111";
 
   //เรียกข้อมูลการจองสอบจาก pers_id from testresult ผูกกับ testresvcode
   const [testResultInfo, setTestResultInfo] = useState([]);
@@ -441,6 +441,7 @@ function ContentPageDoTest() {
                   navigate("/PageTest", {
                     state: testInfo,
                   });
+                  localStorage.clear();
                 }}
               >
                 Start Test

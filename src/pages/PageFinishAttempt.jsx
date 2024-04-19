@@ -57,9 +57,11 @@ function createData(no, status) {
 function PageFinishAttempt() {
   const location = useLocation();
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => ({ ...state }));
+
   const { testinfo } = useSelector((state) => ({ ...state }));
-  const token = user.user.token;
+
+  const { user } = useSelector((state) => state.user);
+  const token = user.token;
   //from redux
   const testResvCode = testinfo.testresvcode;
 
@@ -109,17 +111,17 @@ function PageFinishAttempt() {
   }));
 
   const [formValues, setFormValues] = useState({
-    testresultcode: `${testResvCode}-${user.user.pers_id}`,
+    testresultcode: `${testResvCode}-${user.pers_id}`,
     testresvcode: testResvCode,
-    meminfo_id: user.user.pers_id,
+    meminfo_id: user.pers_id,
     realscore: score,
     testconductdate: dateTime,
     realscoredate: dateTime,
-    realscorerecorder: user.user.pers_id,
+    realscorerecorder: user.pers_id,
+    submittime: dateTime.toLocaleTimeString(),
   });
 
   const handleSubmit = async () => {
-    
     //console.log(formValues);
     addTestResult(formValues, token)
       .then((res) => {
@@ -167,12 +169,12 @@ function PageFinishAttempt() {
                 }}
               >
                 <span style={{ padding: "0px 10px " }}>
-                  เลขประจำตัวข้าราชการ : {user.user.official_id}
+                  เลขประจำตัวข้าราชการ : {user.official_id}
                 </span>
                 <br />
                 <span style={{ padding: "0px 10px " }}>
-                  ชื่อ-นามสกุล : {user.user.rank}
-                  {user.user.fname} {user.user.lname}
+                  ชื่อ-นามสกุล : {user.rank}
+                  {user.fname} {user.lname}
                 </span>
               </Box>
             </Box>
@@ -242,9 +244,10 @@ function PageFinishAttempt() {
             {/* </Link> */}
             <p style={{ marginTop: "10px" }}>
               ยืนยันคำตอบ ภายใน {String(minutes).padStart(2, "0")}:
-              {String(seconds).padStart(2, "0")} กดปุ่ม "ส่งคำตอบทั้งหมด" เพื่อส่งคำตอบ
+              {String(seconds).padStart(2, "0")} กดปุ่ม "ส่งคำตอบทั้งหมด"
+              เพื่อส่งคำตอบ
             </p>
-    
+
             <Button
               variant="contained"
               onClick={handleClickOpen}
@@ -266,9 +269,11 @@ function PageFinishAttempt() {
                   sx={{ textAlign: "center" }}
                   id="alert-dialog-description"
                 >
-                  หากกดปุ่ม "ยืนยัน" จะไม่สามารถเปลี่ยนแปลงคำตอบ ระบบส่งคำตอบทั้งหมด และสิ้นสุดการทำแบบทดสอบทันที
+                  หากกดปุ่ม "ยืนยัน" จะไม่สามารถเปลี่ยนแปลงคำตอบ
+                  ระบบส่งคำตอบทั้งหมด และสิ้นสุดการทำแบบทดสอบทันที
                   <br />
-                  ถ้าต้องการเปลี่ยนแปลงคำตอบให้กดปุ่ม "ยกเลิก" เพื่อย้อนกลับไปเปลี่ยนคำตอบใหม่อีกครั้ง
+                  ถ้าต้องการเปลี่ยนแปลงคำตอบให้กดปุ่ม "ยกเลิก"
+                  เพื่อย้อนกลับไปเปลี่ยนคำตอบใหม่อีกครั้ง
                 </DialogContentText>
               </DialogContent>
               <DialogActions>
@@ -313,6 +318,7 @@ function PageFinishAttempt() {
                   onClick={() => {
                     handleSubmit();
                     handleCloseS();
+                    localStorage.clear();
                     //toast.success("บันทึกข้อมูลผลสอบใน tbresult");
                   }}
                 >

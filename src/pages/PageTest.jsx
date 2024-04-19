@@ -13,15 +13,15 @@ import { blue } from "@mui/material/colors";
 import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../src/store/userSilce";
-import Posts from "../components/Posts";
+//import Posts from "../components/Posts";
 import Pagination from "../components/Pagination";
 import PostIndvForm from "../components/PostIndvForm";
 import SoundDir from "../components/SoundDir";
 import { toast } from "react-toastify";
 
 //Test Redux
-import { start, finish } from "../store/ExamInfoSlice";
-import { fetchQuestions } from "../store/ExamInfoSlice";
+// import { start, finish } from "../store/ExamInfoSlice";
+// import { fetchQuestions } from "../store/ExamInfoSlice";
 
 function PageTest() {
   const navigate = useNavigate();
@@ -46,13 +46,14 @@ function PageTest() {
     if (savedValue !== null) {
       setState(savedValue);
     }
-  }
+  };
 
   useEffect(() => {
     initializeStateFromLocalStorage(setQuestionNumber, "questionNumber");
     initializeStateFromLocalStorage(setIsStart, "startBool");
     initializeStateFromLocalStorage(setIsReading, "readBool");
-    initializeStateFromLocalStorage(setTime, "time");
+    // initializeStateFromLocalStorage(setTime, "time");
+    initializeStateFromLocalStorage(setIsCounting, "countBool");
 
     const savedAnswers = loadFromLocalStorage("answers");
     if (savedAnswers !== null) {
@@ -62,11 +63,18 @@ function PageTest() {
       getQuestionFromIndv();
     }
 
+    const savedTime = loadFromLocalStorage("Time");
+    if (savedTime !== null) {
+      setTime(savedTime);
+    } else {
+      setTime(65 * 60);
+    }
   }, []);
 
   const [QuestionNumber, setQuestionNumber] = useState(0);
   const [QuestionIndvform, setQuestionIndvform] = useState(null);
   console.log(QuestionIndvform);
+
   //toggle for Sound File
   //false -> Play DIR_1_50
   const [isStart, setIsStart] = useState(false);
@@ -75,21 +83,22 @@ function PageTest() {
   //false -> Enable Button
   //True -> Disable Button
   //For Test useState(false)
-  const [isReading, setIsReading] = useState(false);
+  const [isReading, setIsReading] = useState(true);
 
-   //Count Time Func
-   const [time, setTime] = useState(65 * 60);
-   const [isCounting, setIsCounting] = useState(false);
-   const minutes = Math.floor(time / 60);
-   const seconds = time % 60;
+  //Count Time Func
+  const [time, setTime] = useState(0);
+  const [isCounting, setIsCounting] = useState(false);
+  const minutes = Math.floor(time / 60);
+  const seconds = time % 60;
 
   useEffect(() => {
     saveToLocalStorage("questionNumber", QuestionNumber);
     saveToLocalStorage("answers", QuestionIndvform);
     saveToLocalStorage("startBool", isStart);
-    saveToLocalStorage("readBool",isReading);
-    saveToLocalStorage("time",time)
-  }, [QuestionNumber, QuestionIndvform, isStart,isReading,time]);
+    saveToLocalStorage("readBool", isReading);
+    saveToLocalStorage("Time", time);
+    saveToLocalStorage("countBool", isCounting);
+  }, [QuestionNumber, QuestionIndvform, isStart, isReading, time, isCounting]);
 
   //ข้อสอบมี 100 ข้อ
   //รับ state จาก ContentPageDoTest ข้อมูล testInfo
@@ -99,28 +108,15 @@ function PageTest() {
   if (typeof testreservcode !== "undefined") {
     const pers_id = user?.pers_id;
     if (typeof pers_id !== "undefined") {
-      //testresultcode = testreservcode.toString() + "-" + pers_id.toString();
-      testresultcode = "SWC002-1111111111111";
+      testresultcode = testreservcode.toString() + "-" + pers_id.toString();
+      // testresultcode = "SWC002-1111111111111";
     } else {
       testresultcode = "SWC002-1111111111111";
     }
   } else {
     testresultcode = "SWC002-1111111111111";
   }
-  console.log(testresultcode);
-
-  //Test Redux
-  const questionRedux = useSelector((state) => state.examinfo);
-  console.log(questionRedux);
-  useEffect(() => {
-    dispatch(fetchQuestions({ testresultcode, token }))
-      .then((data) => {
-        dispatch(start());
-      })
-      .catch((error) => {
-        console.error("Error fetching questions: ", error);
-      });
-  }, [dispatch]);
+  //console.log(testresultcode);
 
   //getquestion
   //server/routes/exam_archieve/exam.js -> getindvform
@@ -314,7 +310,7 @@ function PageTest() {
   };
 
   //false -> Play Sound Question
-  const [isSendExam, setIsSendExam] = useState(false);
+  //const [isSendExam, setIsSendExam] = useState(false);
 
   //FileTextFromServer
   const [FileTextSixtyOne, setFileTextSixtyOne] = useState(null);
@@ -324,151 +320,21 @@ function PageTest() {
   const [FileTextEightyFive, setFileTextEightyFive] = useState(null);
   const [FileTextNinetyTwo, setFileTextNinetyTwo] = useState(null);
 
-  //Old Pattern of Question
-  const [QuestionAndChoicesFromDB, setQuestionAndChoiceFromDB] = useState(null);
-  const getQuestionAndChoice = async () => {
-    try {
-      const choices = await axios
-        .get(process.env.REACT_APP_API_URL + `/getchoice`, {
-          headers: {
-            authtoken: "bearer " + token,
-          },
-        })
-        .catch((error) => {
-          if (error.response.status === 401 || error.response.status === 404) {
-            dispatch(logout());
-            navigate("/notfound404", {
-              state: {
-                statusCode: error.response.status,
-                txt: error.response.data,
-              },
-            });
-          } else {
-            toast.error(error.response.data.message);
-          }
-        });
-
-      const questions = await axios
-        .get(process.env.REACT_APP_API_URL + `/getquestion`, {
-          headers: {
-            authtoken: "bearer " + token,
-          },
-        })
-        .catch((error) => {
-          if (error.response.status === 401 || error.response.status === 404) {
-            dispatch(logout());
-            navigate("/notfound404", {
-              state: {
-                statusCode: error.response.status,
-                txt: error.response.data,
-              },
-            });
-          } else {
-            toast.error(error.response.data.message);
-          }
-        });
-
-      // const axiosConfig = {
-      //   baseURL: process.env.REACT_APP_API_URL,
-      //   headers: { authtoken: "bearer " + token },
-      // };
-      // const axiosInstance = axios.create(axiosConfig);
-
-      // const fetchFileText = (index, form, filepath) => {
-      //   const rangeMappings = [
-      //     { range: [60, 67], stateSetter: setFileTextSixtyOne },
-      //     { range: [68, 75], stateSetter: setFileTextSixtyNine },
-      //     { range: [76, 79], stateSetter: setFileTextSeventySeven },
-      //     { range: [80, 83], stateSetter: setFileTextEightyOne },
-      //     { range: [84, 90], stateSetter: setFileTextEightyFive },
-      //     { range: [91, 99], stateSetter: setFileTextNinetyTwo },
-      //   ];
-
-      //   const mapping = rangeMappings.find(
-      //     (mapping) => index >= mapping.range[0] && index <= mapping.range[1]
-      //   );
-
-      //   if (mapping) {
-      //     axiosInstance
-      //       .get(`getfiletext/${form}/${filepath}`)
-      //       .then((result) => {
-      //         mapping.stateSetter(result.data);
-      //       })
-      //       .catch((error) => {
-      //         console.error("Error:", error);
-      //       });
-      //   }
-      // };
-
-      setQuestionAndChoiceFromDB(
-        questions.data.map((question, i) => {
-          // function fetchData() {
-          //   try {
-          //     const result = fetchFileText(
-          //       i,
-          //       question.formcode,
-          //       question.problem
-          //     );
-          //     return result;
-          //   } catch (error) {
-          //     console.error("Error:", error);
-          //   }
-          // }
-          // const fileCallFuction = fetchData();
-
-          return {
-            questioncode: question.questioncode,
-            filepath: question.problem,
-            questionText: question.question,
-            cerfcode: question.cerfcode,
-            form: question.formcode,
-            onSelect: false,
-            onAnswer: null,
-            Score: 0,
-            choice: choices.data
-              .filter((choice) => choice.questioncode === question.questioncode)
-              .map((value) => ({ value, sortValue: Math.random() }))
-              .sort((a, b) => a.sortValue - b.sortValue)
-              .map((item) => ({
-                id: item.value.choicecode,
-                choicetext: item.value.choicetext,
-                answer: item.value.answer,
-                questioncode: item.value.questioncode,
-              })),
-          };
-        })
-      );
-    } catch (error) {
-      console.log("Error", error.message);
-    }
-  };
-
   useEffect(() => {
     if (
       location.state?.url === "/PageFinishAttempt" &&
       location.state.data.data != null
     ) {
-      setQuestionAndChoiceFromDB(location.state.data.data);
-      setQuestionIndvform(location.state.data.data);
       setTestResvCode(location.state.data.testResvCode);
       //Disable DIR_1_50
       setIsStart(true);
       //Enable Button in Pagination
       setIsReading(false);
-      //Disable Sound File
-      setIsSendExam(true);
-      //Remaining Time
       setTime(location.state.data.time);
-      //getQuestionFromIndv();
     } else {
-      //get from indvform
-      //getQuestionFromIndv();
-      //get from bquestion and choice
-      getQuestionAndChoice();
       setTestResvCode(location.state);
     }
   }, []);
-  //console.log(QuestionAndChoicesFromDB);
 
   const handleQuestionNumber = (number) => {
     setQuestionNumber(number);
@@ -478,38 +344,6 @@ function PageTest() {
     setTimeout(() => {
       setIsStart(bool);
     }, 2000);
-  };
-
-  const checkIfAnswerIsCorrect = (id, newStatus) => {
-    const question = QuestionIndvform?.find(
-      (question) => question.questioncode === id
-    );
-    if (question) {
-      const selectChoices = question.choice
-        .filter((choice) => choice.choicetext === newStatus)
-        .map((item) => item.answer);
-      //console.log(selectChoices);
-      if (selectChoices.length > 0 && selectChoices[0] === 1) {
-        return true;
-      }
-    }
-    return false;
-  };
-
-  const updateStatusOnAnswer = (id, newStatus) => {
-    const updatedAnswer = QuestionAndChoicesFromDB?.map((question) => {
-      if (question.questioncode === id) {
-        const isCorrect = checkIfAnswerIsCorrect(id, newStatus);
-        return {
-          ...question,
-          onAnswer: newStatus,
-          onSelect: true,
-          Score: isCorrect ? 1 : 0,
-        };
-      }
-      return question;
-    });
-    setQuestionAndChoiceFromDB(updatedAnswer);
   };
 
   //For QuestionIndvform
@@ -551,8 +385,6 @@ function PageTest() {
     (total, question) => total + question.Score,
     0
   );
-
- 
 
   useEffect(() => {
     let timer;
@@ -607,26 +439,22 @@ function PageTest() {
           position: "fixed",
         }}
       >
-        <Card sx={{ minWidth: "150px", minHeight: "20px", boxShadow: 3 }}>
-          <Typography
-            variant="p"
-            sx={{ textAlign: "center", fontSize: "18px", fontWeight: "bold" }}
-            component="div"
-            gutterBottom
-          >
-            {isCounting && (
+        {isCounting && (
+          <Card sx={{ minWidth: "150px", minHeight: "20px", boxShadow: 3 }}>
+            <Typography
+              variant="p"
+              sx={{ textAlign: "center", fontSize: "18px", fontWeight: "bold" }}
+              component="div"
+              gutterBottom
+            >
               <Box>
                 เหลือเวลา {String(minutes).padStart(2, "0")}:
                 {String(seconds).padStart(2, "0")}{" "}
               </Box>
-            )}
-          </Typography>
-        </Card>
+            </Typography>
+          </Card>
+        )}
       </Box>
-
-      {/* <>
-        <p style={{ fontWeight: "bold" }}>Demo Version</p>
-      </> */}
 
       {/* Button For Select Reading Exam */}
       {QuestionNumber >= 60 ? (
@@ -819,59 +647,29 @@ function PageTest() {
           }}
           elevation={6}
         >
-          {false ? (
-            <Box
-              sx={{ display: "flex", justifyContent: "center", margin: "8%" }}
-            >
-              <Box sx={{ display: "flex", flexDirection: "column" }}>
-                {isStart ? (
-                  <Posts
-                    QuestionAndChoice={QuestionAndChoicesFromDB}
-                    QuestionNumber={QuestionNumber}
-                    EndOfListenning={(i) => setQuestionNumber(i)}
-                    TogglePagination={(bool) => setIsReading(bool)}
-                    OnAnswerSelect={(e, value) => {
-                      updateStatusOnAnswer(e.target.name, value);
-                    }}
-                    showSound={isSendExam}
-                    handleDirEnd={(bool) => setIsSendExam(bool)}
-                  />
-                ) : (
-                  <SoundDir
-                    dir="Dir_1_50.mp3"
-                    onFinish={() => handleStart(true)}
-                    time={0}
-                  />
-                )}
-              </Box>
+          <Box sx={{ display: "flex", justifyContent: "center", margin: "8%" }}>
+            <Box sx={{ display: "flex", flexDirection: "column" }}>
+              {!isStart && (
+                <SoundDir
+                  dir="Dir_1_50.mp3"
+                  onFinish={() => handleStart(true)}
+                  time={0}
+                />
+              )}
+              {isStart && (
+                <PostIndvForm
+                  QuestionAndChoice={QuestionIndvform}
+                  QuestionNumber={QuestionNumber + 1}
+                  EndOfListenning={(i) => setQuestionNumber(i)}
+                  ToggleCountDown={(bool) => setIsCounting(bool)}
+                  TogglePagination={(bool) => setIsReading(bool)}
+                  OnAnswerSelect={(e, value) => {
+                    updateStatusOnAnswerIndv(e.target.name, value);
+                  }}
+                />
+              )}
             </Box>
-          ) : (
-            <Box
-              sx={{ display: "flex", justifyContent: "center", margin: "8%" }}
-            >
-              <Box sx={{ display: "flex", flexDirection: "column" }}>
-                {!isStart && (
-                  <SoundDir
-                    dir="Dir_1_50.mp3"
-                    onFinish={() => handleStart(true)}
-                    time={0}
-                  />
-                )}
-                {isStart && (
-                  <PostIndvForm
-                    QuestionAndChoice={QuestionIndvform}
-                    QuestionNumber={QuestionNumber + 1}
-                    EndOfListenning={(i) => setQuestionNumber(i)}
-                    ToggleCountDown={(bool) => setIsCounting(bool)}
-                    TogglePagination={(bool) => setIsReading(bool)}
-                    OnAnswerSelect={(e, value) => {
-                      updateStatusOnAnswerIndv(e.target.name, value);
-                    }}
-                  />
-                )}
-              </Box>
-            </Box>
-          )}
+          </Box>
         </Card>
 
         <Card
@@ -946,22 +744,6 @@ function PageTest() {
               >
                 จบการทำแบบทดสอบ
               </Button>
-            </Box>
-            <br />
-            <Box sx={{ textAlign: "center" }}>
-              <Typography
-                variant="p"
-                sx={{ fontSize: "18px", fontWeight: "bold" }}
-                component="div"
-                gutterBottom
-              >
-                {isCounting && (
-                  <Box>
-                    เหลือเวลา {String(minutes).padStart(2, "0")}:
-                    {String(seconds).padStart(2, "0")}{" "}
-                  </Box>
-                )}
-              </Typography>
             </Box>
           </Box>
         </Card>
