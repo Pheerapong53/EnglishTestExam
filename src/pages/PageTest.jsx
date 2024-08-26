@@ -1,9 +1,9 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import Box from "@mui/material/Box";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Typography from "@mui/material/Typography";
 import Card from "@mui/material/Card";
 import Button from "@mui/material/Button";
@@ -13,21 +13,14 @@ import { blue } from "@mui/material/colors";
 import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../src/store/userSilce";
-//import Posts from "../components/Posts";
 import Pagination from "../components/Pagination";
 import PostIndvForm from "../components/PostIndvForm";
 import SoundDir from "../components/SoundDir";
 import { toast } from "react-toastify";
 
-//Test Redux
-// import { start, finish } from "../store/ExamInfoSlice";
-// import { fetchQuestions } from "../store/ExamInfoSlice";
-
 function PageTest() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  // const { user } = useSelector((state) => ({ ...state }));
-  // const token = user.user.token;
   const { user } = useSelector((state) => state.user);
   const token = user.token;
   const location = useLocation();
@@ -73,7 +66,7 @@ function PageTest() {
 
   const [QuestionNumber, setQuestionNumber] = useState(0);
   const [QuestionIndvform, setQuestionIndvform] = useState(null);
-  console.log(QuestionIndvform);
+  // console.log(QuestionIndvform);
 
   //toggle for Sound File
   //false -> Play DIR_1_50
@@ -109,14 +102,12 @@ function PageTest() {
     const pers_id = user?.pers_id;
     if (typeof pers_id !== "undefined") {
       testresultcode = testreservcode.toString() + "-" + pers_id.toString();
-      // testresultcode = "SWC002-1111111111111";
     } else {
-      testresultcode = "SWC002-1111111111111";
+      console.log("undefined pers_id");
     }
   } else {
-    testresultcode = "SWC002-1111111111111";
+    console.log("undefined testreservcode");
   }
-  //console.log(testresultcode);
 
   //getquestion
   //server/routes/exam_archieve/exam.js -> getindvform
@@ -302,7 +293,6 @@ function PageTest() {
           }
         })
       );
-
       setQuestionIndvform(questions);
     } catch (error) {
       console.log("Error", error.message);
@@ -458,7 +448,7 @@ function PageTest() {
 
       {/* Button For Select Reading Exam */}
       {QuestionNumber >= 60 ? (
-        <Box sx={{ margin: "20px", display: "flex" }}>
+        <Box sx={{ margin: "20px", display: "flex", justifyContent: "center" }}>
           <Box sx={{ margin: "0px 5px " }}>
             <ColorButton
               onClick={() => setQuestionNumber(60)}
@@ -730,7 +720,7 @@ function PageTest() {
               <Button
                 variant="contained"
                 fullWidth
-                // disabled={isReading}
+                disabled={isReading}
                 onClick={() => {
                   navigate("/PageFinishAttempt", {
                     state: {

@@ -1,10 +1,9 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
+/* Update 30/4/67 */
 import React from "react";
-import Typography from "@mui/material/Typography";
-import Box from "@mui/material/Box";
+import { Typography, Box, Button, Modal, TextField } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import Button from "@mui/material/Button";
 import {
   DataGrid,
   GridToolbar,
@@ -15,18 +14,12 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { blue, red, yellow } from "@mui/material/colors";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
-import { Link } from "react-router-dom";
+import CloseIcon from "@mui/icons-material/Close";
 import AddIcon from "@mui/icons-material/Add";
-import Modal from "@mui/material/Modal";
-import TextField from "@mui/material/TextField";
+import { Link } from "react-router-dom";
 import ModalEditExamArchive from "../components/ModalEditExamArchive";
-import Dialog from "@mui/material/Dialog";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import InputLabel from "@mui/material/InputLabel";
-import Select from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
-import FormControl from "@mui/material/FormControl";
+import { Dialog, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
+import {InputLabel, Select, MenuItem, FormControl, IconButton} from "@mui/material";
 import Footer from "../components/Footer";
 import { useState } from "react";
 import { useEffect } from "react";
@@ -34,16 +27,13 @@ import { useNavigate } from "react-router-dom";
 import Axios from "axios";
 import ModalAddMultiple from "../components/ModalAddMultiple";
 import ModalAddOne from "../components/ModalAddOne";
-import DialogTitle from "@mui/material/DialogTitle";
-import IconButton from "@mui/material/IconButton";
-import CloseIcon from "@mui/icons-material/Close";
 import PropTypes from "prop-types";
 import ModalAddTypeExam from "./ModalAddTypeExam";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../src/store/userSilce";
 import { toast } from "react-toastify";
 import { confirmAlert } from "react-confirm-alert";
-import 'react-confirm-alert/src/react-confirm-alert.css';
+import "react-confirm-alert/src/react-confirm-alert.css";
 
 const style = {
   position: "absolute",
@@ -112,8 +102,8 @@ const theme = createTheme({
 
 function ContentPageExamArchive() {
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => ({ ...state }));
-  const token = user.user.token;
+  const { user } = useSelector((state) => state.user);
+  const token = user.token;
 
   const columns = [
     { field: "id", headerName: "รหัสความสามารถทางภาษาอังกฤษสากล", width: 250 },
@@ -127,6 +117,7 @@ function ContentPageExamArchive() {
       headerName: "ลักษณะข้อสอบ",
       width: 600,
     },
+    { field: "cerfleveltype", headerName: "ประเภทของการวัดทักษะ", width: 300 },
     { field: "n_cerfcode", headerName: "จำนวนข้อ", width: 90 },
     {
       field: "management",
@@ -179,6 +170,8 @@ function ContentPageExamArchive() {
 
   //get questions from backend include [tbcefrdifficultylevel, tbquestion]
   const [questionLists, setQuestionLists] = useState([]);
+  //console.log("questionLists: ", questionLists);
+
   useEffect(() => {
     var config = {
       method: "GET",
@@ -226,22 +219,22 @@ function ContentPageExamArchive() {
     });
   };
 
-  const handleDeleteClick = (clickedexam) =>{
+  const handleDeleteClick = (clickedexam) => {
     confirmAlert({
-      title: 'ยืนยันการลบ',
+      title: "ยืนยันการลบ",
       message: `คุณต้องการที่จะลบ ${clickedexam.row.id} ใช่หรือไม่`,
       buttons: [
         {
-          label: 'Yes',
+          label: "Yes",
           onClick: () => toDeleteCefrLevel(clickedexam),
         },
         {
-          label: 'No',
+          label: "No",
           onClick: () => {},
-        }
+        },
       ],
     });
-  }
+  };
 
   //Delete CefrLevel
   const toDeleteCefrLevel = (clickedexam) => {
@@ -252,10 +245,10 @@ function ContentPageExamArchive() {
       url: process.env.REACT_APP_API_URL + `/delcefrlevel/${id}`,
       headers: {
         authtoken: "bearer " + token,
-      }, 
+      },
     };
-    Axios(config).then(
-      (response) => {
+    Axios(config)
+      .then((response) => {
         setQuestionLists(
           questionLists.filter((val) => {
             return val["id"] !== id;
@@ -264,9 +257,14 @@ function ContentPageExamArchive() {
         toast.success(response.data.msg);
       })
       .catch((error) => {
-        if(error.response.status === 401 || error.response.status === 404) {
+        if (error.response.status === 401 || error.response.status === 404) {
           dispatch(logout());
-          navigate('/notfound404', { state: {statusCode: error.response.status, txt: error.response.data} })
+          navigate("/notfound404", {
+            state: {
+              statusCode: error.response.status,
+              txt: error.response.data,
+            },
+          });
         } else {
           toast.error(error.response.data.message);
         }
@@ -287,7 +285,7 @@ function ContentPageExamArchive() {
   const handleOpen = () => setOpen(true);
   const handleClose = () => {
     setOpen(false);
-  }
+  };
 
   //open-close Dialog เพิ่มประเภทข้อสอบ
   const [openS, setOpenS] = React.useState(false);
@@ -336,11 +334,19 @@ function ContentPageExamArchive() {
           คลังข้อสอบ
         </Box>
       </Typography>
+
       <DrawerHeader />
-      <div style={{ height: 450, width: "100%" }}>
-        <Button variant="outlined" startIcon={<AddIcon />} onClick={handleOpen}>
+
+      <div style={{height: 450, width: "100%" }}>
+        <div style={{display: "flex", justifyContent: "flex-end", marginBottom: "10px"}}>
+        <Button variant="contained" startIcon={<AddIcon />} onClick={handleOpen}>
           เพิ่มโจทย์ข้อสอบ
         </Button>
+
+        {/* เพิ่มประเภทข้อสอบ */}
+        <ModalAddTypeExam />
+        </div>
+        
 
         {/* Alert Dialog When Click "เพิ่มโจทย์ข้อสอบ" */}
         <BootstrapDialog
@@ -374,9 +380,6 @@ function ContentPageExamArchive() {
           </DialogContent>
         </BootstrapDialog>
 
-        {/* เพิ่มประเภทข้อสอบ */}
-        <ModalAddTypeExam />
-
         <DataGrid
           rows={questionLists}
           columns={columns}
@@ -400,6 +403,3 @@ function ContentPageExamArchive() {
 }
 
 export default ContentPageExamArchive;
-
-
-

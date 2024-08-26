@@ -33,8 +33,12 @@ const exam = {
           .then((res) => {
             if (res !== null) {
               //const idx = __dirname.match(new RegExp('/server/'))?.index;
-              const idx = __dirname.indexOf('/backend/');
-              const videoPath = path.join(__dirname.substring(0, idx),res.introvdofilepath, res.introvdotitle);
+              const idx = __dirname.indexOf("/backend/");
+              const videoPath = path.join(
+                __dirname.substring(0, idx),
+                res.introvdofilepath,
+                res.introvdotitle
+              );
               const videoSize = fs.statSync(videoPath).size;
               let range =
                 "undefined" !== typeof request.headers.range
@@ -81,13 +85,28 @@ const exam = {
             resolve(response);
           });
       } catch (err) {
-        console.log('Backend :: CLTestMgmt : streamVideoFile -> failed : ', err);
-                reject({ 'stream_success': false });
+        console.log(
+          "Backend :: CLTestMgmt : streamVideoFile -> failed : ",
+          err
+        );
+        reject({ stream_success: false });
       }
     });
     return success;
   },
-
+  getcefrlevel: async (req) => {
+    const { cefrlevel } = req.params;
+    const condition = {
+      where: {
+        cerfcode: cefrlevel,
+      },
+    };
+    try {
+      return await tbcefrdifficultylevel.findOne(condition);
+    } catch (err) {
+      console.log("Backend :: cefrlevel : getcefrlevel -> failed : ", err);
+    }
+  },
   getquestioninfo: async () => {
     const condition = {
       include: [
@@ -111,7 +130,7 @@ const exam = {
     try {
       return await tbcefrdifficultylevel.findAll(condition);
     } catch (err) {
-      console.log("Backend :: question : getquestioninfo -> failed : ", err);
+      console.error("Backend :: question : getquestioninfo -> failed : ", err);
     }
   },
 
@@ -256,11 +275,17 @@ const exam = {
 
       if (existingLevel) {
         return next(
-          errorHandler(StatusCodes.BAD_REQUEST, "CerfLevel already exists!"),
+          errorHandler(
+            StatusCodes.BAD_REQUEST,
+            "มีข้อมูล CerfLevel ในระบบแล้ว"
+          ),
           res
             .status(400)
             .json(
-              errorHandler(StatusCodes.BAD_REQUEST, "CerfLevel already exists!")
+              errorHandler(
+                StatusCodes.BAD_REQUEST,
+                "มีข้อมูล CerfLevel ในระบบแล้ว"
+              )
             )
         );
       }
@@ -270,6 +295,7 @@ const exam = {
           cerfcode: cerfcode.toString(),
           cerfdifficultylevel: req.body.cerfdifficultylevel,
           cerfdifficultyleveldesc: req.body.cerfdifficultyleveldesc,
+          cerfleveltype: req.body.cerfleveltype,
         })
         .catch(function (err) {
           console.log("addcefrlevel error : ", err);

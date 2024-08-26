@@ -39,7 +39,7 @@ const Pagination = ({
     >
       {QuestionAndChoice != null ? (
         QuestionAndChoice?.map((question, index) => (
-          <>
+          <React.Fragment key={question.id}>
             {question.onSelect === false ? (
               <ColorBlueButton
                 key={question.id}
@@ -79,7 +79,7 @@ const Pagination = ({
                 {index + 1}
               </ColorRedButton>
             )}
-          </>
+          </React.Fragment>
         ))
       ) : (
         <p>No Data</p>

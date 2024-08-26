@@ -32,11 +32,14 @@ const test = {
       const testresultcode = req.body.testresultcode;
       const testresvcode = req.body.testresvcode;
       const pers_id = req.body.meminfo_id;
-      const testconductdate = req.body.testconductdate;
+      // const testconductdate = req.body.testconductdate;
+      const testconductdate = new Date();
       const realscore = req.body.realscore;
-      const realscoredate = req.body.realscoredate;
+      // const realscoredate = req.body.realscoredate;
+      const realscoredate = new Date();
       const realscorerecorder = req.body.realscorerecorder;
       const submittime = req.body.submittime;
+      
 
       const meminfo_id = await tbmemberinfo.findOne({
         where: {
@@ -89,6 +92,7 @@ const test = {
           .json({ msg: "ส่งคำตอบสำเร็จ รอการอนุมัติผลสอบ" });
       }
     } catch (error) {
+      console.error("TestResult error:", error);
       return next(
         errorHandler(StatusCodes.INTERNAL_SERVER_ERROR, error),
         res

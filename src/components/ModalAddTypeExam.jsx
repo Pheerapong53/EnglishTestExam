@@ -1,42 +1,32 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
-import { Link } from "react-router-dom";
 import Typography from "@mui/material/Typography";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
-import ControlPointIcon from "@mui/icons-material/ControlPoint";
-import InputLabel from "@mui/material/InputLabel";
-import Select from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
-import FormControl from "@mui/material/FormControl";
+import AddIcon from "@mui/icons-material/Add";
 import { addCefrLevelHandler } from "./functions/cefrLevel";
 import { useNavigate } from "react-router-dom";
-import Dropzone from "react-dropzone";
-import axios from "axios";
-import AddIcon from "@mui/icons-material/Add";
-import { useSelector, useDispatch } from "react-redux";
-import {logout} from "../../src/store/userSilce";
+import { logout } from "../../src/store/userSilce";
 import { toast } from "react-toastify";
 import { confirmAlert } from "react-confirm-alert";
 import "react-confirm-alert/src/react-confirm-alert.css";
 
-
 function ModalAddTypeExam() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const {user} = useSelector((state) => ({...state}));
-  const token = user.user.token;
+  const { user } = useSelector((state) => state.user);
+  const token = user.token;
   //open-close Dialog
   const [open, setOpen] = React.useState(false);
   const [scroll, setScroll] = React.useState("paper");
 
-  const handleClickOpen =  () => {
+  const handleClickOpen = () => {
     setOpen(true);
-    //setScroll(scrollType);
   };
 
   const handleClose = () => {
@@ -55,11 +45,11 @@ function ModalAddTypeExam() {
   }, [open]);
 
   //กำหนดค่าเริ่มต้น for เพิ่มประเภทข้อสอบ
-
   const initialstate = {
     cerfcode: "",
     cerfdifficultylevel: "",
     cerfdifficultyleveldesc: "",
+    cerfleveltype: "",
   };
 
   const [values, setValues] = useState(initialstate);
@@ -81,6 +71,7 @@ function ModalAddTypeExam() {
       cerfcode: data.get("cerfcode"),
       cerfdifficultylevel: data.get("cerfdifficultylevel"),
       cerfdifficultyleveldesc: data.get("cerfdifficultyleveldesc"),
+      cerfleveltype: data.get("cerfleveltype"),
     };
     handleClose();
 
@@ -93,39 +84,42 @@ function ModalAddTypeExam() {
           onClick: () => {
             addCefrLevelHandler(addTypeExam, token)
               .then((res) => {
-                toast.success(res.data.msg, {onClose: () => navigate(0) });
+                toast.success(res.data.msg, { onClose: () => navigate(0) });
               })
               .catch((error) => {
-                if(error.response.status === 401 || error.response.status === 404){
+                if (
+                  error.response.status === 401 ||
+                  error.response.status === 404
+                ) {
                   dispatch(logout());
-                  navigate('/notfound404', { state: {statusCode: error.response.status, txt: error.response.data} })
-                }else{
+                  navigate("/notfound404", {
+                    state: {
+                      statusCode: error.response.status,
+                      txt: error.response.data,
+                    },
+                  });
+                } else {
                   toast.error(error.response.data.message);
-                } 
+                }
               });
           },
         },
         {
           label: "No",
-          onClick: () => {navigate(0)},
+          onClick: () => {
+            navigate(0);
+          },
         },
       ],
     });
 
-    // addCefrLevelHandler(addTypeExam).then((res) => {
-    //   console.log(res.data);
-    // });
-
-    // handleClose();
-    // navigate(0);
-    
   };
 
   return (
     <>
       <Button
-        variant="outlined"
-        onClick = {handleClickOpen}
+        variant="contained"
+        onClick={handleClickOpen}
         sx={{ marginLeft: "10px" }}
         startIcon={<AddIcon />}
       >
@@ -220,14 +214,15 @@ function ModalAddTypeExam() {
                   sx={{ margin: "10px" }}
                   id="outlined-basic"
                   label="ประเภทการวัดข้อสอบ"
+                  name="cerfleveltype"
+                  value={values.cerfleveltype}
+                  required
+                  onChange={handleChange}
                   variant="outlined"
-                  value="ไม่มีการเก็บค่าใน tbcefrdifficultylevel"
-                  error
                   fullWidth
-                  disabled
                 />
               </Box>
-             
+
               <Box
                 sx={{
                   display: "flex",
@@ -250,4 +245,3 @@ function ModalAddTypeExam() {
 }
 
 export default ModalAddTypeExam;
-

@@ -23,6 +23,7 @@ import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import { useState } from "react";
 import { toast } from "react-toastify";
+import { finish } from "../store/TestInfoSlice";
 
 //Functions
 import { addTestResult } from "../components/functions/TestResult";
@@ -50,18 +51,19 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   },
 }));
 
-function createData(no, status) {
-  return { no, status };
-}
-
 function PageFinishAttempt() {
   const location = useLocation();
   const dispatch = useDispatch();
 
   const { testinfo } = useSelector((state) => ({ ...state }));
-
   const { user } = useSelector((state) => state.user);
   const token = user.token;
+
+  const delTestInfo = () => {
+    //ต้องลบออกจาก Redux
+    dispatch(finish());
+  };
+
   //from redux
   const testResvCode = testinfo.testresvcode;
 
@@ -118,14 +120,16 @@ function PageFinishAttempt() {
     testconductdate: dateTime,
     realscoredate: dateTime,
     realscorerecorder: user.pers_id,
-    submittime: dateTime.toLocaleTimeString(),
+    submittime: dateTime.toLocaleTimeString('it','THAI'),
   });
 
   const handleSubmit = async () => {
-    //console.log(formValues);
+    // console.log(formValues);
+    // delTestInfo();
     addTestResult(formValues, token)
       .then((res) => {
         toast.success(res.data.msg);
+        delTestInfo();
         navigate("/PageDoTest");
       })
       .catch((error) => {
@@ -149,13 +153,6 @@ function PageFinishAttempt() {
       <Container>
         <DrawerHeader />
         <Typography component="div">
-          {/* Example Data
-          <p>
-            testresultcode : {testResvCode}-{user.user.pers_id}
-          </p>
-          <p>testresvcode: {testResvCode}</p>
-          <p>memifo_id: {user.user.pers_id}</p>
-          <p>realscode: {score}</p> */}
           <Box sx={{ display: "flex", justifyContent: "flex-start" }}>
             <Box
               sx={{ padding: "10px 0px ", display: "flex", marginLeft: "5px" }}
@@ -234,6 +231,7 @@ function PageFinishAttempt() {
                     realScore: location.state?.realScore,
                     time: location.state?.time,
                     url: "/PageFinishAttempt",
+                    testresvcode: testResvCode,
                   },
                 });
               }}

@@ -50,6 +50,9 @@ routes.post("/addmanyexam",verifyToken, async(req,res) => {
   //res.send(req.body);
   res.send(await exam.addmanyexam(req,res));
 })
+routes.get("/getcefrlevel/:cefrlevel",verifyToken, async(req,res) => {
+  res.send(await exam.getcefrlevel(req));
+})
 
 
 //Upload Files

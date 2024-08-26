@@ -1,16 +1,14 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable eqeqeq */
-import React, { useState } from "react";
+/* Update 2/5/67 */
+import React, { useState, useEffect } from "react";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
-import { Link } from "react-router-dom";
 import Typography from "@mui/material/Typography";
 import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
-import DialogActions from "@mui/material/DialogActions";
 import ControlPointIcon from "@mui/icons-material/ControlPoint";
 import InputLabel from "@mui/material/InputLabel";
 import Select from "@mui/material/Select";
@@ -18,18 +16,59 @@ import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import { addExamOneHandler } from "./functions/cefrLevel";
 import { useNavigate } from "react-router-dom";
-//import Dropzone from "react-dropzone";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../src/store/userSilce";
 import axios from "axios";
 import { toast } from "react-toastify";
 
 function ModalAddOne(dropdown) {
-  const [isCorrect, setIsCorrect] = useState(false);
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => ({ ...state }));
-  const token = user.user.token;
+  const { user } = useSelector((state) => state.user);
+  const token = user.token;
+  const navigate = useNavigate();
 
+  //for auto fill cefrlevel data
+  const [selectedCefrLevel, setSelectedCefrLevel] = useState("");
+  const [autoFilledData, setAutoFilledData] = useState({});
+  console.log(autoFilledData);
+
+  useEffect(() => {
+    if (selectedCefrLevel) {
+      fetchData(selectedCefrLevel);
+    }
+  }, [selectedCefrLevel]);
+
+  const fetchData = async (selectedCefrLevel) => {
+    var config = {
+      method: "GET",
+      url: process.env.REACT_APP_API_URL + `/getcefrlevel/${selectedCefrLevel}`,
+      headers: {
+        authtoken: "bearer " + token,
+      },
+    };
+
+    axios(config)
+      .then((response) => {
+        setAutoFilledData(response.data);
+      })
+      .catch((error) => {
+        if (error.response.status === 401 || error.response.status === 404) {
+          dispatch(logout());
+          navigate("/notfound404", {
+            state: {
+              statusCode: error.response.status,
+              txt: error.response.data,
+            },
+          });
+        } else {
+          toast.error(error.response.data.message);
+        }
+      });
+  };
+
+  const [isCorrect, setIsCorrect] = useState(false);
+
+  //formValues before send to back end 
   const [formValues, setFormValues] = useState({
     cerfcode: {
       value: "",
@@ -78,9 +117,7 @@ function ModalAddOne(dropdown) {
     },
   });
 
-  const navigate = useNavigate();
-
-  //console.log(dropdown);
+  
   //open-close Dialog
   const [open, setOpen] = React.useState(false);
   const [scroll, setScroll] = React.useState("paper");
@@ -93,7 +130,25 @@ function ModalAddOne(dropdown) {
   const handleClose = () => {
     setValues([]);
     setOpen(false);
-    //navigate(0);
+  };
+
+  const handleCefrLevelChange = (e) => {
+    setSelectedCefrLevel(e.target.value);
+  };
+
+  const handleChangeWithValidate = async (e) => {
+    const { name, value } = e.target;
+    setValues({
+      ...values,
+      [name]: value,
+    });
+    setFormValues({
+      ...formValues,
+      [name]: {
+        ...formValues[name],
+        value: value,
+      },
+    });
   };
 
   const descriptionElementRef = React.useRef(null);
@@ -105,20 +160,6 @@ function ModalAddOne(dropdown) {
       }
     }
   }, [open]);
-
-  //กำหนดค่าเริ่มต้น for เพิ่มโจทย์ข้อสอบ
-  //หากเพิ่มโจทย์ใน PageExamLookUp cerfcode auto add
-  // const initialstate = {
-  //   cerfcode: " ",
-  //   questionnumber: "",
-  //   question: "",
-  //   problem: "",
-  //   formcode: "",
-  //   ch01: "",
-  //   ch02: "",
-  //   ch03: "",
-  //   ch04: "",
-  // };
 
   //กำหนดค่า DropDown ให้กับ FormCode
   const formCodeDropDown = [
@@ -139,32 +180,6 @@ function ModalAddOne(dropdown) {
   //file txt Upload
   const [fileProblem, setFileProblem] = useState();
   //console.log(fileProblem);
-
-  //ยังไม่ได้ใช้
-  // const [status, setStatus] = useState();
-
-  //handleChange in text TextField
-  // const handleChange = (e) => {
-  //   setValues({
-  //     ...values,
-  //     [e.target.name]: e.target.value,
-  //   });
-  // };
-
-  const handleChangeWithValidate = async (e) => {
-    const { name, value } = e.target;
-    setValues({
-      ...values,
-      [name]: value,
-    });
-    setFormValues({
-      ...formValues,
-      [name]: {
-        ...formValues[name],
-        value: value,
-      },
-    });
-  };
 
   //handleFileChange for ไฟล์โจทย์
   const handleFileChange = (e) => {
@@ -193,7 +208,6 @@ function ModalAddOne(dropdown) {
 
   const handleSubmitWithValidate = async (event) => {
     event.preventDefault();
-
     const formFields = Object.keys(formValues);
     let newFormValues = { ...formValues };
     const {
@@ -256,125 +270,55 @@ function ModalAddOne(dropdown) {
         ch03: data.get("ch03"),
         ch04: data.get("ch04"),
       };
-      //toast.success('Validate Ok');
-      //console.log(addExamOne);
 
       const formData = await new FormData();
       formData.append("file", fileProblem);
-      //console.log("questionAndAnswer: ", addExamOne);
-      //console.log("FileProblem: ", formData.get("file"));
-
-      // var extendName = values.problem.split(".")[1];
-      // if (extendName.toString() === "txt") {
-      //   axios
-      //     .post(process.env.REACT_APP_API_URL + "/upload", formData,{
-      //       headers: {
-      //         authtoken: "bearer " + token,
-      //       }
-      //     })
-      //     .then((res) => {
-      //       console.log(res);
-      //     });
-      // } else if (extendName.toString() === "mp3") {
-      //   axios
-      //     .post(process.env.REACT_APP_API_URL + "/uploadsound", formData,{
-      //       headers: {
-      //         authtoken: "bearer " + token,
-      //       }
-      //     })
-      //     .then((res) => {
-      //       console.log(res);
-      //     });
-      // }
-
-      addExamOneHandler(addExamOne,token).then((res) => {
-        toast.success(res.data.msg);
-        var extendName = values.problem.split(".")[1];
-      if (extendName.toString() === "txt") {
-        axios
-          .post(process.env.REACT_APP_API_URL + "/upload", formData,{
-            headers: {
-              authtoken: "bearer " + token,
-            }
-          })
-          .then((res) => {
-            toast.success(res.data.msg);
-            navigate(0);
-            handleClose();
-          });
-      } else if (extendName.toString() === "mp3") {
-        axios
-          .post(process.env.REACT_APP_API_URL + "/uploadsound", formData,{
-            headers: {
-              authtoken: "bearer " + token,
-            }
-          })
-          .then((res) => {
-            toast.success(res.data.msg);
-            navigate(0);
-            handleClose();
-          });
-      }
-        //navigate(0);
-        
-      })
-      .catch((error) => {
-        if(error.response.status === 401 || error.response.status === 404){
-          dispatch(logout());
-          navigate('/notfound404', { state: {statusCode: error.response.status, txt: error.response.data} })
-        }else{
-        toast.error(error.response.data.message);
-        }
-      }); 
-    }
-    
-  };
-
-  //handleSubmit to add tbquestion, tbchoice
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-
-    //Upload File Before
-    const data = await new FormData(event.currentTarget);
-    // eslint-disable-next-line no-console
-    const addExamOne = await {
-      cerfcode: data.get("cerfcode"),
-      questionnumber: data.get("questionnumber"),
-      question: data.get("question"),
-      problem: data.get("problem"),
-      formcode: data.get("formcode"),
-      ch01: data.get("ch01"),
-      ch02: data.get("ch02"),
-      ch03: data.get("ch03"),
-      ch04: data.get("ch04"),
-    };
-
-    const formData = await new FormData();
-    formData.append("file", fileProblem);
-    //console.log("questionAndAnswer: ", addExamOne);
-    console.log("FileProblem: ", formData.get("file"));
-
-    var extendName = values.problem.split(".")[1];
-    if (extendName.toString() === "txt") {
-      axios
-        .post(process.env.REACT_APP_API_URL + "/upload", formData)
+      
+      addExamOneHandler(addExamOne, token)
         .then((res) => {
-          console.log(res);
-        });
-    } else if (extendName.toString() === "mp3") {
-      axios
-        .post(process.env.REACT_APP_API_URL + "/uploadsound", formData)
-        .then((res) => {
-          console.log(res);
+          toast.success(res.data.msg);
+          var extendName = values.problem.split(".")[1];
+          if (extendName.toString() === "txt") {
+            axios
+              .post(process.env.REACT_APP_API_URL + "/upload", formData, {
+                headers: {
+                  authtoken: "bearer " + token,
+                },
+              })
+              .then((res) => {
+                toast.success(res.data.msg);
+                navigate(0);
+                handleClose();
+              });
+          } else if (extendName.toString() === "mp3") {
+            axios
+              .post(process.env.REACT_APP_API_URL + "/uploadsound", formData, {
+                headers: {
+                  authtoken: "bearer " + token,
+                },
+              })
+              .then((res) => {
+                toast.success(res.data.msg);
+                navigate(0);
+                handleClose();
+              });
+          }
+          //navigate(0);
+        })
+        .catch((error) => {
+          if (error.response.status === 401 || error.response.status === 404) {
+            dispatch(logout());
+            navigate("/notfound404", {
+              state: {
+                statusCode: error.response.status,
+                txt: error.response.data,
+              },
+            });
+          } else {
+            toast.error(error.response.data.message);
+          }
         });
     }
-
-    addExamOneHandler(addExamOne).then((res) => {
-      console.log(res.data);
-    });
-
-    navigate(0);
-    handleClose();
   };
 
   return (
@@ -434,152 +378,103 @@ function ModalAddOne(dropdown) {
                   marginTop: "10px",
                 }}
               >
-                {/* <TextField
-                    sx={{ margin: "10px" }}
-                    id="outlined-basic"
-                    label="รหัสความสามารถทางภาษาอังกฤษสากล"
-                    variant="outlined"
-                    fullWidth
-                  /> */}
-
-{dropdown?.dropdown.length === 1?(
-  <FormControl sx={{ margin: "10px" }} fullWidth>
-                  <InputLabel id="demo-simple-select-label">
-                    รหัสความสามารถทางภาษาอังกฤษสากล
-                  </InputLabel>
-                  <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    label="รหัสความสามารถทางภาษาอังกฤษสากล"
-                    name="cerfcode"
-                    value={dropdown["dropdown"] || ""}
-                    required
-                    onChange={(e) => {
-                      handleChangeWithValidate(e);
-                      setIsCorrect(true);
-                      if ([formValues.cerfcode] != "") {
-                        setFormValues((prevState) => ({
-                          ...prevState,
-                          cerfcode: {
-                            ...prevState.cerfcode,
-                            error: false,
-                          },
-                        }));
+                {dropdown?.dropdown.length === 1 ? (
+                  <FormControl sx={{ margin: "10px" }} fullWidth>
+                    <InputLabel id="demo-simple-select-label">
+                      รหัสความสามารถทางภาษาอังกฤษสากล
+                    </InputLabel>
+                    <Select
+                      labelId="demo-simple-select-label"
+                      id="demo-simple-select"
+                      label="รหัสความสามารถทางภาษาอังกฤษสากล"
+                      name="cerfcode"
+                      value={dropdown["dropdown"] || ""}
+                      required
+                      onChange={(e) => {
+                        handleCefrLevelChange(e);
+                        handleChangeWithValidate(e);
+                        setIsCorrect(true);
+                        if ([formValues.cerfcode] != "") {
+                          setFormValues((prevState) => ({
+                            ...prevState,
+                            cerfcode: {
+                              ...prevState.cerfcode,
+                              error: false,
+                            },
+                          }));
+                        }
+                      }}
+                      error={formValues.cerfcode.error}
+                      helperText={
+                        formValues.cerfcode.error &&
+                        formValues.cerfcode.errorMessage
                       }
-                    }}
-                    error={formValues.cerfcode.error}
-                    helperText={
-                      formValues.cerfcode.error &&
-                      formValues.cerfcode.errorMessage
-                    }
-                    //error={values.rank === undefined ? true : false}
-                    fullWidth
-                  >
-                    <MenuItem value="">
-                      <em>None</em>
-                    </MenuItem>
-                    {dropdown["dropdown"].map((cerfcode, i) => (
-                      <MenuItem value={cerfcode} key={i}>
-                        {cerfcode}
+                      //error={values.rank === undefined ? true : false}
+                      fullWidth
+                    >
+                      <MenuItem value="">
+                        <em>None</em>
                       </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-):(
-  <FormControl sx={{ margin: "10px" }} fullWidth>
-                  <InputLabel id="demo-simple-select-label">
-                    รหัสความสามารถทางภาษาอังกฤษสากล
-                  </InputLabel>
-                  <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    label="รหัสความสามารถทางภาษาอังกฤษสากล"
-                    name="cerfcode"
-                    value={values.cerfcode || ""}
-                    required
-                    onChange={(e) => {
-                      handleChangeWithValidate(e);
-                      setIsCorrect(true);
-                      if ([formValues.cerfcode] != "") {
-                        setFormValues((prevState) => ({
-                          ...prevState,
-                          cerfcode: {
-                            ...prevState.cerfcode,
-                            error: false,
-                          },
-                        }));
+                      {dropdown["dropdown"].map((cerfcode, i) => (
+                        <MenuItem value={cerfcode} key={i}>
+                          {cerfcode}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                ) : (
+                  <FormControl sx={{ margin: "10px" }} fullWidth>
+                    <InputLabel id="demo-simple-select-label">
+                      รหัสความสามารถทางภาษาอังกฤษสากล
+                    </InputLabel>
+                    <Select
+                      labelId="demo-simple-select-label"
+                      id="demo-simple-select"
+                      label="รหัสความสามารถทางภาษาอังกฤษสากล"
+                      name="cerfcode"
+                      value={values.cerfcode || ""}
+                      required
+                      onChange={(e) => {
+                        handleCefrLevelChange(e);
+                        handleChangeWithValidate(e);
+                        setIsCorrect(true);
+                        if ([formValues.cerfcode] != "") {
+                          setFormValues((prevState) => ({
+                            ...prevState,
+                            cerfcode: {
+                              ...prevState.cerfcode,
+                              error: false,
+                            },
+                          }));
+                        }
+                      }}
+                      error={formValues.cerfcode.error}
+                      helperText={
+                        formValues.cerfcode.error &&
+                        formValues.cerfcode.errorMessage
                       }
-                    }}
-                    error={formValues.cerfcode.error}
-                    helperText={
-                      formValues.cerfcode.error &&
-                      formValues.cerfcode.errorMessage
-                    }
-                    //error={values.rank === undefined ? true : false}
-                    fullWidth
-                  >
-                    <MenuItem value="">
-                      <em>None</em>
-                    </MenuItem>
-                    {dropdown["dropdown"].map((cerfcode, i) => (
-                      <MenuItem value={cerfcode} key={i}>
-                        {cerfcode}
+                      //error={values.rank === undefined ? true : false}
+                      fullWidth
+                    >
+                      <MenuItem value="">
+                        <em>None</em>
                       </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-)}
-                {/* <FormControl sx={{ margin: "10px" }} fullWidth>
-                  <InputLabel id="demo-simple-select-label">
-                    รหัสความสามารถทางภาษาอังกฤษสากล
-                  </InputLabel>
-                  <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    label="รหัสความสามารถทางภาษาอังกฤษสากล"
-                    name="cerfcode"
-                    value={values.cerfcode || ""}
-                    required
-                    onChange={(e) => {
-                      handleChangeWithValidate(e);
-                      setIsCorrect(true);
-                      if ([formValues.cerfcode] != "") {
-                        setFormValues((prevState) => ({
-                          ...prevState,
-                          cerfcode: {
-                            ...prevState.cerfcode,
-                            error: false,
-                          },
-                        }));
-                      }
-                    }}
-                    error={formValues.cerfcode.error}
-                    helperText={
-                      formValues.cerfcode.error &&
-                      formValues.cerfcode.errorMessage
-                    }
-                    //error={values.rank === undefined ? true : false}
-                    fullWidth
-                  >
-                    <MenuItem value="">
-                      <em>None</em>
-                    </MenuItem>
-                    {dropdown["dropdown"].map((cerfcode, i) => (
-                      <MenuItem value={cerfcode} key={i}>
-                        {cerfcode}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl> */}
+                      {dropdown["dropdown"].map((cerfcode, i) => (
+                        <MenuItem value={cerfcode} key={i}>
+                          {cerfcode}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                )}
 
                 <TextField
                   sx={{ margin: "10px" }}
                   id="outlined-basic"
                   label="ระดับความยากง่ายตามกรอบ CEFR"
                   name="cerfdifficultylevel"
-                  value="เพิ่มโจทย์ข้อสอบใน tbquestion จำเป็นต้องกรอกฟิลด์ไหม?"
+                  value={autoFilledData.cerfdifficultylevel || ""}
                   variant="outlined"
-                  error
                   fullWidth
                   disabled
                 />
@@ -589,9 +484,8 @@ function ModalAddOne(dropdown) {
                   id="outlined-basic"
                   label="คำอธิบายระดับความยากง่ายตามกรอบ CEFR"
                   name="cerfdifficultyleveldesc"
-                  value="เพิ่มโจทย์ข้อสอบใน tbquestion จำเป็นต้องกรอกฟิลด์ไหม?"
+                  value={autoFilledData.cerfdifficultyleveldesc || ""}
                   variant="outlined"
-                  error
                   fullWidth
                   disabled
                 />
@@ -601,8 +495,9 @@ function ModalAddOne(dropdown) {
                   id="outlined-basic"
                   label="ลักษณะข้อสอบ"
                   variant="outlined"
-                  value="ไม่มีการเก็บค่าใน tbcefrdifficultylevel"
-                  error
+                  value={
+                    selectedCefrLevel?.startsWith("L") ? "Listening" : "Reading"
+                  }
                   fullWidth
                   disabled
                 />
@@ -612,8 +507,7 @@ function ModalAddOne(dropdown) {
                   id="outlined-basic"
                   label="ประเภทการวัดข้อสอบ"
                   variant="outlined"
-                  value="ไม่มีการเก็บค่าใน tbcefrdifficultylevel"
-                  error
+                  value={autoFilledData.cerfleveltype || ""}
                   fullWidth
                   disabled
                 />
@@ -931,11 +825,8 @@ function ModalAddOne(dropdown) {
           </DialogContentText>
         </DialogContent>
       </Dialog>
-
-      
     </>
   );
 }
 
 export default ModalAddOne;
-

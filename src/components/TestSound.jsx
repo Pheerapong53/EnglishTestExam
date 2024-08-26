@@ -12,9 +12,8 @@ function TestSound({ form, filepath, order, onFinish, time }) {
   const audioFile = useRef(null);
   const [audioUrl, setAudioUrl] = useState(null);
   const [numUrl, setNumUrl] = useState(null);
-  // const [playSound, setPlaySound] = useState(false);
-  // console.log(numUrl);
-  // console.log(time);
+
+  let num = order.toString();
 
   useEffect(() => {
     const axiosConfig = {
@@ -29,7 +28,7 @@ function TestSound({ form, filepath, order, onFinish, time }) {
         //   Num[9] + Num[10] + Num[11]
         // }.mp3`)
         await axiosInstance
-          .get(`/getfilesound/NO/${order}.mp3`)
+          .get(`/getfilesound/NO/${num.padStart("3", 0)}.mp3`)
           .then((result) => {
             setTimeout(() => {
               //setNumUrl(urlNum);
@@ -66,9 +65,7 @@ function TestSound({ form, filepath, order, onFinish, time }) {
           autoPlay
           //controls
           type="audio/mpeg"
-          onEnded={() => 
-            audioFile.current.play()
-          }
+          onEnded={() => audioFile.current.play()}
         />
       ) : (
         ""

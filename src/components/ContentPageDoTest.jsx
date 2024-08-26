@@ -22,7 +22,7 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogTitle from "@mui/material/DialogTitle";
 import CardMedia from "@mui/material/CardMedia";
 import { useSelector, useDispatch } from "react-redux";
-import { finish, start } from "../store/TestInfoSlice";
+import { start } from "../store/TestInfoSlice";
 import { logout } from "../../src/store/userSilce";
 
 const style = {
@@ -54,8 +54,6 @@ const theme = createTheme({
 function ContentPageDoTest() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  // const { user } = useSelector((state) => ({ ...state }));
-  // const token = user.user.token;
   const { user } = useSelector((state) => state.user);
   const token = user.token;
 
@@ -93,7 +91,7 @@ function ContentPageDoTest() {
     var config = generateConfig("GET","/testmgmt/introvideofiles")
     axios(config)
       .then((response) => {
-        console.log(response);
+        //console.log(response);
         setVideoUrl(response.data);
       })
       .catch((error) => {
@@ -138,9 +136,6 @@ function ContentPageDoTest() {
       });
   }, []);
   //console.log(testReservationInfo);
-
-  //เก็บข้อมูลรหัสการจองสอบทั้งหมด for validate การกรอกรหัสในการเข้าทดสอบ
-  //const arrayOfAppvCode = testReservationInfo.map((obj) => obj.testappvcode);
 
   //เก็บข้อมูลการจองสอบจากการใส่รหัสจองสอบที่ถูกต้อง
   const [testInfo, setTestInfo] = useState([]);
@@ -238,19 +233,6 @@ function ContentPageDoTest() {
           >
             คลิปวีดีโอแนะนำการทดสอบ
           </Typography>
-
-          {/* <UploadVideo token={token} /> */}
-          {/* <>
-            {latestVideo && (
-              <video height="500px" width="800px" controls>
-                <source
-                  src={"data:video/mp4;base64," + latestVideo}
-                  type="video/mp4"
-                />
-              </video>
-            )}
-          </> */}
-          {/* <ReactPlayer url="https://youtu.be/1lJDJFZ82R0" /> */}
 
           <>
             {videoUrl?.length !== 0 ? (

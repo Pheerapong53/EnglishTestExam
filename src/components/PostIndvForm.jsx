@@ -32,6 +32,7 @@ const PostIndvForm = ({
   const [isEnd, setEnd] = useState(false);
   const [showSound, setShowSound] = useState(true);
   //console.log(QuestionNumber);
+  //console.log(QuestionAndChoice);
 
   //Time Count Down
   useEffect(() => {
@@ -153,7 +154,7 @@ const PostIndvForm = ({
                       }}
                     >
                       <FormLabel key={question.questioncode}>
-                        {QuestionNumber} : {question.questioncode}
+                        {QuestionNumber} :
                         {question["questionText"] === "none" ||
                         question["questionText"].includes("mp3") ? (
                           <>
@@ -161,7 +162,8 @@ const PostIndvForm = ({
                               <TestSound
                                 form={question["form"]}
                                 filepath={question["filepath"]}
-                                order={question["order"].padStart(3, "0")}
+                                // order={question["order"].padStart(3, "0")}
+                                order={question["order"]}
                                 time={5000}
                                 onFinish={() => {
                                   setTimeDiv(question["time"]);
@@ -235,7 +237,7 @@ const PostIndvForm = ({
                   }}
                 >
                   <FormLabel key={question.questioncode}>
-                    {QuestionNumber} : {question.questioncode}
+                    {QuestionNumber} : 
                     {question["questionText"] === "none" ||
                     question["questionText"].includes("mp3") ? (
                       <>
@@ -243,7 +245,8 @@ const PostIndvForm = ({
                           <TestSound
                             form={question["form"]}
                             filepath={question["filepath"]}
-                            order={question["order"].padStart(3, "0")}
+                            // order={question["order"].padStart(3, "0")}
+                            order={question["order"]}
                             time={5000}
                             onFinish={() => {
                               setTimeDiv(question["time"]);
@@ -317,11 +320,11 @@ const PostIndvForm = ({
                       }}
                     >
                       <FormLabel>
-                        {question.order} : {question.questioncode}
+                        {question.order} : 
                         {question["questionText"] === "none" ||
                         question["questionText"].includes("mp3") ? (
                           <>
-                            {question.order === "57"
+                            {question["order"].toString() === "57"
                               ? showSound && (
                                   <SoundTwoQuestions
                                     form={question["form"]}
@@ -331,12 +334,12 @@ const PostIndvForm = ({
                                     filepath1={
                                       question["questioncode"].includes("057")
                                         ? `${question.questioncode}_57`
-                                        : `${question.questioncode}_58`
+                                        : `${question.form}${question.cerfcode}057_58`
                                     }
                                     filepath2={
                                       question["questioncode"].includes("057")
                                         ? `${question.questioncode}_58`
-                                        : `${question.questioncode}_57`
+                                        : `${question.form}${question.cerfcode}057_57`
                                     }
                                     onStart={() => {
                                       setTimeDiv(38000);
@@ -416,11 +419,11 @@ const PostIndvForm = ({
                       }}
                     >
                       <FormLabel>
-                        {question.order} : {question.questioncode}
+                        {question.order} : 
                         {question["questionText"] === "none" ||
                         question["questionText"].includes("mp3") ? (
                           <>
-                            {question.order === "59"
+                            {question["order"].toString() === "59"
                               ? showSound && (
                                   <SoundTwoQuestions
                                     form={question["form"]}
@@ -517,7 +520,7 @@ const PostIndvForm = ({
                 >
                   <FormLabel>
                     <>
-                      {question.order} : {question.questioncode}
+                      {question.order} : 
                     </>
                     {question["questionText"] === "none" ||
                     question["questionText"].includes("mp3")
@@ -565,7 +568,7 @@ const PostIndvForm = ({
                 >
                   <FormLabel>
                     <>
-                      {question.order} : {question.questioncode}
+                      {question.order} : 
                     </>
                     {question["questionText"] === "none" ||
                     question["questionText"].includes("mp3") ? (
@@ -615,7 +618,7 @@ const PostIndvForm = ({
                 >
                   <FormLabel>
                     <>
-                      {question.order} : {question.questioncode}
+                      {question.order} : 
                     </>
                     {question["questionText"] === "none" ||
                     question["questionText"].includes("mp3") ? (
@@ -665,7 +668,7 @@ const PostIndvForm = ({
                 >
                   <FormLabel>
                     <>
-                      {question.order} : {question.questioncode}
+                      {question.order} : 
                     </>
                     {question["questionText"] === "none" ||
                     question["questionText"].includes("mp3") ? (
@@ -715,7 +718,7 @@ const PostIndvForm = ({
                 >
                   <FormLabel>
                     <>
-                      {question.order} : {question.questioncode}
+                      {question.order} : 
                     </>
                     {question["questionText"] === "none" ||
                     question["questionText"].includes("mp3") ? (
@@ -765,7 +768,7 @@ const PostIndvForm = ({
                 >
                   <FormLabel>
                     <>
-                      {question.order} : {question.questioncode}
+                      {question.order} : 
                     </>
                     {question["questionText"] === "none" ||
                     question["questionText"].includes("mp3") ? (
