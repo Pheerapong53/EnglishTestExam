@@ -14,7 +14,7 @@ import Slide from "@mui/material/Slide";
 import PrintIcon from "@mui/icons-material/Print";
 import Box from "@mui/material/Box";
 import logo from "../img/logo.png";
-import bas from "../img/bas.jpg";
+import command from "../img/command.jpg";
 import ImageList from "@mui/material/ImageListItem";
 import qrcode from "../img/qrcode.jpg";
 import moment from "moment";

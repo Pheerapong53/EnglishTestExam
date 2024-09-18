@@ -27,6 +27,9 @@ import PagePrintTableScoreMobile from "./pages/PagePrintTableScoreMobile";
 import UserLoginRoute from "./components/UserLoginRoute";
 import Notfound404 from "./components/Notfound404";
 
+//import new component 180967
+import ContentPageAddMember from "./components/ContentPageAddMember";
+
 // import PageTestScoreex from "./pages/PageTestScoreex";
 
 // function
@@ -114,6 +117,24 @@ function App() {
           element={
             <UserLoginRoute>
               <Sidebar />
+            </UserLoginRoute>
+          }
+        />
+        {/* New Path */}
+        <Route
+          path="/PageMemberInformation/:right"
+          element={
+            <UserLoginRoute>
+              <Sidebar />
+            </UserLoginRoute>
+          }
+        />
+        {/* New AddMember Path */}
+        <Route
+          path="/ContentPageAddMember/:right"
+          element={
+            <UserLoginRoute>
+              <ContentPageAddMember />
             </UserLoginRoute>
           }
         />

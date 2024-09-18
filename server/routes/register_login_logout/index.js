@@ -10,6 +10,7 @@ const {
   // login,
   loginv2,
   // loginv3,
+  loginmb,
   logout,
   searchUser,
   currentUser,
@@ -26,7 +27,11 @@ routes.post('/signup', createRegister)
 // routes.post('/signin', login);   //version 1 login OTP หรือ password email ทอ.ได้
 routes.post('/signin', loginv2)     //version 2 login ไม่เช็ค email ทอ.
 // routes.post('/signin', loginv3)  //version 3 loginOTP เท่านั้น
-routes.delete('/signout/:id', logout)
+routes.post('/signinmb', loginmb)  //login on mobile
+routes.post('/signout', logout)
 routes.post('/current-user', verifyToken, currentUser)
+
+// log login and logout record
+// routes.get('/getipaeddr', getiparddr)
 
 module.exports = routes

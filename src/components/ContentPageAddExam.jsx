@@ -14,25 +14,25 @@ import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import FormHelperText from "@mui/material/FormHelperText";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import Footer from "../components/Footer";
 import { toast } from "react-toastify";
 import { useSelector, useDispatch } from "react-redux";
-import {logout} from "../../src/store/userSilce";
+import { logout } from "../../src/store/userSilce";
 
 // Functions
-import { searchHandler} from "../components/functions/user";
+import { searchHandler } from "../components/functions/user";
 import { addMemberAndRightHandler } from "./functions/addMember";
 
 //confirmDialog
 import { confirmAlert } from "react-confirm-alert";
 import "react-confirm-alert/src/react-confirm-alert.css";
 
-
 function ContentPageAddExam() {
+  const { right } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const {user} = useSelector((state) => ({...state}));
+  const { user } = useSelector((state) => ({ ...state }));
   const token = user.user.token;
   //console.log(token);
 
@@ -230,7 +230,8 @@ function ContentPageAddExam() {
     officeid: {
       value: "",
       error: false,
-      errorMessage: "You must enter at least 12 digits. If it is 10 digits, add 00 to the last 2 digits.",
+      errorMessage:
+        "You must enter at least 12 digits. If it is 10 digits, add 00 to the last 2 digits.",
     },
     idc: {
       value: "",
@@ -441,14 +442,14 @@ function ContentPageAddExam() {
           },
         }));
         return;
-      }else if(user_orgname.value === ""){
+      } else if (user_orgname.value === "") {
         setFormValues((prevState) => ({
           ...prevState,
           user_orgname: {
             ...prevState.user_orgname,
             error: true,
           },
-        }))
+        }));
       } else if (mem_cellphone.value.length < 10) {
         setFormValues((prevState) => ({
           ...prevState,
@@ -534,26 +535,28 @@ function ContentPageAddExam() {
             label: "Yes",
             onClick: () => {
               // registerHandler(user)
-              addMemberAndRightHandler(user,token)
-        .then((res) => {
-          //console.log(res);
-          setLoading(false);
-          setIsregis(false);
-          toast.success(res.data.msg);
-          navigate("/PageExamInformation");
-        })
-        .catch((error) => {
-          if(error.response.status === 401 || error.response.status === 404){
-            console.log("Error: ",error.response)
-            dispatch(logout());
-            // navigate('/notfound404', { state: {statusCode: error.response.status, txt: error.response.data} })
-          }else{
-          setLoading(false);
-          setIsregis(false);
-          toast.error(error.response.data.message);
-          }
-          
-        });
+              addMemberAndRightHandler(user, token)
+                .then((res) => {
+                  //console.log(res);
+                  setLoading(false);
+                  setIsregis(false);
+                  toast.success(res.data.msg);
+                  navigate("/PageExamInformation");
+                })
+                .catch((error) => {
+                  if (
+                    error.response.status === 401 ||
+                    error.response.status === 404
+                  ) {
+                    console.log("Error: ", error.response);
+                    dispatch(logout());
+                    // navigate('/notfound404', { state: {statusCode: error.response.status, txt: error.response.data} })
+                  } else {
+                    setLoading(false);
+                    setIsregis(false);
+                    toast.error(error.response.data.message);
+                  }
+                });
             },
           },
           {
@@ -562,8 +565,6 @@ function ContentPageAddExam() {
           },
         ],
       });
-
-      
     }
   };
 
@@ -608,6 +609,7 @@ function ContentPageAddExam() {
             borderRadius: "10px",
           }}
         >
+          {/*renderTitle()*/}
           <Box
             sx={{
               fontSize: 24,
@@ -616,9 +618,12 @@ function ContentPageAddExam() {
               marginTop: "10px",
             }}
           >
-            ข้อมูลส่วนบุคคล
+            ข้อมูลส่วนบุคคล {right}
           </Box>
+
           <Box sx={{ display: "flex" }}>
+            {/*have 2 Box*/}
+            {/*Box1 For Image*/}
             <Box
               sx={{ display: "flex", justifyContent: "start", padding: "50px" }}
             >
@@ -651,6 +656,8 @@ function ContentPageAddExam() {
                 </Box>
               </Box>
             </Box>
+
+            {/*Box2 For Content*/}
             <Box
               sx={{
                 display: "flex",
@@ -659,6 +666,7 @@ function ContentPageAddExam() {
                 width: "100%",
               }}
             >
+              {/*Email,Password,Search*/}
               <Box
                 sx={{
                   width: "100%",
@@ -667,6 +675,7 @@ function ContentPageAddExam() {
                   padding: "10px",
                 }}
               >
+                {/*Email*/}
                 <Box sx={{ width: "75%", display: "flex" }}>
                   <TextField
                     id="outlined-basic"
@@ -707,6 +716,8 @@ function ContentPageAddExam() {
                     }
                   />
                 </Box>
+
+                {/*Password*/}
                 <Box
                   sx={{
                     width: "100%",
@@ -766,6 +777,8 @@ function ContentPageAddExam() {
                     }
                   />
                 </Box>
+
+                {/*Search*/}
                 <Box sx={{ width: "50%", display: "flex", marginRight: "5px" }}>
                   <Button
                     variant="outlined"
@@ -776,6 +789,8 @@ function ContentPageAddExam() {
                   </Button>
                 </Box>
               </Box>
+
+              {/*Official_ID*/}
               <Box
                 sx={{
                   width: "100%",
@@ -834,6 +849,8 @@ function ContentPageAddExam() {
                   }
                 />
               </Box>
+
+              {/*Personel_ID*/}
               <Box
                 sx={{
                   width: "100%",
@@ -891,6 +908,8 @@ function ContentPageAddExam() {
                   }
                 />
               </Box>
+
+              {/*Rank*/}
               <Box
                 sx={{
                   width: "100%",
@@ -921,6 +940,8 @@ function ContentPageAddExam() {
                   </Select>
                 </FormControl>
               </Box>
+
+              {/*Name*/}
               <Box
                 sx={{
                   width: "100%",
@@ -967,6 +988,8 @@ function ContentPageAddExam() {
                   }
                 />
               </Box>
+
+              {/*SurName*/}
               <Box
                 sx={{
                   width: "100%",
@@ -1013,6 +1036,8 @@ function ContentPageAddExam() {
                   }
                 />
               </Box>
+
+              {/*UserPosition*/}
               <Box
                 sx={{
                   width: "100%",
@@ -1060,6 +1085,8 @@ function ContentPageAddExam() {
                   }
                 />
               </Box>
+
+              {/*UserOrgName*/}
               <Box
                 sx={{
                   width: "100%",
@@ -1123,6 +1150,8 @@ function ContentPageAddExam() {
                   ) : null}
                 </FormControl>
               </Box>
+
+              {/*Perscorps*/}
               <Box
                 sx={{
                   width: "100%",
@@ -1186,6 +1215,8 @@ function ContentPageAddExam() {
                   ) : null}
                 </FormControl>
               </Box>
+
+              {/*Group*/}
               <Box
                 sx={{
                   width: "100%",
@@ -1249,6 +1280,8 @@ function ContentPageAddExam() {
                   ) : null}
                 </FormControl>
               </Box>
+
+              {/*Telephone*/}
               <Box
                 sx={{
                   width: "100%",
@@ -1301,6 +1334,8 @@ function ContentPageAddExam() {
                   }
                 />
               </Box>
+
+              {/*OfficePhone*/}
               <Box
                 sx={{
                   width: "100%",
@@ -1355,6 +1390,7 @@ function ContentPageAddExam() {
               </Box>
             </Box>
           </Box>
+
           <Box
             sx={{
               display: "flex",

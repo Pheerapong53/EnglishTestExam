@@ -48,8 +48,8 @@ const theme = createTheme({
 
 function ContentPageExamInformation() {
   const dispatch = useDispatch();
-  const {user} = useSelector((state) => ({...state}));
-  const token = user.user.token;
+  const { user } = useSelector((state) => state.user);
+  const token = user.token
   
   const columns = [
     { field: "id", headerName: "ลำดับ", width: 50 },
@@ -88,7 +88,6 @@ function ContentPageExamInformation() {
               startIcon={<DeleteForeverIcon />}
               onClick={() => {
                 handleDeleteClick(params)
-                // toDeleteMember(params);
               }}
             >
               DELETE
@@ -257,7 +256,7 @@ function ContentPageExamInformation() {
       <div style={{ height: 450, width: "100%" }}>
         <Link to="/PageMember" style={{ textDecoration: "none" }}>
           <Button variant="outlined" startIcon={<ArrowBackIcon />}>
-            BACK
+            ย้อนกลับ
           </Button>
         </Link>
         <Link to="/ContentPageAddExam" style={{ textDecoration: "none" }}>

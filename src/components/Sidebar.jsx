@@ -28,6 +28,11 @@ import Tooltip from '@mui/material/Tooltip';
 import {useLocation} from 'react-router-dom';
 import ContentPageHome from './ContentPageHome'
 import ContentPageMember from './ContentPageMember';
+
+//Update ContentPageMember
+import ContentPageMember1 from './ContentPageMember1';
+import ContentPageMemberInformation from './ContentPageMemberInformation';
+
 import ContentPageBookTestDate from './ContentPageBookTestDate'
 import ContentPageDoTest from './ContentPageDoTest'
 import ContentPageTestScoreInformation from './ContentPageTestScoreInformation'
@@ -555,7 +560,7 @@ function Sidebar() {
 {/* TEXT */}
 {
     location.pathname === "/PageHome" ? (<ContentPageHome />) 
-  : location.pathname === "/PageMember" ? (<ContentPageMember />) 
+  : location.pathname === "/PageMember" ? (<ContentPageMember1 />) 
   : location.pathname === "/PageBookTestDate" ? (<ContentPageBookTestDate />) 
   : location.pathname === "/PageDoTest" ? (<ContentPageDoTest />) 
   : location.pathname === "/PageTestScoreInformation" ? (<ContentPageTestScoreInformation />) 
@@ -581,6 +586,8 @@ function Sidebar() {
   : location.pathname === "/ContentListDivisionScores" ? (<ContentListDivisionScores />)
   : location.pathname === "/ContentPageListTestScoresDivision" ? (<ContentPageListTestScoresDivision />)
   : location.pathname === "/ContentTeamDev" ? (<ContentTeamDev />)
+  //new path
+  : location.pathname.match(/^\/PageMemberInformation\/[^]+$/) ? (<ContentPageMemberInformation />)
   : ''
 }
         </Box>
