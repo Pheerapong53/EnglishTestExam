@@ -20,17 +20,15 @@ import Axios from "axios";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import {logout} from "../../src/store/userSilce";
+import { logout } from "../../src/store/userSilce";
 
 //confirmDialog
 import { confirmAlert } from "react-confirm-alert";
-import 'react-confirm-alert/src/react-confirm-alert.css';
+import "react-confirm-alert/src/react-confirm-alert.css";
 
 //import function filter member by usrtypeid
-import {filter, filterByClick} from "./functions/filterMember";
+import { filter, filterByClick } from "../archive/filterMember";
 import { toast } from "react-toastify";
-
-// import { getMember } from "./functions/addMember";
 
 const theme = createTheme({
   palette: {
@@ -46,18 +44,38 @@ const theme = createTheme({
   },
 });
 
-function ContentPageExamInformation() {
+function QuickSearchToolbar() {
+  return (
+    <Box
+      sx={{
+        p: 0.5,
+        pb: 0,
+      }}
+    >
+      <GridToolbarQuickFilter
+        quickFilterParser={(searchInput) =>
+          searchInput
+            .split(",")
+            .map((value) => value.trim())
+            .filter((value) => value !== "")
+        }
+      />
+    </Box>
+  );
+}
+
+function ContentPageExaminer() {
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.user);
-  const token = user.token
-  
+  const { user } = useSelector((state) => ({ ...state }));
+  const token = user.user.token;
+
   const columns = [
     { field: "id", headerName: "ลำดับ", width: 50 },
     { field: "idnumber", headerName: "เลขประจำตัว", width: 150 },
     { field: "name", headerName: "ยศ ชื่อ นามสกุล", width: 200 },
-    { field: "position", headerName: "ตำแหน่ง", width: 500 },
-    { field: "affiliation", headerName: "สังกัด", width: 100 },
-    { field: "email", headerName: "Email", width: 200 },
+    { field: "position", headerName: "ตำแหน่ง", width: 220 },
+    { field: "affiliation", headerName: "สังกัด", width: 150 },
+    { field: "email", headerName: "Email", width: 220 },
     {
       field: "management",
       headerName: "การจัดการ",
@@ -87,7 +105,8 @@ function ContentPageExamInformation() {
               style={{ marginLeft: 16 }}
               startIcon={<DeleteForeverIcon />}
               onClick={() => {
-                handleDeleteClick(params)
+                handleDeleteClick(params);
+                // toDeleteMember(params);
               }}
             >
               DELETE
@@ -100,7 +119,6 @@ function ContentPageExamInformation() {
 
   //get member from backend include [tbmember,tbmemberinfo, tbaccessrights]
   const [MemberLists, setMemberLists] = useState([]);
-
   useEffect(() => {
     var config = {
       method: "GET",
@@ -109,27 +127,28 @@ function ContentPageExamInformation() {
         authtoken: "bearer " + token,
       },
     };
-    Axios(config).then((response) => {
-      setMemberLists(response.data);
-    })
-    .catch((error) => {
-      if(error.response.status === 401 || error.response.status === 404) {
-        dispatch(logout());
-        navigate('/notfound404', { state: {statusCode: error.response.status, txt: error.response.data} })
-      } else {
-        toast.error(error.response.data.message);
-      }
-    });
-    // Axios.get(process.env.REACT_APP_API_URL + `/getmemberinfo`).then(
-    //   (response) => {
-    //     setMemberLists(response.data);
-    //   }
-    // );
+    Axios(config)
+      .then((response) => {
+        setMemberLists(response.data);
+      })
+      .catch((error) => {
+        if (error.response.status === 401 || error.response.status === 404) {
+          dispatch(logout());
+          navigate("/notfound404", {
+            state: {
+              statusCode: error.response.status,
+              txt: error.response.data,
+            },
+          });
+        } else {
+          toast.error(error.response.data.message);
+        }
+      });
   }, []);
   //console.log(MemberLists);
 
   //filter member by usertypeid = usr01 and select data to show in datagrid
-  const members = filter("USR01", MemberLists);
+  const members = filter("USR02", MemberLists);
   //console.log(members);
 
   const DrawerHeader = styled("div")(({ theme }) => ({
@@ -154,30 +173,29 @@ function ContentPageExamInformation() {
     navigate("/PageEditRegister", {
       state: {
         data: data,
-        url: "/PageExamInformation"
-      }
+        url: "/PageExaminer",
+      },
     });
   };
 
-  const handleDeleteClick = (clickedMember) =>{
+  const handleDeleteClick = (clickedMember) => {
     //console.log(clickedMember);
     confirmAlert({
-      title: 'ยืนยันการลบ',
+      title: "ยืนยันการลบ",
       message: `คุณต้องการที่จะลบ ${clickedMember.row.name} ใช่หรือไม่`,
       buttons: [
         {
-          label: 'Yes',
+          label: "Yes",
           onClick: () => toDeleteMember(clickedMember),
         },
         {
-          label: 'No',
+          label: "No",
           onClick: () => {},
-        }
+        },
       ],
     });
   };
 
-  //Delete Member
   const toDeleteMember = (clickedMember) => {
     const delData = filterByClick(
       MemberLists,
@@ -186,8 +204,8 @@ function ContentPageExamInformation() {
       "tbmemberinfos.mem_email",
       clickedMember.row.email
     );
-    // const delId = delData[0].pers_id + "-" + "USR01";
-    const delId = `${delData[0].pers_id}-USR01`
+    // const delId = delData[0].pers_id + "-" + "USR02";
+    const delId = `${delData[0].pers_id}-USR02`;
 
     var config = {
       method: "DELETE",
@@ -196,23 +214,29 @@ function ContentPageExamInformation() {
         authtoken: "bearer " + token,
       },
     };
-    Axios(config).then((response) => {
-      setMemberLists(
-        MemberLists.filter((val) => {
-          return val["tbaccessrights.accessrightsid"] !== delId;
-        })
-      );
-      toast.success(response.data.msg);
-    })
-    .catch((error) => {
-      if(error.response.status === 401 || error.response.status === 404) {
-        dispatch(logout());
-        navigate('/notfound404', { state: {statusCode: error.response.status, txt: error.response.data} })
-      } else {
-        toast.error(error.response.data.message);
-      }
-    });
-    
+    Axios(config)
+      .then((response) => {
+        setMemberLists(
+          MemberLists.filter((val) => {
+            return val["tbaccessrights.accessrightsid"] !== delId;
+          })
+        );
+        toast.success(response.data.msg);
+      })
+      .catch((error) => {
+        if (error.response.status === 401 || error.response.status === 404) {
+          dispatch(logout());
+          navigate("/notfound404", {
+            state: {
+              statusCode: error.response.status,
+              txt: error.response.data,
+            },
+          });
+        } else {
+          toast.error(error.response.data.message);
+        }
+      });
+
     // Axios.delete(process.env.REACT_APP_API_URL + `/delmember/${delId}`).then(
     //   (response) => {
     //     setMemberLists(
@@ -224,42 +248,21 @@ function ContentPageExamInformation() {
     //   }
     // );
   };
-
-  function QuickSearchToolbar() {
-    return (
-      <Box
-        sx={{
-          p: 0.5,
-          pb: 0,
-        }}
-      >
-        <GridToolbarQuickFilter
-          quickFilterParser={(searchInput) =>
-            searchInput
-              .split(",")
-              .map((value) => value.trim())
-              .filter((value) => value !== "")
-          }
-        />
-      </Box>
-    );
-  }
-
   return (
     <>
       <Typography component="div">
         <Box sx={{ textAlign: "center", fontSize: 24, fontWeight: 500 }}>
-          ข้อมูลผู้เข้าสอบ
+          ข้อมูลผู้คุมสอบ
         </Box>
       </Typography>
       <DrawerHeader />
       <div style={{ height: 450, width: "100%" }}>
         <Link to="/PageMember" style={{ textDecoration: "none" }}>
           <Button variant="outlined" startIcon={<ArrowBackIcon />}>
-            ย้อนกลับ
+            BACK
           </Button>
         </Link>
-        <Link to="/ContentPageAddExam" style={{ textDecoration: "none" }}>
+        <Link to="/ContentPageAddExaminer" style={{ textDecoration: "none" }}>
           <Button variant="outlined" startIcon={<ControlPointIcon />}>
             เพิ่มสมาชิก
           </Button>
@@ -284,4 +287,4 @@ function ContentPageExamInformation() {
   );
 }
 
-export default ContentPageExamInformation;
+export default ContentPageExaminer;

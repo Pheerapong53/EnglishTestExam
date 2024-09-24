@@ -14,12 +14,14 @@ import PageAddPublicRelation from "./pages/PageAddPublicRelation";
 import Sidebar from "./components/Sidebar";
 import ContentRegisterBook from "./components/ContentRegisterBook";
 import ContentPageEditRegisterBook from "./components/ContentPageEditRegisterBook";
-import ContentPageAddRemember from "./components/ContentPageAddRemember";
-import ContentPageAddExam from "./components/ContentPageAddExam";
-import ContentPageAddExaminer from "./components/ContentPageAddExaminer";
-import ContentPageAddCoorDinaTor from "./components/ContentPageAddCoorDinaTor";
-import ContentPageAddSuperVisor from "./components/ContentPageAddSuperVisor";
-import ContentPageAddAdmin from "./components/ContentPageAddAdmin";
+
+// import ContentPageAddRemember from "./components/ContentPageAddRemember";
+// import ContentPageAddExam from "./components/ContentPageAddExam";
+// import ContentPageAddExaminer from "./components/ContentPageAddExaminer";
+// import ContentPageAddCoorDinaTor from "./components/ContentPageAddCoorDinaTor";
+// import ContentPageAddSuperVisor from "./components/ContentPageAddSuperVisor";
+// import ContentPageAddAdmin from "./components/ContentPageAddAdmin";
+
 import ContentPagePressRelease from "./components/ContentPagePressRelease";
 import PagePrintTestScoreMobile from "./pages/PagePrintTestScoreMobile";
 import PagePrintTableTestListScoreMobile from "./pages/PagePrintTableTestListScoreMobile";
@@ -178,46 +180,46 @@ function App() {
             </UserLoginRoute>
           }
         />
-        <Route
+        {/* <Route
           path="/PageExamInformation"
           element={
             <UserLoginRoute>
               <Sidebar />
             </UserLoginRoute>
           }
-        />
-        <Route
+        /> */}
+        {/* <Route
           path="/PageExaminer"
           element={
             <UserLoginRoute>
               <Sidebar />
             </UserLoginRoute>
           }
-        />
-        <Route
+        /> */}
+        {/* <Route
           path="/PageCoorDinaTor"
           element={
             <UserLoginRoute>
               <Sidebar />
             </UserLoginRoute>
           }
-        />
-        <Route
+        /> */}
+        {/* <Route
           path="/PageSuperVisor"
           element={
             <UserLoginRoute>
               <Sidebar />
             </UserLoginRoute>
           }
-        />
-        <Route
+        /> */}
+        {/* <Route
           path="/PageAdmin"
           element={
             <UserLoginRoute>
               <Sidebar />
             </UserLoginRoute>
           }
-        />
+        /> */}
         <Route
           path="/PageExamArchiveLookExam"
           element={
@@ -340,46 +342,46 @@ function App() {
             </UserLoginRoute>
           }
         />
-        <Route
+        {/* <Route
           path="/ContentPageAddExam"
           element={
             <UserLoginRoute>
               <ContentPageAddExam />
             </UserLoginRoute>
           }
-        />
-        <Route
+        /> */}
+        {/* <Route
           path="/ContentPageAddExaminer"
           element={
             <UserLoginRoute>
               <ContentPageAddExaminer />
             </UserLoginRoute>
           }
-        />
-        <Route
+        /> */}
+        {/* <Route
           path="/ContentPageAddCoorDinaTor"
           element={
             <UserLoginRoute>
               <ContentPageAddCoorDinaTor />
             </UserLoginRoute>
           }
-        />
-        <Route
+        /> */}
+        {/* <Route
           path="/ContentPageAddSuperVisor"
           element={
             <UserLoginRoute>
               <ContentPageAddSuperVisor />
             </UserLoginRoute>
           }
-        />
-        <Route
+        /> */}
+        {/* <Route
           path="/ContentPageAddAdmin"
           element={
             <UserLoginRoute>
               <ContentPageAddAdmin />
             </UserLoginRoute>
           }
-        />
+        /> */}
         <Route
           path="/PageBookDate"
           element={
@@ -476,14 +478,14 @@ function App() {
             </UserLoginRoute>
           }
         />
-        <Route
+        {/* <Route
           path="/ContentPageAddRemember"
           element={
             <UserLoginRoute>
               <ContentPageAddRemember />
             </UserLoginRoute>
           }
-        />
+        /> */}
         <Route
           path="/PagePrintTestScoreMobile"
           element={<PagePrintTestScoreMobile />}

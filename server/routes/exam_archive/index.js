@@ -21,7 +21,10 @@ routes.get("/getchoice", async(req, res) =>{
 routes.get("/getquestioninfo",verifyToken, async(req, res) => {
     res.send(await exam.getquestioninfo());
 });
-routes.get("/getquestionlist", async(req, res) => {
+routes.get("/getquestionfilterbycerfcode/:cerfcode",verifyToken, async(req,res) => {
+  res.send(await exam.getquestionfilterbycerfcode(req));
+})
+routes.get("/getquestionlist",verifyToken, async(req, res) => {
     res.send(await exam.getquestionlists());
 })
 routes.get("/getchoicelist",verifyToken, async(req, res) => {

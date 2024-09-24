@@ -1,35 +1,35 @@
 import React, { useState } from "react";
 import Navbar from "../components/Navbar";
-import Box from "@mui/material/Box";
-//import { styled } from "@mui/material/styles";
-import Button from "@mui/material/Button";
-import Avatar from "@mui/material/Avatar";
-import TextField from "@mui/material/TextField";
-import InputLabel from "@mui/material/InputLabel";
-import MenuItem from "@mui/material/MenuItem";
-import FormControl from "@mui/material/FormControl";
-import Select from "@mui/material/Select";
+import {
+  Box,
+  Button,
+  Avatar,
+  TextField,
+  InputLabel,
+  MenuItem,
+  FormControl,
+  Select,
+} from "@mui/material";
 import { Link } from "react-router-dom";
 import Footer from "../components/Footer";
-import { useLocation } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import {logout} from "../../src/store/userSilce";
-
-//confirmDialog
+import { logout } from "../../src/store/userSilce";
 import { confirmAlert } from "react-confirm-alert";
 import "react-confirm-alert/src/react-confirm-alert.css";
-
-//Functions
 import { editMemberHandler } from "../components/functions/editMember";
 import { toast } from "react-toastify";
+import { militaryData } from "../data/militaryData";
 
 function PageEditRegister() {
   const location = useLocation();
   const dispatch = useDispatch();
-  const {user} = useSelector((state) => ({...state}));
-  const token = user.user.token;
-  console.log("data PageEdit: ",location.state.data);
+  const { user } = useSelector((state) => state.user);
+  const token = user.token;
+  const Ranks = militaryData.ranks;
+  const Perscorps = militaryData.corps;
+  const PersGrps = militaryData.groups;
+  const Companys = militaryData.companies;
   const initialstate = {
     memimgpath: location.state.data[0]["tbmemberinfos.memimgpath"],
     email: location.state.data[0]["tbmemberinfos.mem_email"],
@@ -46,196 +46,16 @@ function PageEditRegister() {
     mem_offtel: location.state.data[0]["tbmemberinfos.mem_offtel"],
   };
 
-  //console.log("user: ", user);
-  // const Input = styled("input")({
-  //   display: "none",
-  // });
-
-  const Ranks = [
-    "ไม่ระบุ",
-    "นาย",
-    "นาง",
-    "นางสาว",
-    "จ.ต.",
-    "จ.ต.หญิง",
-    "จ.ท.",
-    "จ.ท.หญิง",
-    "จ.อ.",
-    "จ.อ.หญิง",
-    "พ.อ.ต.",
-    "พ.อ.ต.หญิง",
-    "พ.อ.ท.",
-    "พ.อ.ท.หญิง",
-    "พ.อ.อ.",
-    "พ.อ.อ.หญิง",
-    "ร.ต.",
-    "ว่าที่ ร.ต.",
-    "ร.ต.หญิง",
-    "ว่าที่ ร.ต.หญิง",
-    "ร.ท.",
-    "ว่าที่ ร.ท.",
-    "ร.ท.หญิง",
-    "ว่าที่ ร.ท.หญิง",
-    "ร.อ.",
-    "ว่าที่ ร.อ.",
-    "ร.อ.หญิง",
-    "ว่าที่ ร.อ.หญิง",
-    "น.ต.",
-    "ว่าที่ น.ต.",
-    "น.ต.หญิง",
-    "ว่าที่ น.ต.หญิง",
-    "น.ท.",
-    "ว่าที่ น.ท.",
-    "น.ท.หญิง",
-    "ว่าที่ น.ท.หญิง",
-    "น.อ.",
-    "ว่าที่ น.อ.",
-    "น.อ.หญิง",
-    "ว่าที่ น.อ.หญิง",
-    "พล.อ.ต.",
-    "พล.อ.ต.หญิง",
-    "พล.อ.ท.",
-    "พล.อ.ท.หญิง",
-    " พล.อ.อ.",
-    "พล.อ.อ.หญิง",
-  ];
-
-  const Perscorps = [
-    "ถร.",
-    "ชอ.",
-    "ชย.",
-    "กง.",
-    "สบ.",
-    "ส.",
-    "พธ.",
-    "สพ.",
-    "พ.",
-    "ขส.",
-    "วศ.",
-    "อย.",
-    "สห.",
-    "พด.",
-    "ดย.",
-    "ผท.",
-    "อต.",
-    "ตห.",
-  ];
-
-  const PersGrps = [
-    "ผู้ทำการในอากาศ",
-    "ยุทธการ",
-    "นักบิน",
-    "วิทยาศาสตร์",
-    "อุตุนิยมวิทยา",
-    "ควบคุมการปฏิบัติทางอากาศ",
-    "นิรภัย",
-    "สารสนเทศและสงครามอิเล็กทรอนิกส์",
-    "สื่อสารอิเล็กทรอนิกส์",
-    "สรรพาวุธ",
-    "ช่างอากาศ",
-    "ส่งกำลังบำรุง",
-    "ช่างพาหนะ",
-    "ช่างโยธา",
-    "แผนที่",
-    "ขนส่ง",
-    "พลาธิการ",
-    "พัสดุ",
-    "การเงิน",
-    "ปลัดบัญชี",
-    "ตรวจสอบภายใน",
-    "สารบรรณ",
-    "ลาดตระเวนทางอากาศ",
-    "กำลังพล",
-    "สวัสดิการ",
-    "การศึกษาและการฝึก",
-    "ดุริยางค์",
-    "สารวัตร",
-    "อากาศโยธิน",
-    "กิจการพลเรือนและประชาสัมพันธ์",
-    "อนุศาสนาจารย์",
-    "บริการแพทย์",
-    "พยาบาล",
-    "การข่าวกรอง",
-    "พระธรรมนูญ",
-    "ผู้ชำนาญการแพทย์เฉพาะอย่าง",
-    "เภสัชกร",
-    "แพทย์",
-    "ทันตแพทย์",
-    "ผู้บังคับอากาศยานไร้คนขับ",
-    "ปฏิบัติการทางอวกาศ",
-    "ไม่ระบุจำพวก",
-  ];
-
-  const Companys = [
-    "ศบพ.",
-    "ศฮพ.",
-    "ศกอ.",
-    "สพร.ทอ.",
-    "สคม.ทอ.",
-    "สลก.ทอ.",
-    "สบ.ทอ.",
-    "กพ.ทอ.",
-    "ขว.ทอ.",
-    "ยก.ทอ.",
-    "กบ.ทอ.",
-    "กร.ทอ.",
-    "ทสส.ทอ.",
-    "สปช.ทอ.",
-    "กง.ทอ.",
-    "จร.ทอ.",
-    "สตน.ทอ.",
-    "สนภ.ทอ.",
-    "สธน.ทอ.",
-    "ศซบ.ทอ.",
-    "สบน.ทอ.",
-    "คปอ.ทอ.",
-    "อย.",
-    "รร.การบิน",
-    "บน.1",
-    "บน.2",
-    "บน.3",
-    "บน.4",
-    "บน.5",
-    "บน.7",
-    "บน.6",
-    "บน.23",
-    "บน.21",
-    "บน.41",
-    "บน.46",
-    "บน.56",
-    "ศปอว.ทอ.",
-    "พธ.ทอ.",
-    "ชอ.",
-    "สอ.ทอ.",
-    "สพ.ทอ.",
-    "พอ.",
-    "ขส.ทอ.",
-    "ชย.ทอ.",
-    "ศซว.ทอ.",
-    "ยศ.ทอ.",
-    "รร.นนก.",
-    "ศวอ.ทอ.",
-    "สก.ทอ.",
-    "สน.ผบ.ดม.",
-    "สวบ.ทอ.",
-  ];
-
   const [values, setValues] = useState(initialstate);
   const [image, setImage] = useState(
     `${location.state.data[0]["tbmemberinfos.memimgpath"]}`
   );
-  
-  //const [error, setError] = useState("");
-  //console.log(image);
-
   const navigate = useNavigate();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     const data = await new FormData(event.currentTarget);
-    // eslint-disable-next-line no-console
     const user = await {
-      // mem_email: data.get("email"),
       mem_email: initialstate.email,
       pers_id: data.get("pers_id"),
       official_id: data.get("official_id"),
@@ -248,12 +68,6 @@ function PageEditRegister() {
       rtafbranchgrp: data.get("rtafbranchgrp"),
       mem_cellphone: data.get("mem_cellphone"),
       mem_offtel: data.get("mem_offtel"),
-
-      //upload image disable
-      //memimgpath: image,
-      // mem_token: "",
-      // mem_usrtypeid: "USR01",
-      // password: data.get('password'),
     };
 
     //console.log("user: ", user);
@@ -267,18 +81,24 @@ function PageEditRegister() {
             editMemberHandler(user, token)
               .then((res) => {
                 toast.success(res.data.msg);
-                // console.log(res.data);
                 navigate(`${location.state.url}`);
               })
               .catch((error) => {
-                if(error.response.status === 401 || error.response.status === 404){
+                if (
+                  error.response.status === 401 ||
+                  error.response.status === 404
+                ) {
                   dispatch(logout());
-                  navigate('/notfound404', { state: {statusCode: error.response.status, txt: error.response.data} })
-                }else{
+                  navigate("/notfound404", {
+                    state: {
+                      statusCode: error.response.status,
+                      txt: error.response.data,
+                    },
+                  });
+                } else {
                   toast.error(error.response.data.message);
-                } 
+                }
               });
-            //navigate(`${location.state.url}`);
           },
         },
         {
@@ -287,11 +107,6 @@ function PageEditRegister() {
         },
       ],
     });
-    // editMemberHandler(user)
-    // .then((res) => {
-    //   console.log(res.data);
-    // })
-    // navigate(`${location.state.url}`);
   };
 
   const handleChange = (e) => {
@@ -300,9 +115,6 @@ function PageEditRegister() {
       [e.target.name]: e.target.value,
     });
   };
-
-  //   let img = (image.split(',')[1]);
-  // console.log(img);
 
   return (
     <>
@@ -357,7 +169,6 @@ function PageEditRegister() {
                     variant="square"
                     alt="Remy Sharp"
                     src={`data:image/jpeg;base64,${image}`}
-                    //src={image}
                     sx={{ width: "100px", height: "130px" }}
                   />
                 </Box>
@@ -389,7 +200,6 @@ function PageEditRegister() {
                     value={values.email}
                     fullWidth
                     error={values.email === undefined ? true : false}
-                    //onChange={handleChange}
                     disabled
                   />
                 </Box>
@@ -442,7 +252,6 @@ function PageEditRegister() {
                   min={0}
                   required
                   onChange={handleChange}
-                  //disabled
                 />
               </Box>
               <Box
@@ -672,15 +481,6 @@ function PageEditRegister() {
               padding: "10px",
             }}
           >
-            {/* <Link
-              to={`${location.state.url}`}
-              style={{
-                textDecoration: "none",
-                width: "20%",
-                marginLeft: "5px",
-                padding: "10px",
-              }}
-            > */}
             <Button
               type="submit"
               variant="contained"
@@ -690,11 +490,9 @@ function PageEditRegister() {
                 marginLeft: "5px",
                 padding: "10px",
               }}
-              // fullWidth
             >
-              SAVE
+              บันทึก
             </Button>
-            {/* </Link> */}
             <Link
               to={`${location.state.url}`}
               style={{
@@ -705,7 +503,7 @@ function PageEditRegister() {
               }}
             >
               <Button variant="outlined" fullWidth>
-                BACK
+                ย้อนกลับ
               </Button>
             </Link>
           </Box>

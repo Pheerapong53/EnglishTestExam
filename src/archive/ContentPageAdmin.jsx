@@ -20,14 +20,14 @@ import Axios from "axios";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import {logout} from "../../src/store/userSilce";
+import { logout } from "../../src/store/userSilce";
 
 //confirmDialog
 import { confirmAlert } from "react-confirm-alert";
-import 'react-confirm-alert/src/react-confirm-alert.css';
+import "react-confirm-alert/src/react-confirm-alert.css";
 
 //import function filter member by usrtypeid
-import {filter, filterByClick} from "./functions/filterMember";
+import { filter, filterByClick } from "../archive/filterMember";
 import { toast } from "react-toastify";
 
 const theme = createTheme({
@@ -44,39 +44,18 @@ const theme = createTheme({
   },
 });
 
-
-function QuickSearchToolbar() {
-  return (
-    <Box
-      sx={{
-        p: 0.5,
-        pb: 0,
-      }}
-    >
-      <GridToolbarQuickFilter
-        quickFilterParser={(searchInput) =>
-          searchInput
-            .split(",")
-            .map((value) => value.trim())
-            .filter((value) => value !== "")
-        }
-      />
-    </Box>
-  );
-}
-
-function ContentPageExaminer() {
+function ContentPageAdmin() {
   const dispatch = useDispatch();
-  const {user} = useSelector((state) => ({...state}));
+  const { user } = useSelector((state) => ({ ...state }));
   const token = user.user.token;
 
   const columns = [
     { field: "id", headerName: "ลำดับ", width: 50 },
     { field: "idnumber", headerName: "เลขประจำตัว", width: 150 },
     { field: "name", headerName: "ยศ ชื่อ นามสกุล", width: 200 },
-    { field: "position", headerName: "ตำแหน่ง", width: 220 },
-    { field: "affiliation", headerName: "สังกัด", width: 150 },
-    { field: "email", headerName: "Email", width: 220 },
+    { field: "position", headerName: "ตำแหน่ง", width: 500 },
+    { field: "affiliation", headerName: "สังกัด", width: 100 },
+    { field: "email", headerName: "Email", width: 200 },
     {
       field: "management",
       headerName: "การจัดการ",
@@ -84,22 +63,20 @@ function ContentPageExaminer() {
       renderCell: (params) => (
         <strong>
           <ThemeProvider theme={theme}>
-            
-              <Button
-                variant="contained"
-                color="secondary"
-                size="small"
-                style={{ marginLeft: 16, color: "#000" }}
-                startIcon={<EditIcon />}
-                onClick={() => {
-                  editHandler(params);
-                }}
-              >
-                EDIT
-              </Button>
-            
+            <Button
+              variant="contained"
+              color="secondary"
+              size="small"
+              style={{ marginLeft: 16, color: "#000" }}
+              startIcon={<EditIcon />}
+              onClick={() => {
+                editHandler(params);
+              }}
+            >
+              EDIT
+            </Button>
           </ThemeProvider>
-  
+
           <ThemeProvider theme={theme}>
             <Button
               variant="contained"
@@ -108,8 +85,8 @@ function ContentPageExaminer() {
               style={{ marginLeft: 16 }}
               startIcon={<DeleteForeverIcon />}
               onClick={() => {
-                handleDeleteClick(params)
-                // toDeleteMember(params);
+                handleDeleteClick(params);
+                //toDeleteMember(params);
               }}
             >
               DELETE
@@ -130,22 +107,28 @@ function ContentPageExaminer() {
         authtoken: "bearer " + token,
       },
     };
-    Axios(config).then((response) => {
-      setMemberLists(response.data);
-    })
-    .catch((error) => {
-      if(error.response.status === 401 || error.response.status === 404) {
-        dispatch(logout());
-        navigate('/notfound404', { state: {statusCode: error.response.status, txt: error.response.data} })
-      } else {
-        toast.error(error.response.data.message);
-      }
-    });
+    Axios(config)
+      .then((response) => {
+        setMemberLists(response.data);
+      })
+      .catch((error) => {
+        if (error.response.status === 401 || error.response.status === 404) {
+          dispatch(logout());
+          navigate("/notfound404", {
+            state: {
+              statusCode: error.response.status,
+              txt: error.response.data,
+            },
+          });
+        } else {
+          toast.error(error.response.data.message);
+        }
+      });
   }, []);
   //console.log(MemberLists);
 
-  //filter member by usertypeid = usr01 and select data to show in datagrid
-  const members = filter("USR02", MemberLists);
+  //filter member by usertypeid = usr05 and select data to show in datagrid
+  const members = filter("USR05", MemberLists);
   //console.log(members);
 
   const DrawerHeader = styled("div")(({ theme }) => ({
@@ -170,25 +153,25 @@ function ContentPageExaminer() {
     navigate("/PageEditRegister", {
       state: {
         data: data,
-        url: "/PageExaminer"
-      }
+        url: "/PageAdmin",
+      },
     });
   };
 
-  const handleDeleteClick = (clickedMember) =>{
+  const handleDeleteClick = (clickedMember) => {
     //console.log(clickedMember);
     confirmAlert({
-      title: 'ยืนยันการลบ',
+      title: "ยืนยันการลบ",
       message: `คุณต้องการที่จะลบ ${clickedMember.row.name} ใช่หรือไม่`,
       buttons: [
         {
-          label: 'Yes',
+          label: "Yes",
           onClick: () => toDeleteMember(clickedMember),
         },
         {
-          label: 'No',
+          label: "No",
           onClick: () => {},
-        }
+        },
       ],
     });
   };
@@ -201,8 +184,8 @@ function ContentPageExaminer() {
       "tbmemberinfos.mem_email",
       clickedMember.row.email
     );
-    // const delId = delData[0].pers_id + "-" + "USR02";
-    const delId = `${delData[0].pers_id}-USR02`
+    // const delId = delData[0].pers_id + "-" + "USR05";
+    const delId = `${delData[0].pers_id}-USR05`;
 
     var config = {
       method: "DELETE",
@@ -211,39 +194,55 @@ function ContentPageExaminer() {
         authtoken: "bearer " + token,
       },
     };
-    Axios(config).then((response) => {
-      setMemberLists(
-        MemberLists.filter((val) => {
-          return val["tbaccessrights.accessrightsid"] !== delId;
-        })
-      );
-      toast.success(response.data.msg);
-    })
-    .catch((error) => {
-      if(error.response.status === 401 || error.response.status === 404) {
-        dispatch(logout());
-        navigate('/notfound404', { state: {statusCode: error.response.status, txt: error.response.data} })
-      } else {
-        toast.error(error.response.data.message);
-      }
-    });
-
-    // Axios.delete(process.env.REACT_APP_API_URL + `/delmember/${delId}`).then(
-    //   (response) => {
-    //     setMemberLists(
-    //       MemberLists.filter((val) => {
-    //         return val["tbaccessrights.accessrightsid"] !== delId;
-    //       })
-    //     );
-    //     toast.success(response.data.msg);
-    //   }
-    // );
+    Axios(config)
+      .then((response) => {
+        setMemberLists(
+          MemberLists.filter((val) => {
+            return val["tbaccessrights.accessrightsid"] !== delId;
+          })
+        );
+        toast.success(response.data.msg);
+      })
+      .catch((error) => {
+        if (error.response.status === 401 || error.response.status === 404) {
+          dispatch(logout());
+          navigate("/notfound404", {
+            state: {
+              statusCode: error.response.status,
+              txt: error.response.data,
+            },
+          });
+        } else {
+          toast.error(error.response.data.message);
+        }
+      });
   };
+
+  function QuickSearchToolbar() {
+    return (
+      <Box
+        sx={{
+          p: 0.5,
+          pb: 0,
+        }}
+      >
+        <GridToolbarQuickFilter
+          quickFilterParser={(searchInput) =>
+            searchInput
+              .split(",")
+              .map((value) => value.trim())
+              .filter((value) => value !== "")
+          }
+        />
+      </Box>
+    );
+  }
+
   return (
     <>
       <Typography component="div">
         <Box sx={{ textAlign: "center", fontSize: 24, fontWeight: 500 }}>
-          ข้อมูลผู้คุมสอบ
+          ข้อมูลผู้ดูแลระบบ
         </Box>
       </Typography>
       <DrawerHeader />
@@ -253,7 +252,7 @@ function ContentPageExaminer() {
             BACK
           </Button>
         </Link>
-        <Link to="/ContentPageAddExaminer" style={{ textDecoration: "none" }}>
+        <Link to="/ContentPageAddAdmin" style={{ textDecoration: "none" }}>
           <Button variant="outlined" startIcon={<ControlPointIcon />}>
             เพิ่มสมาชิก
           </Button>
@@ -278,4 +277,4 @@ function ContentPageExaminer() {
   );
 }
 
-export default ContentPageExaminer;
+export default ContentPageAdmin;

@@ -1300,9 +1300,12 @@ exports.currentUser = async (req, res, next) => {
 exports.loginv2 = async (req, res, next) => {
   try {
     const { email, password, ipadd, mode } = req.body;
-    const ipV4 = req.connection.remoteAddress
+    
+    const ipV4 = req.connection.remoteAddress    
     const ipV4Split = ipV4.split(":");
-    const ip = ipadd || req.headers['x-forwarded-for'] || ipV4Split[ipV4Split.length - 1];
+    //const ip = ipadd || req.headers['x-forwarded-for'] || ipV4Split[ipV4Split.length - 1];
+    //Fix IP
+    const ip = "10.107.209.69";
 
     if (!email) {
       return next(
@@ -1430,7 +1433,8 @@ exports.loginv2 = async (req, res, next) => {
           },
         },
       });
-
+      console.log(seachip);
+      
       // console.log("statusip:", statusip);
       // const testdata = statusip
 
@@ -1889,7 +1893,7 @@ const saveloglogin = async (user, statusip, ip, email, mode, req, res, next) => 
       rtafbranchgrp,
       ...data
     } = user.toJSON();
-    data["new_usagerecordid"] = new_usagerecordid || new_set_usagerecordid_plus;
+    data["new_usagerecordid"] = new_usagerecordid || new_set_usagerecordid;
     data["ipadrr"] = ip;
     const setData = await JSON.parse(JSON.stringify(data));
     // const fullName = user.mem_rank + " " +user.mem_fname + " " + user.mem_lname;

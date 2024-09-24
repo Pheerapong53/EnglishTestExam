@@ -1,27 +1,25 @@
 import React from "react";
-import CardMedia from "@mui/material/CardMedia";
 import images from "../img";
-import PanToolAltIcon from "@mui/icons-material/PanToolAlt";
-import Card from "@mui/material/Card";
-import CardActions from "@mui/material/CardActions";
-import CardContent from "@mui/material/CardContent";
-import Button from "@mui/material/Button";
-import Typography from "@mui/material/Typography";
-import Box from "@mui/material/Box";
+import PanToolAlt from "@mui/icons-material/PanToolAlt";
+import { CardActions, CardContent, Card, CardMedia } from "@mui/material";
+import { Button, Typography, Box } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { Link } from "react-router-dom";
-import Footer from "../components/Footer";
+import Footer from "./Footer";
 
 function ContentPageMember() {
+  //Component Declaration
   const DrawerHeader = styled("div")(({ theme }) => ({
     display: "flex",
     alignItems: "center",
     justifyContent: "flex-end",
     padding: theme.spacing(0, 1),
-    // necessary for content to be below app bar
     ...theme.mixins.toolbar,
   }));
 
+  //Hooks and Logic
+  //Event Handlers
+  //Render
   return (
     <>
       <Typography component="div">
@@ -40,141 +38,68 @@ function ContentPageMember() {
           alignItems: "center",
         }}
       >
-
-        <Box sx={{ margin: "20px" }}>
-          <Card sx={{ maxWidth: 345 }}>
-            <CardMedia
-              component="img"
-              height="30%"
-              image={images.examer}
-              alt="image"
-            />
-            <CardContent>
-              <Typography gutterBottom variant="h5" component="div">
-                ผู้เข้าสอบ
-              </Typography>
-            </CardContent>
-            <CardActions>
-              <Link
-                to="/PageExamInformation"
-                style={{ textDecoration: "none" }}
-              >
-                <Button
-                  size="small"
-                  variant="outlined"
-                  startIcon={<PanToolAltIcon />}
+        {[
+          {
+            label: "ผู้เข้าสอบ",
+            image: images.examer,
+            //link: "/PageExamInformation",
+            right: "USR01",
+          },
+          {
+            label: "ผู้ประสานงาน",
+            image: images.coordinator,
+            //link: "/PageExaminer",
+            right: "USR02",
+          },
+          {
+            label: "ผู้คุมสอบ",
+            image: images.examiner,
+            //link: "/PageCoorDinaTor",
+            right: "USR03",
+          },
+          {
+            label: "ผู้บังคับบัญชา",
+            image: images.command,
+            //link: "/PageSuperVisor",
+            right: "USR04",
+          },
+          {
+            label: "ผู้ดูแลระบบ",
+            image: images.admin,
+            //link: "/PageAdmin",
+            right: "USR05",
+          },
+        ].map((item, index) => (
+          <Box key={index} sx={{ margin: "20px" }}>
+            <Card sx={{ maxWidth: 345 }}>
+              <CardMedia
+                component="img"
+                height="30%"
+                image={item.image}
+                alt="image"
+              />
+              <CardContent>
+                <Typography gutterBottom variant="h5" component="div">
+                  {item.label}
+                </Typography>
+              </CardContent>
+              <CardActions>
+                <Link
+                  to={`/PageMemberInformation/${item.right}`}
+                  style={{ textDecoration: "none" }}
                 >
-                  CLICK ME
-                </Button>
-              </Link>
-            </CardActions>
-          </Card>
-        </Box>
-
-        <Box sx={{ margin: "20px" }}>
-          <Card sx={{ maxWidth: 345 }}>
-            <CardMedia
-              component="img"
-              height="30%"
-              image={images.examiner}
-              alt="image"
-            />
-            <CardContent>
-              <Typography gutterBottom variant="h5" component="div">
-                ผู้คุมสอบ
-              </Typography>
-            </CardContent>
-            <CardActions>
-              <Link to="/PageExaminer" style={{ textDecoration: "none" }}>
-                <Button
-                  size="small"
-                  variant="outlined"
-                  startIcon={<PanToolAltIcon />}
-                >
-                  CLICK ME
-                </Button>
-              </Link>
-            </CardActions>
-          </Card>
-        </Box>
-        <Box sx={{ margin: "20px" }}>
-          <Card sx={{ maxWidth: 345 }}>
-            <CardMedia
-              component="img"
-              height="30%"
-              image={images.coordinator}
-              alt="image"
-            />
-            <CardContent>
-              <Typography gutterBottom variant="h5" component="div">
-                ผู้ประสานงาน
-              </Typography>
-            </CardContent>
-            <CardActions>
-              <Link to="/PageCoorDinaTor" style={{ textDecoration: "none" }}>
-                <Button
-                  size="small"
-                  variant="outlined"
-                  startIcon={<PanToolAltIcon />}
-                >
-                  CLICK ME
-                </Button>
-              </Link>
-            </CardActions>
-          </Card>
-        </Box>
-        <Box sx={{ margin: "20px" }}>
-          <Card sx={{ maxWidth: 345 }}>
-            <CardMedia
-              component="img"
-              height="30%"
-              image={images.command}
-              alt="image"
-            />
-            <CardContent>
-            <Typography gutterBottom variant="h5" component="div">
-                ผู้บังคับบัญชา
-              </Typography>
-            </CardContent>
-            <CardActions>
-              <Link to="/PageSuperVisor" style={{ textDecoration: "none" }}>
-                <Button
-                  size="small"
-                  variant="outlined"
-                  startIcon={<PanToolAltIcon />}
-                >
-                  CLICK ME
-                </Button>
-              </Link>
-            </CardActions>
-          </Card>
-        </Box>
-        <Box sx={{ margin: "20px" }}>
-          <Card sx={{ maxWidth: 345 }}>
-            <CardMedia
-              component="img"
-              height="30%"
-              image={images.admin}
-              alt="image"
-            />
-            <CardContent>
-              <Typography gutterBottom variant="h5" component="div">
-                ผู้ดูแลระบบ
-              </Typography>
-            </CardContent>
-            <CardActions>
-              <Link to="/PageAdmin" style={{ textDecoration: "none" }}>
-                <Button
-                  size="small"
-                  variant="outlined"
-                  startIcon={<PanToolAltIcon />}
-                >
-                  CLICK ME
-                </Button>
-              </Link>
-            </CardActions>
-          </Card>
-        </Box>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    startIcon={<PanToolAlt />}
+                  >
+                    CLICK ME
+                  </Button>
+                </Link>
+              </CardActions>
+            </Card>
+          </Box>
+        ))}
       </Box>
       <Footer />
     </>

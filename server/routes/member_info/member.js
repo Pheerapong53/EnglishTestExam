@@ -17,12 +17,10 @@ const member = {
           ? ("0" + (d.getMonth() + 1)).slice(-2)
           : d.getMonth() + 1;
       const yearTh = d.getFullYear() + 543;
-      //const day = d.getDate();
       const id = req.body.pers_id + "-" + month + yearTh;
       const meminfo_year = month + yearTh;
       const usrtypeid = req.body.mem_usrtypeid;
       const accessrightsid = req.body.pers_id + "-" + req.body.mem_usrtypeid;
-      //const permissiondate = yearTh + "-" + month + "-" + day;
 
       let condition = {
         include: [
@@ -127,7 +125,10 @@ const member = {
               .json({ msg: "ผู้ใช้งานได้รับการเปลี่ยนแปลงสิทธิแล้ว รอการอนุมัติสิทธิ" })
           );
         } else if (chkAllowS === undefined && AllowS === undefined) {
-          await tbaccessrights
+
+          for(let i = 1; i <= 5;i++){
+            if(req.body.mem_usrtypeid === `USR0${i}`){
+              await tbaccessrights
             .create(
               {
                 accessrightsid: accessrightsid,
@@ -152,6 +153,60 @@ const member = {
                   .json(errorHandler(StatusCodes.INTERNAL_SERVER_ERROR, err))
               );
             });
+            }else{
+              await tbaccessrights
+              .create(
+                {
+                  accessrightsid: `${req.body.pers_id}-USR0${i}`,
+                  persid: req.body.pers_id,
+                  usrtypeid: `USR0${i}`,
+                  permissiondate: new Date(),
+                  status: "2",
+                },
+                {
+                  ignoreDuplicates: true,
+                }
+              )
+              .catch((err) => {
+                console.log(
+                  "tbaccessrights create newAccessrightsId >>> err :",
+                  err
+                );
+                next(
+                  errorHandler(StatusCodes.INTERNAL_SERVER_ERROR, err),
+                  res
+                    .status(500)
+                    .json(errorHandler(StatusCodes.INTERNAL_SERVER_ERROR, err))
+                );
+              });
+            }
+          }
+
+          // await tbaccessrights
+          //   .create(
+          //     {
+          //       accessrightsid: accessrightsid,
+          //       persid: req.body.pers_id,
+          //       usrtypeid: req.body.mem_usrtypeid,
+          //       permissiondate: new Date(),
+          //       status: "0",
+          //     },
+          //     {
+          //       ignoreDuplicates: true,
+          //     }
+          //   )
+          //   .catch((err) => {
+          //     console.log(
+          //       "tbaccessrights create newAccessrightsId >>> err :",
+          //       err
+          //     );
+          //     next(
+          //       errorHandler(StatusCodes.INTERNAL_SERVER_ERROR, err),
+          //       res
+          //         .status(500)
+          //         .json(errorHandler(StatusCodes.INTERNAL_SERVER_ERROR, err))
+          //     );
+          //   });
 
           await tbmemberinfo
             .update(

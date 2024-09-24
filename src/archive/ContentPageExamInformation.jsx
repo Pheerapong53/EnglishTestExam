@@ -20,15 +20,17 @@ import Axios from "axios";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import {logout} from "../../src/store/userSilce";
+import { logout } from "../../src/store/userSilce";
 
 //confirmDialog
 import { confirmAlert } from "react-confirm-alert";
-import 'react-confirm-alert/src/react-confirm-alert.css';
+import "react-confirm-alert/src/react-confirm-alert.css";
 
 //import function filter member by usrtypeid
-import {filter, filterByClick} from "./functions/filterMember";
+import { filter, filterByClick } from "../archive/filterMember";
 import { toast } from "react-toastify";
+
+// import { getMember } from "./functions/addMember";
 
 const theme = createTheme({
   palette: {
@@ -44,10 +46,10 @@ const theme = createTheme({
   },
 });
 
-function ContentPageAdmin() {
+function ContentPageExamInformation() {
   const dispatch = useDispatch();
-  const {user} = useSelector((state) => ({...state}));
-  const token = user.user.token;
+  const { user } = useSelector((state) => state.user);
+  const token = user.token;
 
   const columns = [
     { field: "id", headerName: "ลำดับ", width: 50 },
@@ -85,8 +87,7 @@ function ContentPageAdmin() {
               style={{ marginLeft: 16 }}
               startIcon={<DeleteForeverIcon />}
               onClick={() => {
-                handleDeleteClick(params)
-                //toDeleteMember(params);
+                handleDeleteClick(params);
               }}
             >
               DELETE
@@ -99,6 +100,7 @@ function ContentPageAdmin() {
 
   //get member from backend include [tbmember,tbmemberinfo, tbaccessrights]
   const [MemberLists, setMemberLists] = useState([]);
+
   useEffect(() => {
     var config = {
       method: "GET",
@@ -107,22 +109,33 @@ function ContentPageAdmin() {
         authtoken: "bearer " + token,
       },
     };
-    Axios(config).then((response) => {
-      setMemberLists(response.data);
-    })
-    .catch((error) => {
-      if(error.response.status === 401 || error.response.status === 404) {
-        dispatch(logout());
-        navigate('/notfound404', { state: {statusCode: error.response.status, txt: error.response.data} })
-      } else {
-        toast.error(error.response.data.message);
-      }
-    });
+    Axios(config)
+      .then((response) => {
+        setMemberLists(response.data);
+      })
+      .catch((error) => {
+        if (error.response.status === 401 || error.response.status === 404) {
+          dispatch(logout());
+          navigate("/notfound404", {
+            state: {
+              statusCode: error.response.status,
+              txt: error.response.data,
+            },
+          });
+        } else {
+          toast.error(error.response.data.message);
+        }
+      });
+    // Axios.get(process.env.REACT_APP_API_URL + `/getmemberinfo`).then(
+    //   (response) => {
+    //     setMemberLists(response.data);
+    //   }
+    // );
   }, []);
   //console.log(MemberLists);
 
-  //filter member by usertypeid = usr05 and select data to show in datagrid
-  const members = filter("USR05", MemberLists);
+  //filter member by usertypeid = usr01 and select data to show in datagrid
+  const members = filter("USR01", MemberLists);
   //console.log(members);
 
   const DrawerHeader = styled("div")(({ theme }) => ({
@@ -147,29 +160,30 @@ function ContentPageAdmin() {
     navigate("/PageEditRegister", {
       state: {
         data: data,
-        url: "/PageAdmin"
-      }
+        url: "/PageExamInformation",
+      },
     });
   };
 
-  const handleDeleteClick = (clickedMember) =>{
+  const handleDeleteClick = (clickedMember) => {
     //console.log(clickedMember);
     confirmAlert({
-      title: 'ยืนยันการลบ',
+      title: "ยืนยันการลบ",
       message: `คุณต้องการที่จะลบ ${clickedMember.row.name} ใช่หรือไม่`,
       buttons: [
         {
-          label: 'Yes',
+          label: "Yes",
           onClick: () => toDeleteMember(clickedMember),
         },
         {
-          label: 'No',
+          label: "No",
           onClick: () => {},
-        }
+        },
       ],
     });
   };
 
+  //Delete Member
   const toDeleteMember = (clickedMember) => {
     const delData = filterByClick(
       MemberLists,
@@ -178,8 +192,8 @@ function ContentPageAdmin() {
       "tbmemberinfos.mem_email",
       clickedMember.row.email
     );
-    // const delId = delData[0].pers_id + "-" + "USR05";
-    const delId = `${delData[0].pers_id}-USR05`;   
+    // const delId = delData[0].pers_id + "-" + "USR01";
+    const delId = `${delData[0].pers_id}-USR01`;
 
     var config = {
       method: "DELETE",
@@ -188,22 +202,39 @@ function ContentPageAdmin() {
         authtoken: "bearer " + token,
       },
     };
-    Axios(config).then((response) => {
-      setMemberLists(
-        MemberLists.filter((val) => {
-          return val["tbaccessrights.accessrightsid"] !== delId;
-        })
-      );
-      toast.success(response.data.msg);
-    })
-    .catch((error) => {
-      if(error.response.status === 401 || error.response.status === 404) {
-        dispatch(logout());
-        navigate('/notfound404', { state: {statusCode: error.response.status, txt: error.response.data} })
-      } else {
-        toast.error(error.response.data.message);
-      }
-    });
+    Axios(config)
+      .then((response) => {
+        setMemberLists(
+          MemberLists.filter((val) => {
+            return val["tbaccessrights.accessrightsid"] !== delId;
+          })
+        );
+        toast.success(response.data.msg);
+      })
+      .catch((error) => {
+        if (error.response.status === 401 || error.response.status === 404) {
+          dispatch(logout());
+          navigate("/notfound404", {
+            state: {
+              statusCode: error.response.status,
+              txt: error.response.data,
+            },
+          });
+        } else {
+          toast.error(error.response.data.message);
+        }
+      });
+
+    // Axios.delete(process.env.REACT_APP_API_URL + `/delmember/${delId}`).then(
+    //   (response) => {
+    //     setMemberLists(
+    //       MemberLists.filter((val) => {
+    //         return val["tbaccessrights.accessrightsid"] !== delId;
+    //       })
+    //     );
+    //     toast.success(response.data.msg);
+    //   }
+    // );
   };
 
   function QuickSearchToolbar() {
@@ -230,17 +261,17 @@ function ContentPageAdmin() {
     <>
       <Typography component="div">
         <Box sx={{ textAlign: "center", fontSize: 24, fontWeight: 500 }}>
-          ข้อมูลผู้ดูแลระบบ
+          ข้อมูลผู้เข้าสอบ
         </Box>
       </Typography>
       <DrawerHeader />
       <div style={{ height: 450, width: "100%" }}>
         <Link to="/PageMember" style={{ textDecoration: "none" }}>
           <Button variant="outlined" startIcon={<ArrowBackIcon />}>
-            BACK
+            ย้อนกลับ
           </Button>
         </Link>
-        <Link to="/ContentPageAddAdmin" style={{ textDecoration: "none" }}>
+        <Link to="/ContentPageAddExam" style={{ textDecoration: "none" }}>
           <Button variant="outlined" startIcon={<ControlPointIcon />}>
             เพิ่มสมาชิก
           </Button>
@@ -265,4 +296,4 @@ function ContentPageAdmin() {
   );
 }
 
-export default ContentPageAdmin;
+export default ContentPageExamInformation;

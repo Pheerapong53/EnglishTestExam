@@ -1350,13 +1350,11 @@ function ContentPageAddExam() {
                   fullWidth
                   name="mem_offtel"
                   value={values.mem_offtel || ""}
-                  // error={values.mem_offtel === undefined ? true : false}
                   onInput={(e) => {
                     e.target.value = e.target.value.toString().slice(0, 5);
                   }}
                   min={0}
                   required
-                  // onChange={handleChange}
                   onChange={(e) => {
                     setValues({
                       ...values,
@@ -1370,7 +1368,6 @@ function ContentPageAddExam() {
                       },
                     });
                     setIsregis(true);
-                    // const numberPattern = /^\d+$/;
                     if (formValues.mem_offtel !== "") {
                       setFormValues((prevState) => ({
                         ...prevState,

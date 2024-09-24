@@ -10,18 +10,8 @@ export const addMemberHandler = async (user) => {
 }
 
 export const addMemberAndRightHandler = async (user,token) => {
-    // var config = {
-    //     method: "POST",
-    //     url: process.env.REACT_APP_API_URL + "/addmemberandright", user,
-    //     headers: {
-    //         authtoken: "bearer " + token,
-    //       },
-    // };
-
-    // return await axios(config);
     return await axios.post(process.env.REACT_APP_API_URL + "/addmemberandright", user,{
         headers: {
-            // 'Content-Type': 'application/json'
             authtoken: "bearer " + token,
         }
     });

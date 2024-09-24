@@ -1,42 +1,44 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React from "react";
-import Typography from "@mui/material/Typography";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
+import React, { useEffect, useState } from "react";
+import {
+  Box,
+  Card,
+  Typography,
+  Grid,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  IconButton,
+} from "@mui/material";
 import { styled } from "@mui/material/styles";
-import ControlPointIcon from "@mui/icons-material/ControlPoint";
-import Card from "@mui/material/Card";
 import {
   DataGrid,
   GridToolbarQuickFilter,
   GridLinkOperator,
 } from "@mui/x-data-grid";
-import { Link } from "react-router-dom";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { blue, red, yellow } from "@mui/material/colors";
-import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
+import {
+  DeleteForever,
+  Close,
+  ArrowBack,
+  ControlPoint,
+} from "@mui/icons-material";
 import ModalEditExamArchiveLookExam from "../components/ModalEditExamArchiveLookExam";
 import PropTypes from "prop-types";
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import IconButton from "@mui/material/IconButton";
-import CloseIcon from "@mui/icons-material/Close";
 import ModalAddMultiple from "../components/ModalAddMultiple";
 import ModalAddOne from "../components/ModalAddOne";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import { useLocation } from "react-router-dom";
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 import Axios from "axios";
 import ModalEditExamByCerfcode from "./ModalEditExamByCerfcode";
 import { useSelector, useDispatch } from "react-redux";
-import {logout} from "../../src/store/userSilce";
+import { logout } from "../../src/store/userSilce";
 import { toast } from "react-toastify";
 
 //confirmDialog
 import { confirmAlert } from "react-confirm-alert";
-import 'react-confirm-alert/src/react-confirm-alert.css';
+import "react-confirm-alert/src/react-confirm-alert.css";
 
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   "& .MuiDialogContent-root": {
@@ -64,7 +66,7 @@ const BootstrapDialogTitle = (props) => {
             color: (theme) => theme.palette.grey[500],
           }}
         >
-          <CloseIcon />
+          <Close />
         </IconButton>
       ) : null}
     </DialogTitle>
@@ -90,37 +92,87 @@ const theme = createTheme({
   },
 });
 
+function QuickSearchToolbar() {
+  return (
+    <Box
+      sx={{
+        p: 0.5,
+        pb: 0,
+      }}
+    >
+      <GridToolbarQuickFilter
+        quickFilterParser={(searchInput) =>
+          searchInput
+            .split(",")
+            .map((value) => value.trim())
+            .filter((value) => value !== "")
+        }
+      />
+    </Box>
+  );
+}
+
+const DrawerHeader = styled("div")(({ theme }) => ({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "flex-end",
+  padding: theme.spacing(0, 1),
+  // necessary for content to be below app bar
+  ...theme.mixins.toolbar,
+}));
+
 function ContentPageExamArchiveLookExam() {
+  //Component Declaration
   const dispatch = useDispatch();
-  const {user} = useSelector((state) => ({...state}));
-  const token = user.user.token;
+  const { user } = useSelector((state) => state.user);
+  const token = user.token;
   const navigate = useNavigate();
 
   //get data from navigate to show in Datagrid
   const location = useLocation();
-  //โจทย์+ตัวเลือก Tbquestion include Tbchoice
-const [choiceLists, setChoiceLists] = useState([]);
-useEffect(() => {
-  var config = {
-    method: "GET",
-    url: process.env.REACT_APP_API_URL + "/getchoicelist",
-    headers: {
-      authtoken: "bearer " + token,
-    },
-  };
-  Axios(config).then((response) => {
-    setChoiceLists(response.data);
-  }).catch((error) => {
-    if(error.response.status === 401 || error.response.status === 404) {
-      dispatch(logout());
-      navigate('/notfound404', { state: {statusCode: error.response.status, txt: error.response.data} })
-    } else {
-      toast.error(error.response.data.message);
-    }
-  });
-  }, []);
 
   const columns = [
+    { field: "id", headerName: "ลำดับ", width: 100 },
+    {
+      field: "questioncode",
+      headerName: "รหัสโจทย์",
+      width: 200,
+    },
+    { field: "problem", headerName: "ไฟล์โจทย์", width: 200 },
+    { field: "question", headerName: "โจทย์", width: 400 },
+    { field: "formcode", headerName: "รหัสฟอร์ม", width: 150 },
+    {
+      field: "checkbookingdate",
+      headerName: "การจัดการ",
+      width: 300,
+      renderCell: (params) => {
+        return (
+          <strong>
+            {/* แก้ไขโจทย์ข้อสอบ */}
+            <ModalEditExamByCerfcode params={params} />
+
+            <ThemeProvider theme={theme}>
+              <Button
+                variant="contained"
+                color="primary"
+                size="small"
+                style={{ marginLeft: 16 }}
+                startIcon={<DeleteForever />}
+                onClick={() => {
+                  handleDeleteClick(params);
+                  //toDeleteQuestionAndChoice(params);
+                }}
+              >
+                DELETE
+              </Button>
+            </ThemeProvider>
+          </strong>
+        );
+      },
+    },
+  ];
+
+  const columns_old = [
     { field: "id", headerName: "ลำดับ", width: 100 },
     { field: "questioncode", headerName: "รหัสโจทย์", width: 200 },
     { field: "problem", headerName: "ไฟล์โจทย์", width: 200 },
@@ -145,7 +197,7 @@ useEffect(() => {
                 color="primary"
                 size="small"
                 style={{ marginLeft: 16 }}
-                startIcon={<DeleteForeverIcon />}
+                startIcon={<DeleteForever />}
                 onClick={() => {
                   handleDeleteClick(params);
                   //toDeleteQuestionAndChoice(params);
@@ -160,93 +212,146 @@ useEffect(() => {
     },
   ];
 
+  const DetailRow = ({ label, value, labelWidth }) => (
+    <Grid container spacing={2} sx={{ mb: 1 }}>
+      <Grid item xs={labelWidth}>
+        <Typography sx={{ fontSize: 16 }} color="text.secondary">
+          {label}
+        </Typography>
+      </Grid>
+      <Grid item xs={12 - labelWidth}>
+        <Typography sx={{ fontSize: 16 }} color="text.secondary">
+          {value}
+        </Typography>
+      </Grid>
+    </Grid>
+  );
+
   var cerfcodeDropdown = [location.state.id];
-  // for (let i = 0; i < questionLists.length; i++) {
-  //   cerfcodeDropdown.push(questionLists[i].id);
-  // }
 
-  function filter(nameKey, myArray) {
-    var questionAndChoice = [];
-    var j = 1;
-    for (let i = 0; i < myArray.length; i++) {
-      if (myArray[i].cerfcode === nameKey) {
-        questionAndChoice.push({
-          id: j++,
-          questioncode: myArray[i].questioncode,
-          question: myArray[i].question,
-          problem: myArray[i].problem,
-          choicecode: myArray[i]["tbchoices.choicecode"],
-          choicetext: myArray[i]["tbchoices.choicetext"],
-          answer: myArray[i]["tbchoices.answer"],
-          cerfcode: myArray[i].cerfcode,
-          formcode: myArray[i].formcode,
-        });
-      }
+  //Hooks and Logic
+  //โจทย์+ตัวเลือก Tbquestion include Tbchoice
+  const [choiceLists, setChoiceLists] = useState([]);
+  const [questionLists, setQuestionLists] = useState([]);
+
+  const [open, setOpen] = React.useState(false);
+  useEffect(() => {
+    var configQuestion = {
+      method: "GET",
+      url:
+        process.env.REACT_APP_API_URL +
+        `/getquestionfilterbycerfcode/${location.state.id}`,
+      headers: {
+        authtoken: "bearer " + token,
+      },
+    };
+    var configChoice = {
+      method: "GET",
+      url: process.env.REACT_APP_API_URL + "/getchoicelist",
+      headers: {
+        authtoken: "bearer " + token,
+      },
+    };
+
+    Promise.all([Axios(configQuestion), Axios(configChoice)])
+      .then(([questionRes, choiceRes]) => {
+        setQuestionLists(questionRes.data);
+        setChoiceLists(choiceRes.data);
+      })
+      .catch(handleError);
+  }, []);
+
+  const filterData = (key, myArray, isChoice = false) => {
+    return myArray
+      .filter((item) => item.cerfcode === key)
+      .map((item, index) => ({
+        id: index + 1,
+        questioncode: item.questioncode,
+        question: item.question,
+        problem: item.problem,
+        cerfcode: item.cerfcode,
+        formcode: item.formcode,
+        ...(isChoice && {
+          choicecode: item["tbchoices.choicecode"],
+          choicetext: item["tbchoices.choicetext"],
+          answer: item["tbchoices.answer"],
+        }),
+      }));
+  };
+
+  const choice = filterData(location.state.id, choiceLists, true);
+  const question = filterData(location.state.id, questionLists, false);
+  // console.log("Choice :", choice);
+  // console.log("Question :", question);
+
+  //Event Handlers
+  const handleError = (error) => {
+    if (error.response?.status === 401 || error.response?.status === 404) {
+      dispatch(logout());
+      navigate("/notfound404", {
+        state: {
+          statusCode: error.response.status,
+          txt: error.response.data,
+        },
+      });
+    } else {
+      toast.error(error.response.data.message);
     }
+  };
 
-    return questionAndChoice;
-  }
-
-  const choice = filter(`${location.state.id}`, choiceLists);
-
-  const handleDeleteClick = (clickedexam) =>{
+  const handleDeleteClick = (clickedexam) => {
     //console.log(clickedMember);
     confirmAlert({
-      title: 'ยืนยันการลบ',
+      title: "ยืนยันการลบ",
       message: `คุณต้องการที่จะลบ ${clickedexam.row.questioncode} ใช่หรือไม่`,
       buttons: [
         {
-          label: 'Yes',
+          label: "Yes",
           onClick: () => toDeleteQuestionAndChoice(clickedexam),
         },
         {
-          label: 'No',
+          label: "No",
           onClick: () => {},
-        }
+        },
       ],
     });
   };
- 
-//Delete QuestionAndChoice
-const toDeleteQuestionAndChoice = (clickedexam) => {
-  const questioncode = clickedexam.row.questioncode;
-  var config = {
-    method: "DELETE",
-    url: process.env.REACT_APP_API_URL + `/delquestionandchoice/${questioncode}`,
-    headers: {
-      authtoken: "bearer " + token,
-    },
+
+  //Delete QuestionAndChoice
+  const toDeleteQuestionAndChoice = (clickedexam) => {
+    const questioncode = clickedexam.row.questioncode;
+    var config = {
+      method: "DELETE",
+      url:
+        process.env.REACT_APP_API_URL + `/delquestionandchoice/${questioncode}`,
+      headers: {
+        authtoken: "bearer " + token,
+      },
+    };
+
+    Axios(config)
+      .then((response) => {
+        setChoiceLists(
+          choiceLists.filter((val) => {
+            return val["questioncode"] !== questioncode;
+          })
+        );
+        toast.success(response.data.msg);
+      })
+      .catch((error) => {
+        if (error.response.status === 401 || error.response.status === 404) {
+          dispatch(logout());
+          navigate("/notfound404", {
+            state: {
+              statusCode: error.response.status,
+              txt: error.response.data,
+            },
+          });
+        } else {
+          toast.error(error.response.data.message);
+        }
+      });
   };
-
-  Axios(config).then((response) => {
-      setChoiceLists(
-        choiceLists.filter((val) => {
-          return val["questioncode"] !== questioncode;
-        })
-      );
-      toast.success(response.data.msg);
-    })
-    .catch((error) => {
-      if(error.response.status === 401 || error.response.status === 404) {
-        dispatch(logout());
-        navigate('/notfound404', { state: {statusCode: error.response.status, txt: error.response.data} })
-      } else {
-        toast.error(error.response.data.message);
-      }
-    });
-
-  // Axios.delete(process.env.REACT_APP_API_URL + `/delquestionandchoice/${questioncode}`).then(
-  //   (response) => {
-  //     setChoiceLists(
-  //       choiceLists.filter((val) => {
-  //         return val["questioncode"] !== questioncode;
-  //       })
-  //     );
-  //   }
-  // );
-};
-
-  const [open, setOpen] = React.useState(false);
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -255,26 +360,7 @@ const toDeleteQuestionAndChoice = (clickedexam) => {
     setOpen(false);
   };
 
-  function QuickSearchToolbar() {
-    return (
-      <Box
-        sx={{
-          p: 0.5,
-          pb: 0,
-        }}
-      >
-        <GridToolbarQuickFilter
-          quickFilterParser={(searchInput) =>
-            searchInput
-              .split(",")
-              .map((value) => value.trim())
-              .filter((value) => value !== "")
-          }
-        />
-      </Box>
-    );
-  }
-
+  //Render
   return (
     <>
       <Typography component="div">
@@ -282,18 +368,31 @@ const toDeleteQuestionAndChoice = (clickedexam) => {
           คลังข้อสอบ
         </Box>
       </Typography>
+      <DrawerHeader />
 
-      <Box
-        sx={{ display: "flex", justifyContent: "flex-end", marginTop: "30px" }}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "10px",
+        }}
       >
-        <Button
-          variant="outlined"
-          startIcon={<ControlPointIcon />}
-          onClick={handleClickOpen}
-        >
-          เพิ่มโจทย์ข้อสอบ
-        </Button>
-      </Box>
+        <Link to="/PageExamArchive" style={{ textDecoration: "none" }}>
+          <Button variant="outlined" startIcon={<ArrowBack />}>
+            BACK
+          </Button>
+        </Link>
+        <div style={{ display: "flex", gap: "10px" }}>
+          <Button
+            variant="outlined"
+            startIcon={<ControlPoint />}
+            onClick={handleClickOpen}
+          >
+            เพิ่มโจทย์ข้อสอบ
+          </Button>
+        </div>
+      </div>
 
       {/* Alert Dialog When Click "เพิ่มโจทย์ข้อสอบ" */}
       <BootstrapDialog
@@ -329,11 +428,6 @@ const toDeleteQuestionAndChoice = (clickedexam) => {
 
       {/* show detail exam from PageExamArchive */}
       <Box>
-        <Link to="/PageExamArchive" style={{ textDecoration: "none" }}>
-          <Button variant="outlined" startIcon={<ArrowBackIcon />}>
-            BACK
-          </Button>
-        </Link>
         <Card
           sx={{
             minWidth: 275,
@@ -349,43 +443,35 @@ const toDeleteQuestionAndChoice = (clickedexam) => {
           <Typography sx={{ fontSize: 16 }} color="text.secondary" gutterBottom>
             รายละเอียดข้อสอบ
           </Typography>
+          <DetailRow
+            label="รหัสความสามารถทางภาษาอังกฤษสากล"
+            value={location.state.id}
+            labelWidth={4}
+          />
 
-          <Typography
-            sx={{ fontSize: 16, display: "flex" }}
-            color="text.secondary"
-            gutterBottom
-          >
-            <Box>รหัสความสามารถทางภาษาอังกฤษสากล</Box>
-            <Box sx={{ marginLeft: "100px" }}>{location.state.id}</Box>
-          </Typography>
+          <DetailRow
+            label="ระดับความยากง่ายตามกรอบ"
+            value={location.state.cerfdifficultylevel}
+            labelWidth={4}
+          />
 
-          <Typography
-            sx={{ fontSize: 16, display: "flex" }}
-            color="text.secondary"
-            gutterBottom
-          >
-            <Box>ระดับความยากง่ายตามกรอบ</Box>
-            <Box sx={{ marginLeft: "172px" }}>
-              {location.state.cerfdifficultylevel}
-            </Box>
-          </Typography>
-          <Typography
-            sx={{ fontSize: 16, display: "flex" }}
-            color="text.secondary"
-            gutterBottom
-          >
-            <Box>ลักษณะข้อสอบ</Box>
-            <Box sx={{ marginLeft: "263px" }}>
-              {location.state.cerfdifficultyleveldesc}
-            </Box>
-          </Typography>
+          <DetailRow
+            label="ลักษณะข้อสอบ"
+            value={location.state.cerfdifficultyleveldesc}
+            labelWidth={4}
+          />
+          <DetailRow
+            label="ประเภทของการวัดทักษะ"
+            value={location.state.cerfleveltype}
+            labelWidth={4}
+          />
         </Card>
       </Box>
 
       {/* show question for each cerflevel */}
       <DataGrid
         sx={{ marginTop: "30px" }}
-        rows={choice}
+        rows={question}
         columns={columns}
         pageSize={5}
         rowsPerPageOptions={[5]}
@@ -404,5 +490,3 @@ const toDeleteQuestionAndChoice = (clickedexam) => {
 }
 
 export default ContentPageExamArchiveLookExam;
-
-

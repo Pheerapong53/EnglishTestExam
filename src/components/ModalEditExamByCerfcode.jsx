@@ -1,20 +1,21 @@
 import React, { useState, useEffect } from "react";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import EditIcon from "@mui/icons-material/Edit";
+import {
+  Box,
+  Button,
+  TextField,
+  Typography,
+  Dialog,
+  DialogContent,
+  DialogContentText,
+} from "@mui/material";
+import { Edit } from "@mui/icons-material";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { yellow } from "@mui/material/colors";
-import TextField from "@mui/material/TextField";
-import { Link } from "react-router-dom";
-import Typography from "@mui/material/Typography";
-import Dialog from "@mui/material/Dialog";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { editQuestionAndChoice } from "./functions/cefrLevel";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../src/store/userSilce";
-import {toast} from "react-toastify"
+import { toast } from "react-toastify";
 import axios from "axios";
 
 const theme = createTheme({
@@ -26,31 +27,11 @@ const theme = createTheme({
 });
 
 function ModalEditExamByCerfcode(params) {
+  //Component Declaration
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => ({ ...state }));
-  const token = user.user.token;
+  const { user } = useSelector((state) => state.user);
+  const token = user.token;
   const navigate = useNavigate();
-  //open-close Dialog & set scroll type paper
-  const [open, setOpen] = useState(false);
-  const [scroll, setScroll] = React.useState("paper");
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
-  const handleClose = () => {
-    setOpen(false);
-    setValues(initialstate);
-  };
-
-  //   const descriptionElementRef = React.useRef(null);
-  //   React.useEffect(() => {
-  //     if (open) {
-  //       const { current: descriptionElement } = descriptionElementRef;
-  //       if (descriptionElement !== null) {
-  //         descriptionElement.focus();
-  //       }
-  //     }
-  //   }, [open]);
-
   const initialstate = {
     id: params.params.row.id,
     questioncode: params.params.row.questioncode,
@@ -63,9 +44,12 @@ function ModalEditExamByCerfcode(params) {
     formcode: params.params.row.formcode,
   };
 
+  //Hook and Logic
+  //open-close Dialog & set scroll type paper
+  const [open, setOpen] = useState(false);
+  const [scroll, setScroll] = React.useState("paper");
   const [values, setValues] = useState(initialstate);
   const [fileProblem, setFileProblem] = useState("");
-
   //wait for change
   const [formValues, setFormValues] = useState({
     id: {
@@ -102,8 +86,17 @@ function ModalEditExamByCerfcode(params) {
     },
     formcode: {
       value: params.params.row.formcode,
-    }
-  })
+    },
+  });
+
+  //Event Handler
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+  const handleClose = () => {
+    setOpen(false);
+    setValues(initialstate);
+  };
 
   //handleChange in text TextField
   const handleChange = (e) => {
@@ -113,13 +106,6 @@ function ModalEditExamByCerfcode(params) {
     });
   };
 
-  // const handleFileChange = (e) => {
-  //   setFileProblem(e.target.files[0]);
-  //   setValues({
-  //     ...values,
-  //     problem: e.target.files[0].name,
-  //   });
-  // };
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0].name;
     if (selectedFile) {
@@ -130,13 +116,6 @@ function ModalEditExamByCerfcode(params) {
           ...values,
           problem: e.target.files[0].name,
         });
-        // setFormValues({
-        //   ...formValues,
-        //   problem: {
-        //     ...formValues,
-        //     value: e.target.files[0].name,
-        //   },
-        // });
       } else {
         toast.error("accept only File .txt or .mp3 ");
         return;
@@ -163,46 +142,52 @@ function ModalEditExamByCerfcode(params) {
       // cerfcode: data.get("cerfcode"),
       // formcode: data.get("formcode"),
     };
-    
-    if(fileProblem !== ""){
+
+    if (fileProblem !== "") {
       const formData = await new FormData();
       formData.append("file", fileProblem);
-  
+
       var extendName = values.problem.split(".")[1];
       if (extendName.toString() === "txt") {
         axios
-          .post(process.env.REACT_APP_API_URL + "/upload", formData,{
+          .post(process.env.REACT_APP_API_URL + "/upload", formData, {
             headers: {
               authtoken: "bearer " + token,
-            }
+            },
           })
           .then((res) => {
             toast.success(res.data.msg);
           });
       } else if (extendName.toString() === "mp3") {
         axios
-          .post(process.env.REACT_APP_API_URL + "/uploadsound", formData,{
+          .post(process.env.REACT_APP_API_URL + "/uploadsound", formData, {
             headers: {
               authtoken: "bearer " + token,
-            }
+            },
           })
           .then((res) => {
             toast.success(res.data.msg);
           });
       }
     }
-    
 
-    editQuestionAndChoice(questionAndChoice,token).then((res) => {
-      toast.success(res.data.msg, {onClose: () => navigate(0) });
-    }).catch((error) => {
-      if(error.response.status === 401 || error.response.status === 404){
-        dispatch(logout());
-        navigate('/notfound404', { state: {statusCode: error.response.status, txt: error.response.data} })
-      }else{
-      toast.error(error.response.data.message);
-      }
-    });
+    editQuestionAndChoice(questionAndChoice, token)
+      .then((res) => {
+        toast.success(res.data.msg, { onClose: () => navigate(0) });
+      })
+      .catch((error) => {
+        if (error.response.status === 401 || error.response.status === 404) {
+          dispatch(logout());
+          navigate("/notfound404", {
+            state: {
+              statusCode: error.response.status,
+              txt: error.response.data,
+            },
+          });
+        } else {
+          toast.error(error.response.data.message);
+        }
+      });
     //navigate(0);
     //handleClose();
   };
@@ -215,8 +200,7 @@ function ModalEditExamByCerfcode(params) {
           color="secondary"
           size="small"
           style={{ marginLeft: 16 }}
-          startIcon={<EditIcon />}
-          //onClick={handleClickOpen}
+          startIcon={<Edit />}
           onClick={() => {
             handleClickOpen();
           }}
@@ -234,11 +218,7 @@ function ModalEditExamByCerfcode(params) {
         aria-describedby="scroll-dialog-description"
       >
         <DialogContent dividers={scroll === "paper"} sx={{ width: "600px" }}>
-          <DialogContentText
-            id="scroll-dialog-description"
-            //ref={descriptionElementRef}
-            tabIndex={-1}
-          >
+          <DialogContentText id="scroll-dialog-description" tabIndex={-1}>
             <Box component="form" onSubmit={handleSubmit}>
               <Typography
                 id="modal-modal-title"

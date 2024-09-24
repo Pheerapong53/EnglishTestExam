@@ -208,15 +208,8 @@ const exam = {
     const randomFormCode = arrayFormCode[randomIndex];
 
     const condition = {
-      // include: [
-      //   {
-      //     model: tbchoice,
-      //   },
-      // ],
-      // group: [sequelize.col("questioncode")],
       raw: true,
       where: { formcode: randomFormCode },
-      //where: {formcode: 'F0001'},
     };
 
     try {
@@ -224,6 +217,19 @@ const exam = {
     } catch (err) {
       console.log("Backend :: question : getquestion -> failed : ", err);
     }
+  },
+  getquestionfilterbycerfcode: async (req) => {
+    const {cerfcode} = req.params;
+      let condition = {
+        where: {
+          cerfcode: cerfcode,
+        },
+      };
+      try {
+        return await tbquestion.findAll(condition);
+      } catch (err) {
+        console.log("Backend :: question : getquestion -> failed : ", err);
+      }
   },
 
   getchoice: async () => {

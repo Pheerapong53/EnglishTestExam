@@ -20,14 +20,14 @@ import Axios from "axios";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import {logout} from "../../src/store/userSilce";
+import { logout } from "../../src/store/userSilce";
 
 //confirmDialog
 import { confirmAlert } from "react-confirm-alert";
-import 'react-confirm-alert/src/react-confirm-alert.css';
+import "react-confirm-alert/src/react-confirm-alert.css";
 
 //import function filter member by usrtypeid
-import {filter, filterByClick} from "./functions/filterMember";
+import { filter, filterByClick } from "../archive/filterMember";
 import { toast } from "react-toastify";
 
 const theme = createTheme({
@@ -46,7 +46,7 @@ const theme = createTheme({
 
 function ContentPageCoorDinator() {
   const dispatch = useDispatch();
-  const {user} = useSelector((state) => ({...state}));
+  const { user } = useSelector((state) => ({ ...state }));
   const token = user.user.token;
 
   const columns = [
@@ -85,7 +85,7 @@ function ContentPageCoorDinator() {
               style={{ marginLeft: 16 }}
               startIcon={<DeleteForeverIcon />}
               onClick={() => {
-                handleDeleteClick(params)
+                handleDeleteClick(params);
                 //toDeleteMember(params);
               }}
             >
@@ -107,17 +107,23 @@ function ContentPageCoorDinator() {
         authtoken: "bearer " + token,
       },
     };
-    Axios(config).then((response) => {
-      setMemberLists(response.data);
-    })
-    .catch((error) => {
-      if(error.response.status === 401 || error.response.status === 404) {
-        dispatch(logout());
-        navigate('/notfound404', { state: {statusCode: error.response.status, txt: error.response.data} })
-      } else {
-        toast.error(error.response.data.message);
-      }
-    });
+    Axios(config)
+      .then((response) => {
+        setMemberLists(response.data);
+      })
+      .catch((error) => {
+        if (error.response.status === 401 || error.response.status === 404) {
+          dispatch(logout());
+          navigate("/notfound404", {
+            state: {
+              statusCode: error.response.status,
+              txt: error.response.data,
+            },
+          });
+        } else {
+          toast.error(error.response.data.message);
+        }
+      });
   }, []);
   //console.log(MemberLists);
 
@@ -147,25 +153,25 @@ function ContentPageCoorDinator() {
     navigate("/PageEditRegister", {
       state: {
         data: data,
-        url: "/PageCoorDinaTor"
-      }
+        url: "/PageCoorDinaTor",
+      },
     });
   };
 
-  const handleDeleteClick = (clickedMember) =>{
+  const handleDeleteClick = (clickedMember) => {
     //console.log(clickedMember);
     confirmAlert({
-      title: 'ยืนยันการลบ',
+      title: "ยืนยันการลบ",
       message: `คุณต้องการที่จะลบ ${clickedMember.row.name} ใช่หรือไม่`,
       buttons: [
         {
-          label: 'Yes',
+          label: "Yes",
           onClick: () => toDeleteMember(clickedMember),
         },
         {
-          label: 'No',
+          label: "No",
           onClick: () => {},
-        }
+        },
       ],
     });
   };
@@ -188,22 +194,28 @@ function ContentPageCoorDinator() {
         authtoken: "bearer " + token,
       },
     };
-    Axios(config).then((response) => {
-      setMemberLists(
-        MemberLists.filter((val) => {
-          return val["tbaccessrights.accessrightsid"] !== delId;
-        })
-      );
-      toast.success(response.data.msg);
-    })
-    .catch((error) => {
-      if(error.response.status === 401 || error.response.status === 404) {
-        dispatch(logout());
-        navigate('/notfound404', { state: {statusCode: error.response.status, txt: error.response.data} })
-      } else {
-        toast.error(error.response.data.message);
-      }
-    });
+    Axios(config)
+      .then((response) => {
+        setMemberLists(
+          MemberLists.filter((val) => {
+            return val["tbaccessrights.accessrightsid"] !== delId;
+          })
+        );
+        toast.success(response.data.msg);
+      })
+      .catch((error) => {
+        if (error.response.status === 401 || error.response.status === 404) {
+          dispatch(logout());
+          navigate("/notfound404", {
+            state: {
+              statusCode: error.response.status,
+              txt: error.response.data,
+            },
+          });
+        } else {
+          toast.error(error.response.data.message);
+        }
+      });
   };
 
   function QuickSearchToolbar() {
@@ -240,7 +252,10 @@ function ContentPageCoorDinator() {
             BACK
           </Button>
         </Link>
-        <Link to="/ContentPageAddCoorDinaTor" style={{ textDecoration: "none" }}>
+        <Link
+          to="/ContentPageAddCoorDinaTor"
+          style={{ textDecoration: "none" }}
+        >
           <Button variant="outlined" startIcon={<ControlPointIcon />}>
             เพิ่มสมาชิก
           </Button>

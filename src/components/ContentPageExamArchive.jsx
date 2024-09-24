@@ -1,28 +1,26 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
-/* Update 30/4/67 */
-import React from "react";
-import { Typography, Box, Button, Modal, TextField } from "@mui/material";
-import { styled } from "@mui/material/styles";
+/* Update 23/9/67 */
+import React, { useState, useEffect, useRef } from "react";
+import {
+  Typography,
+  Box,
+  Button,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+} from "@mui/material";
 import {
   DataGrid,
-  GridToolbar,
   GridLinkOperator,
   GridToolbarQuickFilter,
 } from "@mui/x-data-grid";
-import { createTheme, ThemeProvider } from "@mui/material/styles";
+import { styled, createTheme, ThemeProvider } from "@mui/material/styles";
 import { blue, red, yellow } from "@mui/material/colors";
-import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
-import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
-import CloseIcon from "@mui/icons-material/Close";
-import AddIcon from "@mui/icons-material/Add";
-import { Link } from "react-router-dom";
+import { Close, Add, RemoveRedEye, DeleteForever } from "@mui/icons-material";
 import ModalEditExamArchive from "../components/ModalEditExamArchive";
-import { Dialog, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
-import {InputLabel, Select, MenuItem, FormControl, IconButton} from "@mui/material";
 import Footer from "../components/Footer";
-import { useState } from "react";
-import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Axios from "axios";
 import ModalAddMultiple from "../components/ModalAddMultiple";
@@ -34,6 +32,7 @@ import { logout } from "../../src/store/userSilce";
 import { toast } from "react-toastify";
 import { confirmAlert } from "react-confirm-alert";
 import "react-confirm-alert/src/react-confirm-alert.css";
+import ToPrintPageExamArchive from "./ToPrintPageExamArchive";
 
 const style = {
   position: "absolute",
@@ -74,7 +73,7 @@ const BootstrapDialogTitle = (props) => {
             color: (theme) => theme.palette.grey[500],
           }}
         >
-          <CloseIcon />
+          <Close />
         </IconButton>
       ) : null}
     </DialogTitle>
@@ -100,11 +99,41 @@ const theme = createTheme({
   },
 });
 
+const DrawerHeader = styled("div")(({ theme }) => ({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "flex-end",
+  padding: theme.spacing(0, 1),
+  // necessary for content to be below app bar
+  ...theme.mixins.toolbar,
+}));
+
+function QuickSearchToolbar() {
+  return (
+    <Box
+      sx={{
+        p: 0.5,
+        pb: 0,
+      }}
+    >
+      <GridToolbarQuickFilter
+        quickFilterParser={(searchInput) =>
+          searchInput
+            .split(",")
+            .map((value) => value.trim())
+            .filter((value) => value !== "")
+        }
+      />
+    </Box>
+  );
+}
+
 function ContentPageExamArchive() {
+  //Component Declaration
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.user);
   const token = user.token;
-
+  const navigate = useNavigate();
   const columns = [
     { field: "id", headerName: "รหัสความสามารถทางภาษาอังกฤษสากล", width: 250 },
     {
@@ -132,7 +161,7 @@ function ContentPageExamArchive() {
                 color="third"
                 size="small"
                 style={{ marginLeft: 16, color: "#fff" }}
-                startIcon={<RemoveRedEyeIcon />}
+                startIcon={<RemoveRedEye />}
                 onClick={() => {
                   lookExamHandler(params);
                 }}
@@ -154,7 +183,7 @@ function ContentPageExamArchive() {
                 color="primary"
                 size="small"
                 style={{ marginLeft: 16 }}
-                startIcon={<DeleteForeverIcon />}
+                startIcon={<DeleteForever />}
                 onClick={() => {
                   handleDeleteClick(params);
                 }}
@@ -168,9 +197,14 @@ function ContentPageExamArchive() {
     },
   ];
 
+  //Hooks and Logic
   //get questions from backend include [tbcefrdifficultylevel, tbquestion]
   const [questionLists, setQuestionLists] = useState([]);
-  //console.log("questionLists: ", questionLists);
+  // console.log("questionLists: ", questionLists);
+  const [open, setOpen] = React.useState(false);
+  const [openS, setOpenS] = React.useState(false);
+  //กำหนดตัวแปร scroll ให้กับ Dialog: body->ไม่มีแถบ Scrollbar ด้านข้าง, paper->มีแถบ Scrollbar ด้านข้าง
+  const [scroll, setScroll] = React.useState("paper");
 
   useEffect(() => {
     var config = {
@@ -200,6 +234,16 @@ function ContentPageExamArchive() {
       });
   }, []);
 
+  const descriptionElementRef = React.useRef(null);
+  React.useEffect(() => {
+    if (openS) {
+      const { current: descriptionElement } = descriptionElementRef;
+      if (descriptionElement !== null) {
+        descriptionElement.focus();
+      }
+    }
+  }, [openS]);
+
   //ย้ายไปไว้ที่ ModalAddOne
   //Create Dropdown Lists
   var cerfcodeDropdown = [];
@@ -207,14 +251,14 @@ function ContentPageExamArchive() {
     cerfcodeDropdown.push(questionLists[i].id);
   }
 
-  //show question look exam
-  const navigate = useNavigate();
+  //Event Handlers
   const lookExamHandler = (clickedexam) => {
     navigate("/PageExamArchiveLookExam", {
       state: {
         id: clickedexam.row.id,
         cerfdifficultylevel: clickedexam.row.cerfdifficultylevel,
         cerfdifficultyleveldesc: clickedexam.row.cerfdifficultyleveldesc,
+        cerfleveltype: clickedexam.row.cerfleveltype,
       },
     });
   };
@@ -271,62 +315,17 @@ function ContentPageExamArchive() {
       });
   };
 
-  const DrawerHeader = styled("div")(({ theme }) => ({
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "flex-end",
-    padding: theme.spacing(0, 1),
-    // necessary for content to be below app bar
-    ...theme.mixins.toolbar,
-  }));
-
   //open-close Dialog เพิ่มโจทย์ข้อสอบ
-  const [open, setOpen] = React.useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => {
     setOpen(false);
   };
 
   //open-close Dialog เพิ่มประเภทข้อสอบ
-  const [openS, setOpenS] = React.useState(false);
   const handleOpenS = () => setOpenS(true);
   const handleCloseS = () => setOpenS(false);
 
-  //กำหนดตัวแปร scroll ให้กับ Dialog: body->ไม่มีแถบ Scrollbar ด้านข้าง, paper->มีแถบ Scrollbar ด้านข้าง
-  const [scroll, setScroll] = React.useState("paper");
-
-  //เพิ่มประเภทข้อสอบ
-  const descriptionElementRef = React.useRef(null);
-  React.useEffect(() => {
-    if (openS) {
-      const { current: descriptionElement } = descriptionElementRef;
-      if (descriptionElement !== null) {
-        descriptionElement.focus();
-      }
-    }
-  }, [openS]);
-
-  //function search
-  function QuickSearchToolbar() {
-    return (
-      <Box
-        sx={{
-          p: 0.5,
-          pb: 0,
-        }}
-      >
-        <GridToolbarQuickFilter
-          quickFilterParser={(searchInput) =>
-            searchInput
-              .split(",")
-              .map((value) => value.trim())
-              .filter((value) => value !== "")
-          }
-        />
-      </Box>
-    );
-  }
-
+  //Render
   return (
     <>
       <Typography component="div">
@@ -334,19 +333,31 @@ function ContentPageExamArchive() {
           คลังข้อสอบ
         </Box>
       </Typography>
-
       <DrawerHeader />
+      <div style={{ height: 450, width: "100%" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "10px",
+          }}
+        >
+          {/* Left-aligned print button */}
+          <ToPrintPageExamArchive toprint={questionLists} />
 
-      <div style={{height: 450, width: "100%" }}>
-        <div style={{display: "flex", justifyContent: "flex-end", marginBottom: "10px"}}>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={handleOpen}>
-          เพิ่มโจทย์ข้อสอบ
-        </Button>
-
-        {/* เพิ่มประเภทข้อสอบ */}
-        <ModalAddTypeExam />
+          {/* Right-aligned add button and modal */}
+          <div style={{ display: "flex", gap: "10px" }}>
+            <Button
+              variant="contained"
+              startIcon={<Add />}
+              onClick={handleOpen}
+            >
+              เพิ่มโจทย์ข้อสอบ
+            </Button>
+            <ModalAddTypeExam />
+          </div>
         </div>
-        
 
         {/* Alert Dialog When Click "เพิ่มโจทย์ข้อสอบ" */}
         <BootstrapDialog

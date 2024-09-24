@@ -19,7 +19,8 @@ import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../src/store/userSilce";
 import { blue, red, yellow } from "@mui/material/colors";
 import { toast } from "react-toastify";
-//import { filter } from "./functions/filterMember";
+import { confirmAlert } from "react-confirm-alert";
+import "react-confirm-alert/src/react-confirm-alert.css";
 
 const theme = createTheme({
   palette: {
@@ -69,8 +70,14 @@ function filterMembers(nameKey, myArray) {
       });
     }
   }
-
   return members;
+}
+
+function filterByClick(arr, key_1, value_1, key_2, value_2) {
+  return arr.reduce((data, item) => {
+    if (item[key_1] === value_1 && item[key_2] === value_2) data.push(item);
+    return data;
+  }, []);
 }
 
 function ContentPageMemberInformation() {
@@ -108,7 +115,7 @@ function ContentPageMemberInformation() {
               style={{ marginLeft: 16, color: "#000" }}
               startIcon={<Edit />}
               onClick={() => {
-                //editHandler(params);
+                editHandler(params);
               }}
             >
               EDIT
@@ -123,7 +130,7 @@ function ContentPageMemberInformation() {
               style={{ marginLeft: 16 }}
               startIcon={<DeleteForever />}
               onClick={() => {
-                //handleDeleteClick(params)
+                handleDeleteClick(params);
               }}
             >
               DELETE
@@ -173,6 +180,80 @@ function ContentPageMemberInformation() {
   }, []);
 
   //Event Handlers
+  const editHandler = (clickedMember) => {
+    const data = filterByClick(
+      MemberLists,
+      "official_id",
+      clickedMember.row.idnumber,
+      "tbmemberinfos.mem_email",
+      clickedMember.row.email
+    );
+    navigate("/PageEditRegister", {
+      state: {
+        data: data,
+        url: `/PageMemberInformation/${right}`,
+      },
+    });
+  };
+
+  const handleDeleteClick = (clickedMember) => {
+    confirmAlert({
+      title: "ยืนยันการลบ",
+      message: `คุณต้องการที่จะลบ ${clickedMember.row.name} ใช่หรือไม่`,
+      buttons: [
+        {
+          label: "Yes",
+          onClick: () => toDeleteMember(clickedMember),
+        },
+        {
+          label: "No",
+          onClick: () => {},
+        },
+      ],
+    });
+  };
+
+  const toDeleteMember = (clickedMember) => {
+    const delData = filterByClick(
+      MemberLists,
+      "official_id",
+      clickedMember.row.idnumber,
+      "tbmemberinfos.mem_email",
+      clickedMember.row.email
+    );
+
+    const delId = `${delData[0].pers_id}-${right}`;
+
+    var config = {
+      method: "DELETE",
+      url: process.env.REACT_APP_API_URL + `/delmember/${delId}`,
+      headers: {
+        authtoken: "bearer " + token,
+      },
+    };
+    Axios(config)
+      .then((response) => {
+        setMemberLists(
+          MemberLists.filter((val) => {
+            return val["tbaccessrights.accessrightsid"] !== delId;
+          })
+        );
+        toast.success(response.data.msg);
+      })
+      .catch((error) => {
+        if (error.response.status === 401 || error.response.status === 404) {
+          dispatch(logout());
+          navigate("/notfound404", {
+            state: {
+              statusCode: error.response.status,
+              txt: error.response.data,
+            },
+          });
+        } else {
+          toast.error(error.response.data.message);
+        }
+      });
+  };
 
   //Render
   return (
@@ -195,11 +276,6 @@ function ContentPageMemberInformation() {
         >
           <Button variant="outlined" startIcon={<ControlPoint />}>
             เพิ่มสมาชิก
-          </Button>
-        </Link>
-        <Link to="/ContentPageAddExam" style={{ textDecoration: "none" }}>
-          <Button variant="outlined" startIcon={<ControlPoint />}>
-            เพิ่มสมาชิก(Old)
           </Button>
         </Link>
         <DataGrid
