@@ -37,18 +37,51 @@ function ModalEditExamByCerfcode(params) {
     questioncode: params.params.row.questioncode,
     problem: params.params.row.problem,
     question: params.params.row.question,
-    choicecode: params.params.row.choicecode,
-    choicetext: params.params.row.choicetext,
-    answer: params.params.row.answer,
     cerfcode: params.params.row.cerfcode,
     formcode: params.params.row.formcode,
   };
 
   //Hook and Logic
+  //Get Choice From tbchoice by questioncode
+  const [choiceLists, setChoiceLists] = useState();
+  console.log(choiceLists);
+
+  useEffect(() => {
+    if (!params?.params?.row?.questioncode) return;
+    var configChoice = {
+      method: "GET",
+      url:
+        process.env.REACT_APP_API_URL +
+        `/getchoicebyquestioncode/${params.params.row.questioncode}`,
+      headers: { authtoken: "bearer " + token },
+    };
+    axios(configChoice)
+      .then((res) => {
+        const fetchChoices = res.data;
+        const initialstate = {
+          id: params.params.row.id,
+          questioncode: params.params.row.questioncode,
+          problem: params.params.row.problem,
+          question: params.params.row.question,
+          cerfcode: params.params.row.cerfcode,
+          formcode: params.params.row.formcode,
+        };
+        fetchChoices.forEach((choice) => {
+          initialstate[choice.choicecode] = choice.choicetext;
+        });
+
+        setChoiceLists(initialstate);
+      })
+      .catch((error) => {
+        console.error("Error fetching choice data:", error);
+      });
+  }, [params]);
   //open-close Dialog & set scroll type paper
   const [open, setOpen] = useState(false);
   const [scroll, setScroll] = React.useState("paper");
   const [values, setValues] = useState(initialstate);
+  //console.log(values);
+
   const [fileProblem, setFileProblem] = useState("");
   //wait for change
   const [formValues, setFormValues] = useState({
@@ -67,19 +100,6 @@ function ModalEditExamByCerfcode(params) {
       value: params.params.row.question,
       error: false,
       errorMessage: "You must enter a Question",
-    },
-    choicecode: {
-      value: params.params.row.choicecode,
-    },
-    choicetext: {
-      value: params.params.row.choicetext,
-      error: false,
-      errorMessage: "You must enter a choice",
-    },
-    answer: {
-      value: params.params.row.answer,
-      error: false,
-      errorMessage: "You must enter answer value 1 or 0",
     },
     cerfcode: {
       value: params.params.row.cerfcode,
@@ -101,6 +121,10 @@ function ModalEditExamByCerfcode(params) {
   //handleChange in text TextField
   const handleChange = (e) => {
     setValues({
+      ...values,
+      [e.target.name]: e.target.value,
+    });
+    setChoiceLists({
       ...values,
       [e.target.name]: e.target.value,
     });
@@ -130,17 +154,10 @@ function ModalEditExamByCerfcode(params) {
     // eslint-disable-next-line no-console
     const questionAndChoice = await {
       questioncode: params.params.row.questioncode,
-      // questioncode: data.get("questioncode"),
       problem: data.get("problem"),
       question: data.get("question"),
-      choicecode: params.params.row.choicecode,
-      // choicecode: data.get("choicecode"),
-      choicetext: data.get("choicetext"),
-      answer: data.get("answer"),
       cerfcode: params.params.row.cerfcode,
       formcode: params.params.row.formcode,
-      // cerfcode: data.get("cerfcode"),
-      // formcode: data.get("formcode"),
     };
 
     if (fileProblem !== "") {
@@ -258,10 +275,8 @@ function ModalEditExamByCerfcode(params) {
                   id="outlined-basic"
                   label="ลำดับ"
                   name="id"
-                  value={values.id || ""}
+                  value={values?.id || ""}
                   required
-                  onChange={handleChange}
-                  //error={values.problem === undefined ? true : false}
                   fullWidth
                   variant="outlined"
                   disabled
@@ -272,10 +287,8 @@ function ModalEditExamByCerfcode(params) {
                   id="outlined-basic"
                   label="รหัสโจทย์"
                   name="questioncode"
-                  value={values.questioncode || ""}
+                  value={values?.questioncode || ""}
                   required
-                  onChange={handleChange}
-                  //error={values.problem === undefined ? true : false}
                   fullWidth
                   variant="outlined"
                   disabled
@@ -286,28 +299,25 @@ function ModalEditExamByCerfcode(params) {
                   id="outlined-basic"
                   label="ไฟล์โจทย์"
                   name="problem"
-                  value={values.problem || ""}
+                  value={values?.problem || ""}
                   required
                   onChange={handleChange}
-                  //error={values.problem === undefined ? true : false}
                   fullWidth
                   variant="outlined"
                 />
                 <input
                   accept={
-                    values.cerfcode === "R1A1" ||
-                    values.cerfcode === "R1A2" ||
-                    values.cerfcode === "R1B1" ||
-                    values.cerfcode === "R1B2" ||
-                    values.cerfcode === "R1C1"
+                    values?.cerfcode === "R1A1" ||
+                    values?.cerfcode === "R1A2" ||
+                    values?.cerfcode === "R1B1" ||
+                    values?.cerfcode === "R1B2" ||
+                    values?.cerfcode === "R1C1"
                       ? ".txt"
                       : ".mp3"
                   }
                   id="contained-button-file"
                   label="ไฟล์โจทย์ (นามสกุล .txt, .mp3)"
-                  // style={{ display: 'none' }}
                   component="span"
-                  //value={fileProblem}
                   multiple
                   name="file"
                   type="file"
@@ -324,69 +334,91 @@ function ModalEditExamByCerfcode(params) {
                   id="outlined-basic"
                   label="โจทย์"
                   name="question"
-                  value={values.question || ""}
+                  value={values?.question || ""}
                   required
                   onChange={handleChange}
-                  //error={values.problem === undefined ? true : false}
                   fullWidth
                   variant="outlined"
                 />
+                {values?.cerfcode === "L2C1" && (
+                  <>
+                    <input
+                      accept=".mp3"
+                      id="contained-button-file"
+                      label="ไฟล์โจทย์ (นามสกุล .txt, .mp3)"
+                      component="span"
+                      multiple
+                      name="file"
+                      type="file"
+                      onChange={handleFileChange}
+                    />
+                    <label htmlFor="contained-button-file">
+                      <Button component="span" variant="outlined" fullWidth>
+                        อัพโหลดไฟล์โจทย์ (นามสกุล .mp3)
+                      </Button>
+                    </label>
+                  </>
+                )}
 
                 <TextField
                   sx={{ margin: "10px" }}
                   id="outlined-basic"
-                  label="รหัสตัวเลือก"
-                  name="choicecode"
-                  value={values.choicecode || ""}
+                  label="ตัวเลือก (ถูก)"
+                  name={`${params.params.row.questioncode}CH01`}
+                  value={
+                    choiceLists?.[`${params.params.row.questioncode}CH01`] || ""
+                  }
                   required
                   onChange={handleChange}
-                  //error={values.problem === undefined ? true : false}
                   fullWidth
                   variant="outlined"
-                  disabled
                 />
                 <TextField
                   sx={{ margin: "10px" }}
                   id="outlined-basic"
                   label="ตัวเลือก"
-                  name="choicetext"
-                  value={values.choicetext || ""}
+                  name={`${params.params.row.questioncode}CH02`}
+                  value={
+                    choiceLists?.[`${params.params.row.questioncode}CH02`] || ""
+                  }
                   required
                   onChange={handleChange}
-                  //error={values.problem === undefined ? true : false}
                   fullWidth
                   variant="outlined"
                 />
-
                 <TextField
                   sx={{ margin: "10px" }}
                   id="outlined-basic"
-                  label="คำตอบถูก(1)/ผิด(0)"
-                  type="number"
-                  name="answer"
-                  value={values.answer || 0}
+                  label="ตัวเลือก"
+                  name={`${params.params.row.questioncode}CH03`}
+                  value={
+                    choiceLists?.[`${params.params.row.questioncode}CH03`] || ""
+                  }
                   required
                   onChange={handleChange}
-                  //error={values.problem === undefined ? true : false}
                   fullWidth
                   variant="outlined"
-                  InputProps={{
-                    inputProps: {
-                      max: 1,
-                      min: 0,
-                    },
-                  }}
                 />
-
+                <TextField
+                  sx={{ margin: "10px" }}
+                  id="outlined-basic"
+                  label="ตัวเลือก"
+                  name={`${params.params.row.questioncode}CH04`}
+                  value={
+                    choiceLists?.[`${params.params.row.questioncode}CH04`] || ""
+                  }
+                  required
+                  onChange={handleChange}
+                  fullWidth
+                  variant="outlined"
+                />
                 <TextField
                   sx={{ margin: "10px" }}
                   id="outlined-basic"
                   label="รหัสความสามารถ"
                   name="cerfcode"
-                  value={values.cerfcode || ""}
+                  value={values?.cerfcode || ""}
                   required
-                  onChange={handleChange}
-                  //error={values.problem === undefined ? true : false}
                   fullWidth
                   variant="outlined"
                   disabled
@@ -397,10 +429,8 @@ function ModalEditExamByCerfcode(params) {
                   id="outlined-basic"
                   label="รหัสฟอร์มข้อสอบ"
                   name="formcode"
-                  value={values.formcode || ""}
+                  value={values?.formcode || ""}
                   required
-                  onChange={handleChange}
-                  //error={values.problem === undefined ? true : false}
                   fullWidth
                   variant="outlined"
                   disabled
@@ -414,11 +444,9 @@ function ModalEditExamByCerfcode(params) {
                 }}
               >
                 <Box sx={{ paddingRight: "20px" }}>
-                  {/* <Link to="#" style={{ textDecoration: "none" }}> */}
                   <Button type="submit" variant="contained">
                     บันทึก
                   </Button>
-                  {/* </Link> */}
                 </Box>
               </Box>
             </Box>

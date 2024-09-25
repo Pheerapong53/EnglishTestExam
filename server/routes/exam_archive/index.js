@@ -27,6 +27,9 @@ routes.get("/getquestionfilterbycerfcode/:cerfcode",verifyToken, async(req,res) 
 routes.get("/getquestionlist",verifyToken, async(req, res) => {
     res.send(await exam.getquestionlists());
 })
+routes.get("/getchoicebyquestioncode/:questioncode",verifyToken, async(req,res) => {
+  res.send(await exam.getchoiceByQuestioncode(req));
+})
 routes.get("/getchoicelist",verifyToken, async(req, res) => {
   res.send(await exam.getchoicelists());
 })

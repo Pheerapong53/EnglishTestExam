@@ -242,7 +242,19 @@ const exam = {
       console.log("Backend :: question : getchoice -> failed : ", err);
     }
   },
-
+  getchoiceByQuestioncode: async (req) => {
+    const {questioncode} = req.params;
+    let condition = {
+      where : {
+        questioncode : questioncode,
+      },
+    };
+    try {
+      return await tbchoice.findAll(condition);
+    }catch(err) {
+      console.log("Backend :: choice : getchoiceByQuestioncode -> failed : ", err);
+    }
+  },
   getquestionlists: async () => {
     const condition = {
       raw: true,

@@ -26,6 +26,7 @@ import {
   ControlPoint,
 } from "@mui/icons-material";
 import ModalEditExamArchiveLookExam from "../components/ModalEditExamArchiveLookExam";
+import ModalEditExamByCerfcodeNew from "./ModalEditExamByCerfcodeNew";
 import PropTypes from "prop-types";
 import ModalAddMultiple from "../components/ModalAddMultiple";
 import ModalAddOne from "../components/ModalAddOne";
@@ -149,7 +150,7 @@ function ContentPageExamArchiveLookExam() {
         return (
           <strong>
             {/* แก้ไขโจทย์ข้อสอบ */}
-            <ModalEditExamByCerfcode params={params} />
+            <ModalEditExamByCerfcodeNew params={params} />
 
             <ThemeProvider theme={theme}>
               <Button
