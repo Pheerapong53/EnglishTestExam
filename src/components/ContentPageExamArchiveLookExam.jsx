@@ -24,6 +24,7 @@ import {
   Close,
   ArrowBack,
   ControlPoint,
+  Edit,
 } from "@mui/icons-material";
 import ModalEditExamArchiveLookExam from "../components/ModalEditExamArchiveLookExam";
 import ModalEditExamByCerfcodeNew from "./ModalEditExamByCerfcodeNew";
@@ -128,6 +129,10 @@ function ContentPageExamArchiveLookExam() {
   const { user } = useSelector((state) => state.user);
   const token = user.token;
   const navigate = useNavigate();
+  const [openModal, setOpenModal] = useState(false);
+  const [params, setParams] = useState();
+  const handleOpenModal = () => setOpenModal(true);
+  const handleCloseModal = () => setOpenModal(false);
 
   //get data from navigate to show in Datagrid
   const location = useLocation();
@@ -150,7 +155,21 @@ function ContentPageExamArchiveLookExam() {
         return (
           <strong>
             {/* แก้ไขโจทย์ข้อสอบ */}
-            <ModalEditExamByCerfcodeNew params={params} />
+            <ThemeProvider theme={theme}>
+              <Button
+                variant="contained"
+                color="secondary"
+                size="small"
+                style={{ marginLeft: 16 }}
+                startIcon={<Edit />}
+                onClick={() => {
+                  setParams(params);
+                  handleOpenModal();
+                }}
+              >
+                EDIT
+              </Button>
+            </ThemeProvider>
 
             <ThemeProvider theme={theme}>
               <Button
@@ -364,6 +383,12 @@ function ContentPageExamArchiveLookExam() {
   //Render
   return (
     <>
+      <ModalEditExamByCerfcodeNew
+        params={params}
+        open={openModal}
+        handleClose={handleCloseModal}
+      />
+
       <Typography component="div">
         <Box sx={{ textAlign: "center", fontSize: 24, fontWeight: 500 }}>
           คลังข้อสอบ
