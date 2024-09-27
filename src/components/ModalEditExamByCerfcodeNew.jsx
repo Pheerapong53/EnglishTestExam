@@ -6,14 +6,19 @@ import {
   DialogContent,
   DialogContentText,
   Typography,
+  TextField,
 } from "@mui/material";
 import { Edit } from "@mui/icons-material";
 import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../src/store/userSilce";
+import { editChoice } from "./functions/cefrLevel";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 function ModalEditExamByCerfcodeNew({ params, open, handleClose }) {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { user } = useSelector((state) => state.user);
   const token = user.token;
   //Hook and Logic
@@ -21,40 +26,77 @@ function ModalEditExamByCerfcodeNew({ params, open, handleClose }) {
   console.log(choiceLists);
 
   useEffect(() => {
-    if (!params?.row?.questioncode) return;
-    var configChoice = {
-      method: "GET",
-      url:
-        process.env.REACT_APP_API_URL +
-        `/getchoicebyquestioncode/${params.row.questioncode}`,
-      headers: { authtoken: "bearer " + token },
-    };
-    axios(configChoice)
-      .then((res) => {
-        const fetchChoices = res.data;
-        const initialstate = {
-          id: params.row.id,
-          questioncode: params.row.questioncode,
-          problem: params.row.problem,
-          question: params.row.question,
-          cerfcode: params.row.cerfcode,
-          formcode: params.row.formcode,
-        };
-        fetchChoices.forEach((choice) => {
-          initialstate[choice.choicecode] = choice.choicetext;
-        });
+    let isMounted = true;
+    const fetchChoices = async () => {
+      if (!params?.row?.questioncode) return;
 
-        setChoiceLists(initialstate);
-      })
-      .catch((error) => {
+      try {
+        var configChoice = {
+          method: "GET",
+          url:
+            process.env.REACT_APP_API_URL +
+            `/getchoicebyquestioncode/${params.row.questioncode}`,
+          headers: { authtoken: "bearer " + token },
+        };
+        const { data } = await axios(configChoice);
+        if (isMounted) {
+          const initialstate = {
+            id: params.row.id,
+            questioncode: params.row.questioncode,
+            problem: params.row.problem,
+            question: params.row.question,
+            cerfcode: params.row.cerfcode,
+            formcode: params.row.formcode,
+          };
+
+          data.forEach((choice) => {
+            initialstate[choice.choicecode] = choice.choicetext;
+          });
+
+          setChoiceLists(initialstate);
+        }
+      } catch (error) {
         console.error("Error fetching choice data:", error);
-      });
+      }
+    };
+    fetchChoices();
+
+    return () => {
+      isMounted = false;
+    };
   }, [params]);
   //Event Handler
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Form Submitted :", params.row);
+    //editChoice
+    editChoice(choiceLists, token)
+      .then((res) => {
+        toast.success(res.data.msg, { onClose: () => navigate(0) });
+      })
+      .catch((error) => {
+        if (error.response.status === 401 || error.response.status === 404) {
+          dispatch(logout());
+          navigate("/notfound404", {
+            state: {
+              statusCode: error.response.status,
+              txt: error.response.data,
+            },
+          });
+        } else {
+          toast.error(error.response.data.message);
+        }
+      });
+    console.log("Form Submitted :", choiceLists);
   };
+
+  const handleChange = (e) => {
+    e.preventDefault();
+    setChoiceLists((prevState) => ({
+      ...prevState,
+      [e.target.name]: e.target.value,
+    }));
+  };
+  //Render
   return (
     <>
       <Dialog
@@ -100,23 +142,93 @@ function ModalEditExamByCerfcodeNew({ params, open, handleClose }) {
                 <Typography>ลำดับ:{params?.row.id}</Typography>
                 <Typography>รหัสโจทย์: {params?.row.questioncode}</Typography>
                 <Typography>ไฟล์โจทย์: {params?.row.problem}</Typography>
+                <TextField
+                  sx={{ margin: "10px" }}
+                  id="outlined-basic"
+                  label="ไฟล์โจทย์"
+                  name="problem"
+                  value={choiceLists?.problem || ""}
+                  required
+                  onChange={handleChange}
+                  fullWidth
+                  variant="outlined"
+                />
                 <Typography>โจทย์: {params?.row.question}</Typography>
+                <TextField
+                  sx={{ margin: "10px" }}
+                  id="outlined-basic"
+                  label="โจทย์"
+                  name="question"
+                  value={choiceLists?.question || ""}
+                  required
+                  onChange={handleChange}
+                  fullWidth
+                  variant="outlined"
+                />
                 <Typography>
-                  ตัวเลือก (ถูก):{" "}
-                  {choiceLists?.[`${params.row.questioncode}CH01`] || "N/A"}
+                  ตัวเลือก (ถูก): {`${params?.row?.questioncode}CH01` || "N/A"}
                 </Typography>
+                <TextField
+                  sx={{ margin: "10px" }}
+                  id="outlined-basic"
+                  label="ตัวเลือก (ถูก)"
+                  name={`${params?.row?.questioncode}CH01`}
+                  value={
+                    choiceLists?.[`${params?.row?.questioncode}CH01`] || ""
+                  }
+                  required
+                  onChange={handleChange}
+                  fullWidth
+                  variant="outlined"
+                />
                 <Typography>
-                  ตัวเลือก (ถูก):{" "}
-                  {choiceLists?.[`${params.row.questioncode}CH02`] || "N/A"}
+                  ตัวเลือก2: {`${params?.row?.questioncode}CH02` || "N/A"}
                 </Typography>
+                <TextField
+                  sx={{ margin: "10px" }}
+                  id="outlined-basic"
+                  label="ตัวเลือก"
+                  name={`${params?.row?.questioncode}CH02`}
+                  value={
+                    choiceLists?.[`${params?.row?.questioncode}CH02`] || ""
+                  }
+                  required
+                  onChange={handleChange}
+                  fullWidth
+                  variant="outlined"
+                />
                 <Typography>
-                  ตัวเลือก (ถูก):{" "}
-                  {choiceLists?.[`${params.row.questioncode}CH03`] || "N/A"}
+                  ตัวเลือก3: {`${params?.row?.questioncode}CH03` || "N/A"}
                 </Typography>
+                <TextField
+                  sx={{ margin: "10px" }}
+                  id="outlined-basic"
+                  label="ตัวเลือก"
+                  name={`${params?.row?.questioncode}CH03`}
+                  value={
+                    choiceLists?.[`${params?.row?.questioncode}CH03`] || ""
+                  }
+                  required
+                  onChange={handleChange}
+                  fullWidth
+                  variant="outlined"
+                />
                 <Typography>
-                  ตัวเลือก (ถูก):{" "}
-                  {choiceLists?.[`${params.row.questioncode}CH04`] || "N/A"}
+                  ตัวเลือก4: {`${params?.row?.questioncode}CH04` || "N/A"}
                 </Typography>
+                <TextField
+                  sx={{ margin: "10px" }}
+                  id="outlined-basic"
+                  label="ตัวเลือก"
+                  name={`${params?.row?.questioncode}CH04`}
+                  value={
+                    choiceLists?.[`${params?.row?.questioncode}CH04`] || ""
+                  }
+                  required
+                  onChange={handleChange}
+                  fullWidth
+                  variant="outlined"
+                />
                 <Typography>รหัสความสามารถ: {params?.row.cerfcode}</Typography>
                 <Typography>รหัสฟอร์มข้อสอบ: {params?.row.formcode}</Typography>
               </Box>

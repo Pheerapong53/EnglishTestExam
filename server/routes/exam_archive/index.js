@@ -39,6 +39,15 @@ routes.put("/editcefrlevel", async(req,res, next) => {
 routes.put("/editquestionandchoice", async(req,res) => {
   res.send(await exam.editquestionandchoice(req,res));
 })
+routes.put("/editchoice", async(req,res) => {
+  try {
+    const result = await exam.editchoice(req);
+    return res.status(200).json(result);
+  } catch (error) {
+    console.error("Error in editchoice route:", error.message || error);
+    return res.status(500).json({ msg: "Error editing choices" });
+  }
+})
 routes.delete("/delcefrlevel/:id",verifyToken, async(req,res) =>{
     res.send(await exam.delcefrlevel(req, res));
 })

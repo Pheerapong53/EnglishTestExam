@@ -219,17 +219,17 @@ const exam = {
     }
   },
   getquestionfilterbycerfcode: async (req) => {
-    const {cerfcode} = req.params;
-      let condition = {
-        where: {
-          cerfcode: cerfcode,
-        },
-      };
-      try {
-        return await tbquestion.findAll(condition);
-      } catch (err) {
-        console.log("Backend :: question : getquestion -> failed : ", err);
-      }
+    const { cerfcode } = req.params;
+    let condition = {
+      where: {
+        cerfcode: cerfcode,
+      },
+    };
+    try {
+      return await tbquestion.findAll(condition);
+    } catch (err) {
+      console.log("Backend :: question : getquestion -> failed : ", err);
+    }
   },
 
   getchoice: async () => {
@@ -243,16 +243,19 @@ const exam = {
     }
   },
   getchoiceByQuestioncode: async (req) => {
-    const {questioncode} = req.params;
+    const { questioncode } = req.params;
     let condition = {
-      where : {
-        questioncode : questioncode,
+      where: {
+        questioncode: questioncode,
       },
     };
     try {
       return await tbchoice.findAll(condition);
-    }catch(err) {
-      console.log("Backend :: choice : getchoiceByQuestioncode -> failed : ", err);
+    } catch (err) {
+      console.log(
+        "Backend :: choice : getchoiceByQuestioncode -> failed : ",
+        err
+      );
     }
   },
   getquestionlists: async () => {
@@ -363,7 +366,43 @@ const exam = {
         .json({ msg: "err from editcefrlevel" + error });
     }
   },
+  editchoice: async (req) => {
+    const questioncode = req.body.questioncode;
+    const choiceCodes = ["CH01", "CH02", "CH03", "CH04"];
+    try {
+      let updateStatus = false;
 
+      for (let i = 0; i < choiceCodes.length; i++){
+        const choicetext = req.body[`${questioncode}${choiceCodes[i]}`];
+        const existingChoices = await tbchoice.findOne({
+          where: {
+            choicecode: `${questioncode}${choiceCodes[i]}`,
+          },
+        });
+        
+        if(existingChoices){
+          await tbchoice.update(
+            { choicetext: choicetext },
+            { where: { choicecode: `${questioncode}${choiceCodes[i]}` } }
+          );
+          updateStatus = true
+        }else {
+          await tbchoice.create({
+            choicecode: `${questioncode}${choiceCodes[i]}`,
+            choicetext: choicetext,
+            answer: choiceCodes[i] === 'CH01' ? 1 : 0, // Correct answer for CH01
+            questioncode: questioncode,
+          },
+        {ignoreDuplicates : true});
+        }
+      }
+      return { msg: updateStatus ? 'แก้ไขคำตอบแล้ว' : 'เพิ่มคำตอบแล้ว' };
+    } catch (error) {
+      console.error("Error in editing choices:", error.message || error);
+      throw error;
+    }
+  },
+  
   editquestionandchoice: async (req, res) => {
     const question = await tbquestion
       .update(
