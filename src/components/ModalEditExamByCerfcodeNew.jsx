@@ -139,9 +139,30 @@ function ModalEditExamByCerfcodeNew({ params, open, handleClose }) {
                   marginTop: "10px",
                 }}
               >
-                <Typography>ลำดับ:{params?.row.id}</Typography>
+                <TextField
+                  label="ลำดับ"
+                  sx={{ margin: "10px" }}
+                  id="outlined-basic"
+                  name="id"
+                  value={params?.row.id || ""}
+                  fullWidth
+                  variant="outlined"
+                  disabled
+                />
                 <Typography>รหัสโจทย์: {params?.row.questioncode}</Typography>
+                <TextField
+                  label="รหัสโจทย์"
+                  sx={{ margin: "10px" }}
+                  id="outlined-basic"
+                  name="questioncode"
+                  value={params?.row.questioncode || ""}
+                  fullWidth
+                  variant="outlined"
+                  disabled
+                />
                 <Typography>ไฟล์โจทย์: {params?.row.problem}</Typography>
+                <Typography>Show Old File</Typography>
+                <Typography>If new file is selected show preview file</Typography>
                 <TextField
                   sx={{ margin: "10px" }}
                   id="outlined-basic"
@@ -165,13 +186,10 @@ function ModalEditExamByCerfcodeNew({ params, open, handleClose }) {
                   fullWidth
                   variant="outlined"
                 />
-                <Typography>
-                  ตัวเลือก (ถูก): {`${params?.row?.questioncode}CH01` || "N/A"}
-                </Typography>
                 <TextField
                   sx={{ margin: "10px" }}
                   id="outlined-basic"
-                  label="ตัวเลือก (ถูก)"
+                  label={`ตัวเลือก (ถูก): ${params?.row?.questioncode ? `${params.row.questioncode}CH01` : "N/A"}`}
                   name={`${params?.row?.questioncode}CH01`}
                   value={
                     choiceLists?.[`${params?.row?.questioncode}CH01`] || ""
@@ -181,13 +199,10 @@ function ModalEditExamByCerfcodeNew({ params, open, handleClose }) {
                   fullWidth
                   variant="outlined"
                 />
-                <Typography>
-                  ตัวเลือก2: {`${params?.row?.questioncode}CH02` || "N/A"}
-                </Typography>
                 <TextField
                   sx={{ margin: "10px" }}
                   id="outlined-basic"
-                  label="ตัวเลือก"
+                  label={`ตัวเลือก2 : ${params?.row?.questioncode ? `${params.row.questioncode}CH02` : "N/A"}`}
                   name={`${params?.row?.questioncode}CH02`}
                   value={
                     choiceLists?.[`${params?.row?.questioncode}CH02`] || ""
@@ -197,13 +212,10 @@ function ModalEditExamByCerfcodeNew({ params, open, handleClose }) {
                   fullWidth
                   variant="outlined"
                 />
-                <Typography>
-                  ตัวเลือก3: {`${params?.row?.questioncode}CH03` || "N/A"}
-                </Typography>
                 <TextField
                   sx={{ margin: "10px" }}
                   id="outlined-basic"
-                  label="ตัวเลือก"
+                  label={`ตัวเลือก3 : ${params?.row?.questioncode ? `${params.row.questioncode}CH03` : "N/A"}`}
                   name={`${params?.row?.questioncode}CH03`}
                   value={
                     choiceLists?.[`${params?.row?.questioncode}CH03`] || ""
@@ -213,13 +225,10 @@ function ModalEditExamByCerfcodeNew({ params, open, handleClose }) {
                   fullWidth
                   variant="outlined"
                 />
-                <Typography>
-                  ตัวเลือก4: {`${params?.row?.questioncode}CH04` || "N/A"}
-                </Typography>
                 <TextField
                   sx={{ margin: "10px" }}
                   id="outlined-basic"
-                  label="ตัวเลือก"
+                  label={`ตัวเลือก4 : ${params?.row?.questioncode ? `${params.row.questioncode}CH04` : "N/A"}`}
                   name={`${params?.row?.questioncode}CH04`}
                   value={
                     choiceLists?.[`${params?.row?.questioncode}CH04`] || ""
@@ -229,8 +238,27 @@ function ModalEditExamByCerfcodeNew({ params, open, handleClose }) {
                   fullWidth
                   variant="outlined"
                 />
-                <Typography>รหัสความสามารถ: {params?.row.cerfcode}</Typography>
-                <Typography>รหัสฟอร์มข้อสอบ: {params?.row.formcode}</Typography>
+                <TextField
+                  label="รหัสความสามารถ"
+                  sx={{ margin: "10px" }}
+                  id="outlined-basic"
+                  name="cerfcode"
+                  value={params?.row.cerfcode || ""}
+                  fullWidth
+                  variant="outlined"
+                  disabled
+                />
+
+                <TextField
+                  label="รหัสฟอร์มข้อสอบ"
+                  sx={{ margin: "10px" }}
+                  id="outlined-basic"
+                  name="formcode"
+                  value={params?.row.formcode || ""}
+                  fullWidth
+                  variant="outlined"
+                  disabled
+                />
               </Box>
               <Box
                 sx={{
