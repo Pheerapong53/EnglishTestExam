@@ -1305,7 +1305,11 @@ exports.loginv2 = async (req, res, next) => {
     const ipV4Split = ipV4.split(":");
     //const ip = ipadd || req.headers['x-forwarded-for'] || ipV4Split[ipV4Split.length - 1];
     //Fix IP
-    const ip = "10.107.209.69";
+    // Phee 
+    //const ip = "10.107.209.69";
+    //Home Phee
+    const ip = "192.168.1.112";
+    
 
     if (!email) {
       return next(
