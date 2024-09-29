@@ -4,6 +4,8 @@ const multer = require('multer');
 const app = express();
 const exam = require("./exam");
 const {verifyToken} = require("../../middleware/VerifyToken");
+const path = require("path");
+const fs = require("fs");
 //const upload = multer({dest:'../fileexam/'});
 
 routes.get("/indvform",verifyToken,async(req,res) => {
@@ -71,7 +73,6 @@ routes.get("/getcefrlevel/:cefrlevel",verifyToken, async(req,res) => {
 
 
 //Upload Files
-
 const storagetext = multer.diskStorage({
     destination: ('./fileproblem/text/'),
     filename: function (req, file, cb) {
@@ -82,13 +83,14 @@ const storagetext = multer.diskStorage({
   })
 
 const storagesound = multer.diskStorage({
-    destination: ('./fileproblem/sound/'),
+  
+    destination: (`./routes/fileproblem/sound/`),
     filename: function (req, file, cb) {
       // null as first argument means no error
     
       cb(null, file.originalname)
     },
-  })
+  });
 
 const uploadtext = multer({storage: storagetext})
 const uploadsound = multer({storage: storagesound})
