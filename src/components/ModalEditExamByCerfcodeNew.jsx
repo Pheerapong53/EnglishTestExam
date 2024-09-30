@@ -106,8 +106,38 @@ function ModalEditExamByCerfcodeNew({ params, open, handleClose }) {
   }, [params]);
 
   //Event Handler
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    //sendfile to backend
+    if (newFile !== "") {
+      const formData = await new FormData();
+      formData.append("file", newFile);
+      formData.append("formcode", params.row.formcode);
+      formData.append("problem", params.row.problem);
+
+      var extendName = params.row.problem.split(".")[1];
+      if (extendName.toString() === "txt") {
+        axios
+          .post(process.env.REACT_APP_API_URL + "/upload", formData, {
+            headers: {
+              authtoken: "bearer " + token,
+            },
+          })
+          .then((res) => {
+            toast.success(res.data.msg);
+          });
+      } else if (extendName.toString() === "mp3") {
+        await axios
+          .post(process.env.REACT_APP_API_URL + "/uploadsound", formData, {
+            headers: {
+              authtoken: "bearer " + token,
+            },
+          })
+          .then((res) => {
+            toast.success(res.data.msg);
+          });
+      }
+    }
     //editChoice
     editChoice(choiceLists, token)
       .then((res) => {
@@ -149,6 +179,7 @@ function ModalEditExamByCerfcodeNew({ params, open, handleClose }) {
       console.log("fileExtension:", fileExtension);
 
       if (fileExtension === "mp3" || fileExtension === "txt") {
+        setNewFile(e.target.files[0]);
         const reader = new FileReader();
 
         reader.onerror = () => {
@@ -241,24 +272,37 @@ function ModalEditExamByCerfcodeNew({ params, open, handleClose }) {
                   disabled
                 />
                 <Typography>ไฟล์โจทย์: {params?.row.problem}</Typography>
-                <Typography>Preview File Here</Typography>
-
                 {filePreview ? (
                   <>
                     {["R1A1", "R1A2", "R1B1", "R1B2", "R1C1"].includes(
                       params?.row.cerfcode
                     ) ? (
-                      <pre style={{ whiteSpace: "pre-wrap" }}>
-                        {filePreview}
-                      </pre>
+                      <>
+                        <p>Text Preview</p>
+                        <pre
+                          style={{
+                            whiteSpace: "pre-wrap",
+                            border: "1px solid #ccc", // Adds a light gray border
+                            padding: "10px", // Adds padding for better spacing
+                            backgroundColor: "#f9f9f9", // Light gray background for better contrast
+                            borderRadius: "5px", // Rounded corners
+                            overflow: "auto", // Allows scrolling if content overflows
+                          }}
+                        >
+                          {filePreview}
+                        </pre>
+                      </>
                     ) : (
-                      <audio controls>
-                        <source
-                          src={`data:audio/mp3;base64,${filePreview}`}
-                          type="audio/mp3"
-                        />
-                        Your browser does not support the audio element.
-                      </audio>
+                      <>
+                        <p>Sound Preview</p>
+                        <audio controls>
+                          <source
+                            src={`data:audio/mp3;base64,${filePreview}`}
+                            type="audio/mp3"
+                          />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </>
                     )}
                   </>
                 ) : fileUrl ? (
@@ -266,7 +310,18 @@ function ModalEditExamByCerfcodeNew({ params, open, handleClose }) {
                     {["R1A1", "R1A2", "R1B1", "R1B2", "R1C1"].includes(
                       params?.row.cerfcode
                     ) ? (
-                      <pre style={{ whiteSpace: "pre-wrap" }}>{fileUrl}</pre>
+                      <pre
+                        style={{
+                          whiteSpace: "pre-wrap",
+                          border: "1px solid #ccc", // Adds a light gray border
+                          padding: "10px", // Adds padding for better spacing
+                          backgroundColor: "#f9f9f9", // Light gray background for better contrast
+                          borderRadius: "5px", // Rounded corners
+                          overflow: "auto", // Allows scrolling if content overflows
+                        }}
+                      >
+                        {fileUrl}
+                      </pre>
                     ) : (
                       <audio controls>
                         <source

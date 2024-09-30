@@ -82,13 +82,35 @@ const storagetext = multer.diskStorage({
     },
   })
 
-const storagesound = multer.diskStorage({
+const storagesoundfix = multer.diskStorage({
   
     destination: (`./routes/fileproblem/sound/`),
     filename: function (req, file, cb) {
       // null as first argument means no error
     
       cb(null, file.originalname)
+    },
+  });
+
+  const storagesound = multer.diskStorage({
+  
+    destination: function(req,file, cb){
+      const formcode = req.body.formcode;
+      const dir = `./routes/fileproblem/sound/${formcode}`;
+
+      fs.mkdir(dir, {recursive: true}, (err) => {
+        if(err) {
+          return cb(err);
+        }
+        cb(null, dir);
+      });
+    },
+    
+    filename: function (req,file, cb) {
+      const filename = `${req.body.problem}`;
+      // null as first argument means no error
+    
+      cb(null, filename);
     },
   });
 
@@ -101,8 +123,14 @@ routes.post('/upload',verifyToken,uploadtext.single('file'),(req,res) => {
 })
 
 routes.post('/uploadsound',verifyToken,uploadsound.single('file'),(req,res) => {
-    console.log(req.file);
-    res.send("file mp3 save on server");
+  console.log('Formcode:', req.body.formcode); // Check formcode
+  console.log('Filename:', req.body.problem); // Check questioncode  
+  console.log(req.file);
+  if (!req.body.formcode || !req.body.problem) {
+    return res.status(400).json({ msg: 'Missing formcode or problem' });
+  }
+
+  res.send("File mp3 saved on server");
 })
 
 module.exports = routes;
