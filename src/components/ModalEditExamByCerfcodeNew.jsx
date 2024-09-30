@@ -24,6 +24,11 @@ function ModalEditExamByCerfcodeNew({ params, open, handleClose }) {
   //Hook and Logic
   const [choiceLists, setChoiceLists] = useState({});
   console.log(choiceLists);
+  //old file problem
+  const [fileUrl, setFileUrl] = useState("");
+  //filePreview
+  const [filePreview, setFilePreview] = useState("");
+  const [newFile, setNewFile] = useState("");
 
   useEffect(() => {
     let isMounted = true;
@@ -65,6 +70,41 @@ function ModalEditExamByCerfcodeNew({ params, open, handleClose }) {
       isMounted = false;
     };
   }, [params]);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchFileUrl = async () => {
+      if (!params?.row.problem) return;
+
+      try {
+        const fileExtension = params["row"]["problem"].split(".").pop();
+        const isMP3 = fileExtension === "mp3";
+        const isTXT = fileExtension === "txt";
+
+        const configFile = {
+          method: "GET",
+          url: isMP3
+            ? `${process.env.REACT_APP_API_URL}/getfilesound/${params.row.formcode}/${params.row.problem}`
+            : `${process.env.REACT_APP_API_URL}/getfiletext/${params.row.formcode}/${params.row.problem}`,
+          headers: { authtoken: "bearer " + token },
+        };
+
+        const response = await axios(configFile);
+        setFileUrl(response.data);
+      } catch (error) {
+        console.error("Error fetching fileUrl data:", error);
+      }
+    };
+
+    fetchFileUrl();
+
+    return () => {
+      isMounted = false;
+      setFileUrl("");
+      setFilePreview("");
+    };
+  }, [params]);
+
   //Event Handler
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -96,6 +136,47 @@ function ModalEditExamByCerfcodeNew({ params, open, handleClose }) {
       [e.target.name]: e.target.value,
     }));
   };
+
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    console.log("selectedFile:", selectedFile);
+
+    setFilePreview(""); // Clear the previous file preview
+
+    if (selectedFile) {
+      const fileExtension = selectedFile.name.split(".").pop().toLowerCase(); // Extract the file extension
+
+      console.log("fileExtension:", fileExtension);
+
+      if (fileExtension === "mp3" || fileExtension === "txt") {
+        const reader = new FileReader();
+
+        reader.onerror = () => {
+          toast.error("Error reading file");
+        };
+
+        // Handle text files
+        if (fileExtension === "txt") {
+          reader.onloadend = () => {
+            setFilePreview(reader.result); // Set the file preview directly to the text content
+          };
+          reader.readAsText(selectedFile); // Read the file as text
+        }
+
+        // Handle mp3 files
+        if (fileExtension === "mp3") {
+          reader.onloadend = () => {
+            setFilePreview(reader.result.split(",")[1]); // Set the base64 data (removing the data URL prefix)
+          };
+          reader.readAsDataURL(selectedFile); // Read the file as a base64-encoded data URL
+        }
+      } else {
+        toast.error("Accept only .txt or .mp3 files");
+        return;
+      }
+    }
+  };
+
   //Render
   return (
     <>
@@ -149,7 +230,6 @@ function ModalEditExamByCerfcodeNew({ params, open, handleClose }) {
                   variant="outlined"
                   disabled
                 />
-                <Typography>รหัสโจทย์: {params?.row.questioncode}</Typography>
                 <TextField
                   label="รหัสโจทย์"
                   sx={{ margin: "10px" }}
@@ -161,8 +241,46 @@ function ModalEditExamByCerfcodeNew({ params, open, handleClose }) {
                   disabled
                 />
                 <Typography>ไฟล์โจทย์: {params?.row.problem}</Typography>
-                <Typography>Show Old File</Typography>
-                <Typography>If new file is selected show preview file</Typography>
+                <Typography>Preview File Here</Typography>
+
+                {filePreview ? (
+                  <>
+                    {["R1A1", "R1A2", "R1B1", "R1B2", "R1C1"].includes(
+                      params?.row.cerfcode
+                    ) ? (
+                      <pre style={{ whiteSpace: "pre-wrap" }}>
+                        {filePreview}
+                      </pre>
+                    ) : (
+                      <audio controls>
+                        <source
+                          src={`data:audio/mp3;base64,${filePreview}`}
+                          type="audio/mp3"
+                        />
+                        Your browser does not support the audio element.
+                      </audio>
+                    )}
+                  </>
+                ) : fileUrl ? (
+                  <>
+                    {["R1A1", "R1A2", "R1B1", "R1B2", "R1C1"].includes(
+                      params?.row.cerfcode
+                    ) ? (
+                      <pre style={{ whiteSpace: "pre-wrap" }}>{fileUrl}</pre>
+                    ) : (
+                      <audio controls>
+                        <source
+                          src={`data:audio/mp3;base64,${fileUrl}`}
+                          type="audio/mp3"
+                        />
+                        Your browser does not support the audio element.
+                      </audio>
+                    )}
+                  </>
+                ) : (
+                  <>No File</>
+                )}
+
                 <TextField
                   sx={{ margin: "10px" }}
                   id="outlined-basic"
@@ -170,10 +288,32 @@ function ModalEditExamByCerfcodeNew({ params, open, handleClose }) {
                   name="problem"
                   value={choiceLists?.problem || ""}
                   required
-                  onChange={handleChange}
+                  //onChange={handleChange}
                   fullWidth
                   variant="outlined"
                 />
+                <input
+                  accept={
+                    ["R1A1", "R1A2", "R1B1", "R1B2", "R1C1"].includes(
+                      params?.row.cerfcode
+                    )
+                      ? ".txt"
+                      : ".mp3"
+                  }
+                  id="contained-button-file"
+                  label="ไฟล์โจทย์ (นามสกุล .txt, .mp3)"
+                  component="span"
+                  multiple
+                  name="file"
+                  type="file"
+                  onChange={handleFileChange}
+                />
+                <label htmlFor="contained-button-file">
+                  <Button component="span" variant="outlined" fullWidth>
+                    อัพโหลดไฟล์โจทย์ (นามสกุล .txt, .mp3)
+                  </Button>
+                </label>
+
                 <Typography>โจทย์: {params?.row.question}</Typography>
                 <TextField
                   sx={{ margin: "10px" }}
@@ -185,11 +325,16 @@ function ModalEditExamByCerfcodeNew({ params, open, handleClose }) {
                   onChange={handleChange}
                   fullWidth
                   variant="outlined"
+                  multiline
                 />
                 <TextField
                   sx={{ margin: "10px" }}
                   id="outlined-basic"
-                  label={`ตัวเลือก (ถูก): ${params?.row?.questioncode ? `${params.row.questioncode}CH01` : "N/A"}`}
+                  label={`ตัวเลือก (ถูก): ${
+                    params?.row?.questioncode
+                      ? `${params.row.questioncode}CH01`
+                      : "N/A"
+                  }`}
                   name={`${params?.row?.questioncode}CH01`}
                   value={
                     choiceLists?.[`${params?.row?.questioncode}CH01`] || ""
@@ -202,7 +347,11 @@ function ModalEditExamByCerfcodeNew({ params, open, handleClose }) {
                 <TextField
                   sx={{ margin: "10px" }}
                   id="outlined-basic"
-                  label={`ตัวเลือก2 : ${params?.row?.questioncode ? `${params.row.questioncode}CH02` : "N/A"}`}
+                  label={`ตัวเลือก2 : ${
+                    params?.row?.questioncode
+                      ? `${params.row.questioncode}CH02`
+                      : "N/A"
+                  }`}
                   name={`${params?.row?.questioncode}CH02`}
                   value={
                     choiceLists?.[`${params?.row?.questioncode}CH02`] || ""
@@ -215,7 +364,11 @@ function ModalEditExamByCerfcodeNew({ params, open, handleClose }) {
                 <TextField
                   sx={{ margin: "10px" }}
                   id="outlined-basic"
-                  label={`ตัวเลือก3 : ${params?.row?.questioncode ? `${params.row.questioncode}CH03` : "N/A"}`}
+                  label={`ตัวเลือก3 : ${
+                    params?.row?.questioncode
+                      ? `${params.row.questioncode}CH03`
+                      : "N/A"
+                  }`}
                   name={`${params?.row?.questioncode}CH03`}
                   value={
                     choiceLists?.[`${params?.row?.questioncode}CH03`] || ""
@@ -228,7 +381,11 @@ function ModalEditExamByCerfcodeNew({ params, open, handleClose }) {
                 <TextField
                   sx={{ margin: "10px" }}
                   id="outlined-basic"
-                  label={`ตัวเลือก4 : ${params?.row?.questioncode ? `${params.row.questioncode}CH04` : "N/A"}`}
+                  label={`ตัวเลือก4 : ${
+                    params?.row?.questioncode
+                      ? `${params.row.questioncode}CH04`
+                      : "N/A"
+                  }`}
                   name={`${params?.row?.questioncode}CH04`}
                   value={
                     choiceLists?.[`${params?.row?.questioncode}CH04`] || ""
