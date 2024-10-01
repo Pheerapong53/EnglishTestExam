@@ -2,6 +2,8 @@ const express = require("express");
 const routes = express.Router();
 const app = express();
 const fs = require("fs");
+const multer = require('multer');
+const path = require('path');
 const { verifyToken } = require("../../middleware/VerifyToken");
 
 routes.get("/getfiletext/:form/:fileId",verifyToken, (req, res) => {
@@ -35,5 +37,50 @@ routes.get("/getfilesound/:form/:fileId",verifyToken, (req, res) => {
     }
   });
 });
+
+
+const ensureDirectoryExistence = (dir) => {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+};
+const storagesoundfix = multer.diskStorage({
+  destination: (req, file, cb) => {
+    console.log("Data : ", file ); 
+    const formcode = "sound/F0001/"
+    const uploadDir = path.join(__dirname, formcode);
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.originalname)
+  },
+});
+const storage = multer.diskStorage({
+  destination: function(req, file, cb){
+    const formcode = `sound/${req.params.formcode}/`
+    const uploadDir = path.join(__dirname, formcode);
+
+    cb(null, uploadDir)
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.originalname)
+  },
+});
+const uploadsound = multer({storage: storage})
+//Upload File MP3
+routes.post('/uploadsoundfile/:formcode',verifyToken,function(req,res){
+  
+  uploadsound.single('file')(req, res, (err) => {
+    console.log("File : ", req.file);
+    
+    if (err instanceof multer.MulterError) {
+      return res.status(500).json({ message: 'Multer error during upload', error: err });
+    } else if (err) {
+      return res.status(500).json({ message: 'Unknown error during upload', error: err });
+    }
+    
+    res.json({ message: 'Sound file uploaded successfully', fileName: req.file.originalname });
+  });
+})
 
 module.exports = routes;

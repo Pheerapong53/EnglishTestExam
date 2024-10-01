@@ -21,9 +21,11 @@ function ModalEditExamByCerfcodeNew({ params, open, handleClose }) {
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.user);
   const token = user.token;
+  console.log("params.row : ", params?.row);
+
   //Hook and Logic
   const [choiceLists, setChoiceLists] = useState({});
-  console.log(choiceLists);
+  //console.log(choiceLists);
   //old file problem
   const [fileUrl, setFileUrl] = useState("");
   //filePreview
@@ -110,53 +112,69 @@ function ModalEditExamByCerfcodeNew({ params, open, handleClose }) {
     e.preventDefault();
     //sendfile to backend
     if (newFile !== "") {
-      const formData = await new FormData();
-      formData.append("file", newFile);
-      formData.append("formcode", params.row.formcode);
-      formData.append("problem", params.row.problem);
+      const renamedFile = new File([newFile], `${params.row.problem}`, {
+        type: newFile.type,
+      });
+      const formData = new FormData();
+      formData.append("file", renamedFile);
+      for (let [key, value] of formData.entries()) {
+        console.log(`${key}: ${value}`);
+      }
 
       var extendName = params.row.problem.split(".")[1];
+      console.log(extendName);
       if (extendName.toString() === "txt") {
-        axios
-          .post(process.env.REACT_APP_API_URL + "/upload", formData, {
-            headers: {
-              authtoken: "bearer " + token,
-            },
-          })
-          .then((res) => {
-            toast.success(res.data.msg);
-          });
+        try {
+          const res = await axios.post(
+            process.env.REACT_APP_API_URL + "/upload",
+            formData,
+            {
+              headers: {
+                authtoken: "bearer " + token,
+              },
+            }
+          );
+          console.log("Success Text:", res.data);
+        } catch (error) {
+          console.error("Error uploading text file:", error);
+        }
       } else if (extendName.toString() === "mp3") {
-        await axios
-          .post(process.env.REACT_APP_API_URL + "/uploadsound", formData, {
-            headers: {
-              authtoken: "bearer " + token,
-            },
-          })
-          .then((res) => {
-            toast.success(res.data.msg);
-          });
+        try {
+          const res = await axios.post(
+            process.env.REACT_APP_API_URL +
+              `/uploadsoundfile/${params.row.formcode}`,
+            formData,
+            {
+              headers: {
+                authtoken: "bearer " + token,
+              },
+            }
+          );
+          console.log("Success Sound:", res.data);
+        } catch (error) {
+          console.error("Error uploading sound file:", error);
+        }
       }
     }
     //editChoice
-    editChoice(choiceLists, token)
-      .then((res) => {
-        toast.success(res.data.msg, { onClose: () => navigate(0) });
-      })
-      .catch((error) => {
-        if (error.response.status === 401 || error.response.status === 404) {
-          dispatch(logout());
-          navigate("/notfound404", {
-            state: {
-              statusCode: error.response.status,
-              txt: error.response.data,
-            },
-          });
-        } else {
-          toast.error(error.response.data.message);
-        }
-      });
-    console.log("Form Submitted :", choiceLists);
+    // editChoice(choiceLists, token)
+    //   .then((res) => {
+    //     toast.success(res.data.msg, { onClose: () => navigate(0) });
+    //   })
+    //   .catch((error) => {
+    //     if (error.response.status === 401 || error.response.status === 404) {
+    //       dispatch(logout());
+    //       navigate("/notfound404", {
+    //         state: {
+    //           statusCode: error.response.status,
+    //           txt: error.response.data,
+    //         },
+    //       });
+    //     } else {
+    //       toast.error(error.response.data.message);
+    //     }
+    //   });
+    // console.log("Form Submitted :", choiceLists);
   };
 
   const handleChange = (e) => {

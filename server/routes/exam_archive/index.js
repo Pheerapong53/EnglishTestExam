@@ -73,6 +73,11 @@ routes.get("/getcefrlevel/:cefrlevel",verifyToken, async(req,res) => {
 
 
 //Upload Files
+const ensureDirectoryExistence = (dir) => {
+  if(!fs.existsSync(dir)){
+    fs.mkdirSync(dir, {recursive: true});
+  }
+};
 const storagetext = multer.diskStorage({
     destination: ('./fileproblem/text/'),
     filename: function (req, file, cb) {
@@ -94,43 +99,48 @@ const storagesoundfix = multer.diskStorage({
 
   const storagesound = multer.diskStorage({
   
-    destination: function(req,file, cb){
-      const formcode = req.body.formcode;
-      const dir = `./routes/fileproblem/sound/${formcode}`;
-
-      fs.mkdir(dir, {recursive: true}, (err) => {
-        if(err) {
-          return cb(err);
-        }
-        cb(null, dir);
-      });
+    destination: (req, file, cb) => {
+      const { formcode } = req.body;
+  
+      // Log formcode to check if it's undefined
+      console.log('Received formcode:', formcode);
+  
+      if (!formcode) {
+        return cb(new Error('Formcode is missing'));
+      }
+  
+      const uploadDir = path.join(__dirname, `../routes/fileproblem/sound/${formcode}`);
+      
+      // Ensure the directory exists
+      ensureDirectoryExistence(uploadDir);
+  
+      cb(null, uploadDir);
     },
-    
-    filename: function (req,file, cb) {
-      const filename = `${req.body.problem}`;
-      // null as first argument means no error
-    
-      cb(null, filename);
+    filename: (req, file, cb) => {
+      const { problem } = req.body;
+  
+      // Log problem to check if it's undefined
+      console.log('Received problem:', problem);
+  
+      if (!problem) {
+        return cb(new Error('Problem is missing'));
+      }
+  
+      cb(null, problem);
     },
   });
 
 const uploadtext = multer({storage: storagetext})
-const uploadsound = multer({storage: storagesound})
+const uploadsound = multer({storage: storagesoundfix})
 
 routes.post('/upload',verifyToken,uploadtext.single('file'),(req,res) => {
     console.log(req.file);
     res.send("file save on server");
-})
+});
 
 routes.post('/uploadsound',verifyToken,uploadsound.single('file'),(req,res) => {
-  console.log('Formcode:', req.body.formcode); // Check formcode
-  console.log('Filename:', req.body.problem); // Check questioncode  
   console.log(req.file);
-  if (!req.body.formcode || !req.body.problem) {
-    return res.status(400).json({ msg: 'Missing formcode or problem' });
-  }
-
-  res.send("File mp3 saved on server");
-})
+ res.send("File mp3 was saved on server");
+});
 
 module.exports = routes;
