@@ -21,22 +21,26 @@ function ModalEditExamByCerfcodeNew({ params, open, handleClose }) {
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.user);
   const token = user.token;
-  console.log("params.row : ", params?.row);
+  //console.log("params.row : ", params?.row);
 
   //Hook and Logic
+  //State for storing the list of choices
   const [choiceLists, setChoiceLists] = useState({});
-  //console.log(choiceLists);
-  //old file problem
+  //State for holding the existing file URLs for problem and question
   const [fileUrl, setFileUrl] = useState("");
-  //filePreview
+  const [fileQuestion, setFileQuestion] = useState("");
+  //State for holding the preview content of the currently selected files (before submission)
   const [filePreview, setFilePreview] = useState("");
+  const [fileQuestionPreview, setFileQuestionPreview] = useState("");
+  //State for holding the new files (problem and question) selected by the user
   const [newFile, setNewFile] = useState("");
+  const [newFileQuestion, setNewFileQuestion] = useState("");
 
   useEffect(() => {
-    let isMounted = true;
+    let isMounted = true; // Flag to prevent setting state if component unmounts
+    // Function to fetch choices based on the question code
     const fetchChoices = async () => {
       if (!params?.row?.questioncode) return;
-
       try {
         var configChoice = {
           method: "GET",
@@ -74,15 +78,39 @@ function ModalEditExamByCerfcodeNew({ params, open, handleClose }) {
   }, [params]);
 
   useEffect(() => {
-    let isMounted = true;
+    let isMounted = true; // Flag to prevent setting state if component unmounts
+
+    // Function to fetch the question's file URL (e.g., audio file for the question)
+    const fetchQuestionUrl = async () => {
+      if (!params?.row.problem) return;
+
+      try {
+        const configFile = {
+          method: "GET",
+          url: `${process.env.REACT_APP_API_URL}/getfilesound/${params.row.formcode}/${params.row.question}`,
+          headers: { authtoken: "bearer " + token },
+        };
+
+        const response = await axios(configFile);
+        if (isMounted) {
+          setFileQuestion(response.data);
+        }
+      } catch (error) {
+        console.error("Error fetching fileUrl data:", error);
+      }
+    };
+
+    // Function to fetch the problem's file URL (could be sound or text)
     const fetchFileUrl = async () => {
       if (!params?.row.problem) return;
 
       try {
+        // Extract file extension to determine if the file is .mp3 or .txt
         const fileExtension = params["row"]["problem"].split(".").pop();
         const isMP3 = fileExtension === "mp3";
         const isTXT = fileExtension === "txt";
 
+        // API config based on the file type (sound or text)
         const configFile = {
           method: "GET",
           url: isMP3
@@ -92,41 +120,51 @@ function ModalEditExamByCerfcodeNew({ params, open, handleClose }) {
         };
 
         const response = await axios(configFile);
-        setFileUrl(response.data);
+        if (isMounted) {
+          setFileUrl(response.data);
+        }
       } catch (error) {
         console.error("Error fetching fileUrl data:", error);
       }
     };
 
+    // Fetch the file URL when the component mounts or when `params` change
     fetchFileUrl();
 
+    // Conditionally fetch the question file URL if the cerfcode matches
+    if (["L2B2", "L2C1"].includes(params?.row.cerfcode)) {
+      fetchQuestionUrl();
+    }
+
+    // Cleanup function to reset states and prevent memory leaks
     return () => {
       isMounted = false;
-      setFileUrl("");
-      setFilePreview("");
+      setFileUrl(""); // Clear file URL state
+      setFilePreview(""); // Clear file preview state
+      setFileQuestion(""); // Clear question file URL state
+      setFileQuestionPreview(""); // Clear question file preview state
     };
   }, [params]);
 
   //Event Handler
   const handleSubmit = async (e) => {
     e.preventDefault();
-    //sendfile to backend
+    // Handle the file upload for "problem" (can be text or mp3)
     if (newFile !== "") {
-      const renamedFile = new File([newFile], `${params.row.problem}`, {
+      // Rename the uploaded file
+      const renamedFile = new File([newFile], `${choiceLists.problem}`, {
         type: newFile.type,
       });
-      const formData = new FormData();
+      const formData = new FormData(); // Create a FormData object for the file upload
       formData.append("file", renamedFile);
-      for (let [key, value] of formData.entries()) {
-        console.log(`${key}: ${value}`);
-      }
 
       var extendName = params.row.problem.split(".")[1];
-      console.log(extendName);
+      // Handle text file upload
       if (extendName.toString() === "txt") {
         try {
           const res = await axios.post(
-            process.env.REACT_APP_API_URL + "/upload",
+            process.env.REACT_APP_API_URL +
+              `/uploadtextfile/${params.row.formcode}`,
             formData,
             {
               headers: {
@@ -134,11 +172,13 @@ function ModalEditExamByCerfcodeNew({ params, open, handleClose }) {
               },
             }
           );
-          console.log("Success Text:", res.data);
+          toast.success(res.data.message); // Show success toast notification
         } catch (error) {
           console.error("Error uploading text file:", error);
         }
-      } else if (extendName.toString() === "mp3") {
+      }
+      // Handle mp3 file upload
+      else if (extendName.toString() === "mp3") {
         try {
           const res = await axios.post(
             process.env.REACT_APP_API_URL +
@@ -150,31 +190,59 @@ function ModalEditExamByCerfcodeNew({ params, open, handleClose }) {
               },
             }
           );
-          console.log("Success Sound:", res.data);
+          toast.success(res.data.message); // Show success toast notification
         } catch (error) {
           console.error("Error uploading sound file:", error);
         }
       }
     }
-    //editChoice
-    // editChoice(choiceLists, token)
-    //   .then((res) => {
-    //     toast.success(res.data.msg, { onClose: () => navigate(0) });
-    //   })
-    //   .catch((error) => {
-    //     if (error.response.status === 401 || error.response.status === 404) {
-    //       dispatch(logout());
-    //       navigate("/notfound404", {
-    //         state: {
-    //           statusCode: error.response.status,
-    //           txt: error.response.data,
-    //         },
-    //       });
-    //     } else {
-    //       toast.error(error.response.data.message);
-    //     }
-    //   });
-    // console.log("Form Submitted :", choiceLists);
+
+    // Handle the file upload for "question" (only mp3 allowed)
+    if (newFileQuestion !== "") {
+      // Rename the uploaded file
+      const renamedFile = new File(
+        [newFileQuestion],
+        `${choiceLists?.question}`,
+        {
+          type: newFile.type,
+        }
+      );
+      const formData = new FormData(); // Create a FormData object for the file upload
+      formData.append("file", renamedFile);
+      try {
+        const res = await axios.post(
+          process.env.REACT_APP_API_URL +
+            `/uploadsoundfile/${params.row.formcode}`,
+          formData,
+          {
+            headers: {
+              authtoken: "bearer " + token,
+            },
+          }
+        );
+        toast.success(res.data.message);
+      } catch (error) {
+        console.error("Error uploading sound file:", error);
+      }
+    }
+
+    // Edit the choice list after file uploads
+    try {
+      const res = await editChoice(choiceLists, token);
+      toast.success(res.data.msg, { onClose: () => navigate(0) });
+    } catch (error) {
+      if (error.response.status === 401 || error.response.status === 404) {
+        dispatch(logout());
+        navigate("/notfound404", {
+          state: {
+            statusCode: error.response.status,
+            txt: error.response.data,
+          },
+        });
+      } else {
+        toast.error(error.response.data.message);
+      }
+    }
   };
 
   const handleChange = (e) => {
@@ -221,6 +289,32 @@ function ModalEditExamByCerfcodeNew({ params, open, handleClose }) {
         }
       } else {
         toast.error("Accept only .txt or .mp3 files");
+        return;
+      }
+    }
+  };
+
+  const handleQuestionChange = (e) => {
+    const selectedFile = e.target.files[0];
+    console.log("selectedFile:", selectedFile);
+
+    setFileQuestionPreview(""); // Clear the previous file preview
+
+    if (selectedFile) {
+      const fileExtension = selectedFile.name.split(".").pop().toLowerCase(); // Extract the file extension
+      if (fileExtension === "mp3") {
+        setNewFileQuestion(e.target.files[0]);
+        const reader = new FileReader();
+
+        reader.onerror = () => {
+          toast.error("Error reading file");
+        };
+        reader.onloadend = () => {
+          setFileQuestionPreview(reader.result.split(",")[1]); // Set the base64 data (removing the data URL prefix)
+        };
+        reader.readAsDataURL(selectedFile); // Read the file as a base64-encoded data URL
+      } else {
+        toast.error("Accept only .mp3 files");
         return;
       }
     }
@@ -289,7 +383,18 @@ function ModalEditExamByCerfcodeNew({ params, open, handleClose }) {
                   variant="outlined"
                   disabled
                 />
-                <Typography>ไฟล์โจทย์: {params?.row.problem}</Typography>
+
+                <TextField
+                  label="ไฟล์โจทย์"
+                  sx={{ margin: "10px" }}
+                  id="outlined-basic"
+                  name="problem"
+                  value={choiceLists?.problem || ""}
+                  required
+                  fullWidth
+                  variant="outlined"
+                  onChange={handleChange}
+                />
                 {filePreview ? (
                   <>
                     {["R1A1", "R1A2", "R1B1", "R1B2", "R1C1"].includes(
@@ -300,11 +405,11 @@ function ModalEditExamByCerfcodeNew({ params, open, handleClose }) {
                         <pre
                           style={{
                             whiteSpace: "pre-wrap",
-                            border: "1px solid #ccc", // Adds a light gray border
-                            padding: "10px", // Adds padding for better spacing
-                            backgroundColor: "#f9f9f9", // Light gray background for better contrast
-                            borderRadius: "5px", // Rounded corners
-                            overflow: "auto", // Allows scrolling if content overflows
+                            border: "1px solid #ccc",
+                            padding: "10px",
+                            backgroundColor: "#f9f9f9",
+                            borderRadius: "5px",
+                            overflow: "auto",
                           }}
                         >
                           {filePreview}
@@ -331,11 +436,11 @@ function ModalEditExamByCerfcodeNew({ params, open, handleClose }) {
                       <pre
                         style={{
                           whiteSpace: "pre-wrap",
-                          border: "1px solid #ccc", // Adds a light gray border
-                          padding: "10px", // Adds padding for better spacing
-                          backgroundColor: "#f9f9f9", // Light gray background for better contrast
-                          borderRadius: "5px", // Rounded corners
-                          overflow: "auto", // Allows scrolling if content overflows
+                          border: "1px solid #ccc",
+                          padding: "10px",
+                          backgroundColor: "#f9f9f9",
+                          borderRadius: "5px",
+                          overflow: "auto",
                         }}
                       >
                         {fileUrl}
@@ -354,18 +459,8 @@ function ModalEditExamByCerfcodeNew({ params, open, handleClose }) {
                   <>No File</>
                 )}
 
-                <TextField
-                  sx={{ margin: "10px" }}
-                  id="outlined-basic"
-                  label="ไฟล์โจทย์"
-                  name="problem"
-                  value={choiceLists?.problem || ""}
-                  required
-                  //onChange={handleChange}
-                  fullWidth
-                  variant="outlined"
-                />
                 <input
+                  label="ไฟล์โจทย์ (นามสกุล .txt, .mp3)"
                   accept={
                     ["R1A1", "R1A2", "R1B1", "R1B2", "R1C1"].includes(
                       params?.row.cerfcode
@@ -373,25 +468,28 @@ function ModalEditExamByCerfcodeNew({ params, open, handleClose }) {
                       ? ".txt"
                       : ".mp3"
                   }
-                  id="contained-button-file"
-                  label="ไฟล์โจทย์ (นามสกุล .txt, .mp3)"
+                  id="file-problem"
                   component="span"
                   multiple
                   name="file"
                   type="file"
                   onChange={handleFileChange}
                 />
-                <label htmlFor="contained-button-file">
-                  <Button component="span" variant="outlined" fullWidth>
+                <label htmlFor="file-problem">
+                  <Button
+                    sx={{ margin: "10px" }}
+                    component="span"
+                    variant="outlined"
+                    fullWidth
+                  >
                     อัพโหลดไฟล์โจทย์ (นามสกุล .txt, .mp3)
                   </Button>
                 </label>
 
-                <Typography>โจทย์: {params?.row.question}</Typography>
                 <TextField
+                  label="โจทย์"
                   sx={{ margin: "10px" }}
                   id="outlined-basic"
-                  label="โจทย์"
                   name="question"
                   value={choiceLists?.question || ""}
                   required
@@ -400,6 +498,62 @@ function ModalEditExamByCerfcodeNew({ params, open, handleClose }) {
                   variant="outlined"
                   multiline
                 />
+                {fileQuestionPreview ? (
+                  // If a new file is uploaded, show the sound preview of the newly uploaded file
+                  <>
+                    <p>Sound Preview</p>
+                    <audio controls>
+                      <source
+                        src={`data:audio/mp3;base64,${fileQuestionPreview}`}
+                        type="audio/mp3"
+                      />
+                      Your browser does not support the audio element.
+                    </audio>
+                  </>
+                ) : fileQuestion ? (
+                  // If there's no new file but an existing file, show the existing file preview
+                  <>
+                    <audio controls>
+                      <source
+                        src={`data:audio/mp3;base64,${fileQuestion}`}
+                        type="audio/mp3"
+                      />
+                      Your browser does not support the audio element.
+                    </audio>
+                  </>
+                ) : (
+                  // If no file is available and the cerfcode matches specific conditions
+                  ["L2B2", "L2C1"].includes(params?.row.cerfcode) && (
+                    <p>No File</p>
+                  )
+                )}
+
+                {/* Show the input for file upload if cerfcode matches specific conditions */}
+                {["L2B2", "L2C1"].includes(params?.row.cerfcode) && (
+                  <>
+                    <input
+                      accept={".mp3"}
+                      id="file-question"
+                      label="ไฟล์คำถาม (นามสกุล .mp3)"
+                      component="span"
+                      multiple
+                      name="file-question"
+                      type="file"
+                      onChange={handleQuestionChange}
+                    />
+                    <label htmlFor="file-question">
+                      <Button
+                        sx={{ margin: "10px" }}
+                        component="span"
+                        variant="outlined"
+                        fullWidth
+                      >
+                        อัพโหลดไฟล์โจทย์ (นามสกุล .mp3)
+                      </Button>
+                    </label>
+                  </>
+                )}
+
                 <TextField
                   sx={{ margin: "10px" }}
                   id="outlined-basic"
