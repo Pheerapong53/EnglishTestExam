@@ -263,14 +263,14 @@ function ModalEditExamByCerfcodeNew({ params, open, handleClose }) {
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
-    console.log("selectedFile:", selectedFile);
+    //console.log("selectedFile:", selectedFile);
 
     setFilePreview(""); // Clear the previous file preview
 
     if (selectedFile) {
       const fileExtension = selectedFile.name.split(".").pop().toLowerCase(); // Extract the file extension
 
-      console.log("fileExtension:", fileExtension);
+      //console.log("fileExtension:", fileExtension);
 
       if (fileExtension === "mp3" || fileExtension === "txt") {
         setNewFile(e.target.files[0]);
@@ -304,7 +304,7 @@ function ModalEditExamByCerfcodeNew({ params, open, handleClose }) {
 
   const handleQuestionChange = (e) => {
     const selectedFile = e.target.files[0];
-    console.log("selectedFile:", selectedFile);
+    //console.log("selectedFile:", selectedFile);
 
     setFileQuestionPreview(""); // Clear the previous file preview
 

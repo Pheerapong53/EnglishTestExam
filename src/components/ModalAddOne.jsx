@@ -2,18 +2,20 @@
 /* eslint-disable eqeqeq */
 /* Update 2/5/67 */
 import React, { useState, useEffect } from "react";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
-import Typography from "@mui/material/Typography";
-import Dialog from "@mui/material/Dialog";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import ControlPointIcon from "@mui/icons-material/ControlPoint";
-import InputLabel from "@mui/material/InputLabel";
-import Select from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
-import FormControl from "@mui/material/FormControl";
+import {
+  Box,
+  Button,
+  Select,
+  MenuItem,
+  FormControl,
+  TextField,
+  Typography,
+  Dialog,
+  DialogContent,
+  DialogContentText,
+  InputLabel,
+} from "@mui/material";
+import { ControlPoint } from "@mui/icons-material";
 import { addExamOneHandler } from "./functions/cefrLevel";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
@@ -22,58 +24,83 @@ import axios from "axios";
 import { toast } from "react-toastify";
 
 function ModalAddOne(dropdown) {
+  console.log("dropdown : ", dropdown);
+
+  //Component Declaration
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.user);
   const token = user.token;
   const navigate = useNavigate();
 
-  //for auto fill cefrlevel data
-  const [selectedCefrLevel, setSelectedCefrLevel] = useState("");
+  //Dropdown options for FormCode
+  const formCodeDropDown = [
+    { key: "FORM1", value: "F0001" },
+    { key: "FORM2", value: "F0002" },
+    { key: "FORM3", value: "F0003" },
+    { key: "FORM4", value: "F0004" },
+    { key: "FORM5", value: "F0005" },
+    { key: "FORM6", value: "F0006" },
+    { key: "FORM7", value: "F0007" },
+    { key: "FORM8", value: "F0008" },
+    { key: "FORM9", value: "F0009" },
+    { key: "FORM10", value: "F0010" },
+  ];
+
+  //Hook and Logic
+  //State for selecting cerfcode
+  const [selectedCerfCode, setSelectedCerfCode] = useState("");
+  //State for storing the data of cerfcode
   const [autoFilledData, setAutoFilledData] = useState({});
   console.log(autoFilledData);
+  //State for validate data in form
+  const [isCorrect, setIsCorrect] = useState(false);
 
   useEffect(() => {
-    if (selectedCefrLevel) {
-      fetchData(selectedCefrLevel);
-    }
-  }, [selectedCefrLevel]);
+    if (selectedCerfCode === "") return;
 
-  const fetchData = async (selectedCefrLevel) => {
-    var config = {
-      method: "GET",
-      url: process.env.REACT_APP_API_URL + `/getcefrlevel/${selectedCefrLevel}`,
-      headers: {
-        authtoken: "bearer " + token,
-      },
-    };
+    // Function to fetch cerfcode data based on the cerfcode
+    const fetchData = async () => {
+      var config = {
+        method: "GET",
+        url:
+          process.env.REACT_APP_API_URL + `/getcefrlevel/${selectedCerfCode}`,
+        headers: {
+          authtoken: "bearer " + token,
+        },
+      };
 
-    axios(config)
-      .then((response) => {
+      try {
+        const response = await axios(config);
         setAutoFilledData(response.data);
-      })
-      .catch((error) => {
-        if (error.response.status === 401 || error.response.status === 404) {
+      } catch (error) {
+        const { response } = error;
+
+        if (response.status === 401 || response.status === 404) {
           dispatch(logout());
           navigate("/notfound404", {
             state: {
-              statusCode: error.response.status,
-              txt: error.response.data,
+              statusCode: response.status,
+              txt: response.data,
             },
           });
         } else {
-          toast.error(error.response.data.message);
+          toast.error(response.data.message);
         }
-      });
-  };
+      }
+    };
+    fetchData();
 
-  const [isCorrect, setIsCorrect] = useState(false);
+    return () => {
+      setAutoFilledData({}); // Clear data of cerfcode
+    };
+  }, [selectedCerfCode]);
 
-  //formValues before send to back end 
+  //Initial form values before sending to the backend
   const [formValues, setFormValues] = useState({
     cerfcode: {
       value: "",
       error: false,
-      errorMessage: "You must enter Cerf Code",
+      errorMessage: "You must enter Cerfcode",
     },
     questionnumber: {
       value: "",
@@ -117,9 +144,9 @@ function ModalAddOne(dropdown) {
     },
   });
 
-  
-  //open-close Dialog
+  // State for managing the visibility of the "เพิ่มข้อสอบรายข้อ" dialog
   const [open, setOpen] = React.useState(false);
+  // State to manage the scroll behavior of the dialog
   const [scroll, setScroll] = React.useState("paper");
 
   const handleClickOpen = (scrollType) => () => {
@@ -133,7 +160,7 @@ function ModalAddOne(dropdown) {
   };
 
   const handleCefrLevelChange = (e) => {
-    setSelectedCefrLevel(e.target.value);
+    setSelectedCerfCode(e.target.value);
   };
 
   const handleChangeWithValidate = async (e) => {
@@ -151,8 +178,10 @@ function ModalAddOne(dropdown) {
     });
   };
 
+  // Ref for the description element to manage focus
   const descriptionElementRef = React.useRef(null);
   React.useEffect(() => {
+    // Focus the description element when the dialog opens
     if (open) {
       const { current: descriptionElement } = descriptionElementRef;
       if (descriptionElement !== null) {
@@ -161,31 +190,59 @@ function ModalAddOne(dropdown) {
     }
   }, [open]);
 
-  //กำหนดค่า DropDown ให้กับ FormCode
-  const formCodeDropDown = [
-    { key: "FORM1", value: "F0001" },
-    { key: "FORM2", value: "F0002" },
-    { key: "FORM3", value: "F0003" },
-    { key: "FORM4", value: "F0004" },
-    { key: "FORM5", value: "F0005" },
-    { key: "FORM6", value: "F0006" },
-    { key: "FORM7", value: "F0007" },
-    { key: "FORM8", value: "F0008" },
-    { key: "FORM9", value: "F0009" },
-    { key: "FORM10", value: "F0010" },
-  ];
-
+  //State to hold the data
   const [values, setValues] = useState([]);
 
-  //file txt Upload
-  const [fileProblem, setFileProblem] = useState();
-  //console.log(fileProblem);
+  //State for holding the new files (problem and question) selected by the user
+  const [fileProblem, setFileProblem] = useState("");
+  const [fileQuestion, setFileQuestion] = useState("");
+  //State for holding the preview content of the currently selected files (before submission)
+  const [fileProblemPreview, setFileProblemPreview] = useState("");
+  const [fileQuestionPreview, setFileQuestionPreview] = useState("");
 
   //handleFileChange for ไฟล์โจทย์
-  const handleFileChange = (e) => {
-    const selectedFile = e.target.files[0].name;
+  const handleQuestionChange = (e) => {
+    const selectedFile = e.target.files[0];
+    //console.log("selectedFile:", selectedFile);
+
+    setFileQuestionPreview(""); // Clear the previous file preview
+
     if (selectedFile) {
-      const fileExtension = selectedFile.split(".").pop();
+      const fileExtension = selectedFile.name.split(".").pop().toLowerCase(); // Extract the file extension
+      if (fileExtension === "mp3") {
+        setFileQuestion(e.target.files[0]);
+        setValues({
+          ...values,
+          problem: e.target.files[0].name,
+        });
+        setFormValues({
+          ...formValues,
+          problem: {
+            ...formValues,
+            value: e.target.files[0].name,
+          },
+        });
+        const reader = new FileReader();
+
+        reader.onerror = () => {
+          toast.error("Error reading file");
+        };
+        reader.onloadend = () => {
+          setFileQuestionPreview(reader.result.split(",")[1]); // Set the base64 data (removing the data URL prefix)
+        };
+        reader.readAsDataURL(selectedFile); // Read the file as a base64-encoded data URL
+      } else {
+        toast.error("Accept only .mp3 files");
+        return;
+      }
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    setFileProblemPreview(""); // Clear the previous file preview
+    if (selectedFile) {
+      const fileExtension = selectedFile.name.split(".").pop();
       if (fileExtension === "mp3" || fileExtension === "txt") {
         setFileProblem(e.target.files[0]);
         setValues({
@@ -199,6 +256,28 @@ function ModalAddOne(dropdown) {
             value: e.target.files[0].name,
           },
         });
+
+        const reader = new FileReader();
+
+        reader.onerror = () => {
+          toast.error("Error reading file");
+        };
+
+        // Handle text files
+        if (fileExtension === "txt") {
+          reader.onloadend = () => {
+            setFileProblemPreview(reader.result); // Set the file preview directly to the text content
+          };
+          reader.readAsText(selectedFile); // Read the file as text
+        }
+
+        // Handle mp3 files
+        if (fileExtension === "mp3") {
+          reader.onloadend = () => {
+            setFileProblemPreview(reader.result.split(",")[1]); // Set the base64 data (removing the data URL prefix)
+          };
+          reader.readAsDataURL(selectedFile); // Read the file as a base64-encoded data URL
+        }
       } else {
         toast.error("accept only File .txt or .mp3 ");
         return;
@@ -271,39 +350,74 @@ function ModalAddOne(dropdown) {
         ch04: data.get("ch04"),
       };
 
-      const formData = await new FormData();
-      formData.append("file", fileProblem);
-      
       addExamOneHandler(addExamOne, token)
-        .then((res) => {
+        .then(async (res) => {
           toast.success(res.data.msg);
-          var extendName = values.problem.split(".")[1];
-          if (extendName.toString() === "txt") {
-            axios
-              .post(process.env.REACT_APP_API_URL + "/upload", formData, {
-                headers: {
-                  authtoken: "bearer " + token,
-                },
-              })
-              .then((res) => {
-                toast.success(res.data.msg);
-                navigate(0);
-                handleClose();
-              });
-          } else if (extendName.toString() === "mp3") {
-            axios
-              .post(process.env.REACT_APP_API_URL + "/uploadsound", formData, {
-                headers: {
-                  authtoken: "bearer " + token,
-                },
-              })
-              .then((res) => {
-                toast.success(res.data.msg);
-                navigate(0);
-                handleClose();
-              });
+          if (fileProblem !== "") {
+            const formData = new FormData(); // Create a FormData object for the file upload
+            formData.append("file", fileProblem);
+
+            var extendName = values.problem.split(".")[1];
+            // Handle text file upload
+            if (extendName.toString() === "txt") {
+              try {
+                const res = await axios.post(
+                  process.env.REACT_APP_API_URL +
+                    `/uploadtextfile/${values.formcode}`,
+                  formData,
+                  {
+                    headers: {
+                      authtoken: "bearer " + token,
+                    },
+                  }
+                );
+                toast.success(res.data.message); // Show success toast notification
+              } catch (error) {
+                console.error("Error uploading text file:", error);
+              }
+            }
+            // Handle mp3 file upload
+            else if (extendName.toString() === "mp3") {
+              try {
+                const res = await axios.post(
+                  process.env.REACT_APP_API_URL +
+                    `/uploadsoundfile/${values.formcode}`,
+                  formData,
+                  {
+                    headers: {
+                      authtoken: "bearer " + token,
+                    },
+                  }
+                );
+                toast.success(res.data.message); // Show success toast notification
+              } catch (error) {
+                console.error("Error uploading sound file:", error);
+              }
+            }
           }
-          //navigate(0);
+
+          // Handle the file upload for "question" (only mp3 allowed)
+          if (fileQuestion !== "") {
+            const formData = new FormData(); // Create a FormData object for the file upload
+            formData.append("file", fileQuestion);
+            try {
+              const res = await axios.post(
+                process.env.REACT_APP_API_URL +
+                  `/uploadsoundfile/${values.formcode}`,
+                formData,
+                {
+                  headers: {
+                    authtoken: "bearer " + token,
+                  },
+                }
+              );
+              toast.success(res.data.message);
+            } catch (error) {
+              console.error("Error uploading sound file:", error);
+            }
+          }
+
+          navigate(0);
         })
         .catch((error) => {
           if (error.response.status === 401 || error.response.status === 404) {
@@ -327,7 +441,7 @@ function ModalAddOne(dropdown) {
         sx={{ width: "200px" }}
         variant="contained"
         onClick={handleClickOpen("paper")}
-        startIcon={<ControlPointIcon />}
+        startIcon={<ControlPoint />}
       >
         เพิ่มรายข้อ
       </Button>
@@ -496,7 +610,7 @@ function ModalAddOne(dropdown) {
                   label="ลักษณะข้อสอบ"
                   variant="outlined"
                   value={
-                    selectedCefrLevel?.startsWith("L") ? "Listening" : "Reading"
+                    selectedCerfCode?.startsWith("L") ? "Listening" : "Reading"
                   }
                   fullWidth
                   disabled
@@ -603,9 +717,49 @@ function ModalAddOne(dropdown) {
                   fullWidth
                   variant="outlined"
                 />
+                {fileProblemPreview && (
+                  <>
+                    {["R1A1", "R1A2", "R1B1", "R1B2", "R1C1"].includes(
+                      selectedCerfCode
+                    ) ? (
+                      <>
+                        <p>Text Preview</p>
+                        <pre
+                          style={{
+                            whiteSpace: "pre-wrap",
+                            border: "1px solid #ccc",
+                            padding: "10px",
+                            backgroundColor: "#f9f9f9",
+                            borderRadius: "5px",
+                            overflow: "auto",
+                          }}
+                        >
+                          {fileProblemPreview}
+                        </pre>
+                      </>
+                    ) : (
+                      <>
+                        <p>Sound Preview</p>
+                        <audio controls>
+                          <source
+                            src={`data:audio/mp3;base64,${fileProblemPreview}`}
+                            type="audio/mp3"
+                          />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </>
+                    )}
+                  </>
+                )}
 
                 <input
-                  accept={".txt" || ".mp3"}
+                  accept={
+                    ["R1A1", "R1A2", "R1B1", "R1B2", "R1C1"].includes(
+                      selectedCerfCode
+                    )
+                      ? ".txt"
+                      : ".mp3"
+                  }
                   id="contained-button-file"
                   label="ไฟล์โจทย์ (นามสกุล .txt, .mp3)"
                   // style={{ display: 'none' }}
