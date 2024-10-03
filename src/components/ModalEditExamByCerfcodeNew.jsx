@@ -4,6 +4,8 @@ import {
   Button,
   Dialog,
   DialogContent,
+  DialogTitle,
+  DialogActions,
   DialogContentText,
   Typography,
   TextField,
@@ -12,7 +14,7 @@ import { Edit } from "@mui/icons-material";
 import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../src/store/userSilce";
-import { editChoice } from "./functions/cefrLevel";
+import { editQuestionAndChoice } from "./functions/cefrLevel";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
@@ -35,6 +37,8 @@ function ModalEditExamByCerfcodeNew({ params, open, handleClose }) {
   //State for holding the new files (problem and question) selected by the user
   const [newFile, setNewFile] = useState("");
   const [newFileQuestion, setNewFileQuestion] = useState("");
+  //State for openning dialog confirmation
+  const [openDialog, setOpenDialog] = useState(false);
 
   useEffect(() => {
     let isMounted = true; // Flag to prevent setting state if component unmounts
@@ -147,8 +151,12 @@ function ModalEditExamByCerfcodeNew({ params, open, handleClose }) {
   }, [params]);
 
   //Event Handler
+  const handleOpenDialog = () => setOpenDialog(true);
+  const handleCloseDialog = () => setOpenDialog(false);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setOpenDialog(false); //Close the dialog before proceeding
     // Handle the file upload for "problem" (can be text or mp3)
     if (newFile !== "") {
       // Rename the uploaded file
@@ -228,7 +236,7 @@ function ModalEditExamByCerfcodeNew({ params, open, handleClose }) {
 
     // Edit the choice list after file uploads
     try {
-      const res = await editChoice(choiceLists, token);
+      const res = await editQuestionAndChoice(choiceLists, token);
       toast.success(res.data.msg, { onClose: () => navigate(0) });
     } catch (error) {
       if (error.response.status === 401 || error.response.status === 404) {
@@ -652,11 +660,41 @@ function ModalEditExamByCerfcodeNew({ params, open, handleClose }) {
                 }}
               >
                 <Box sx={{ paddingRight: "20px" }}>
-                  <Button type="submit" variant="contained">
+                  <Button
+                    //type="submit"
+                    variant="contained"
+                    onClick={handleOpenDialog}
+                  >
                     บันทึก
                   </Button>
                 </Box>
               </Box>
+
+              <Dialog open={openDialog} onClose={handleCloseDialog}>
+                <DialogTitle>ยืนยันการแก้ไข</DialogTitle>
+                <DialogContent>
+                  <DialogContentText>
+                    ยืนยันการแก้ไข กรุณาตรวจสอบความถูกต้องก่อนการดำเนินการ
+                  </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                  <Button
+                    variant="contained"
+                    onClick={handleCloseDialog}
+                    color="error"
+                  >
+                    ยกเลิก
+                  </Button>
+                  <Button
+                    variant="contained"
+                    type="submit"
+                    onClick={handleSubmit}
+                    color="primary"
+                  >
+                    ยืนยัน
+                  </Button>
+                </DialogActions>
+              </Dialog>
             </Box>
           </DialogContentText>
         </DialogContent>

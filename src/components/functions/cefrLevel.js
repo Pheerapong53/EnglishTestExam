@@ -18,15 +18,6 @@ export const editQuestionAndChoice = async(questionAndChoice, token) => {
     });
 }
 
-export const editChoice = async(choiceUpdate, token) => {
-    return await axios.put(process.env.REACT_APP_API_URL + "/editchoice", choiceUpdate,{
-        headers: {
-            'Content-Type': 'application/json',
-            authtoken: "bearer " + token,
-        }
-    });
-}
-
 export const addCefrLevelHandler = async (cefrlevel, token) => {
     return await axios.post(process.env.REACT_APP_API_URL + "/addcefrlevel", cefrlevel,{
         headers: {

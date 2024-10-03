@@ -366,12 +366,28 @@ const exam = {
         .json({ msg: "err from editcefrlevel" + error });
     }
   },
-  editchoice: async (req) => {
+  editquestionandchoice: async (req) => {
     const questioncode = req.body.questioncode;
     const choiceCodes = ["CH01", "CH02", "CH03", "CH04"];
     try {
       let updateStatus = false;
-
+      // Update question before 
+      const question = await tbquestion
+      .update(
+        {
+          problem: req.body.problem,
+          question: req.body.question,
+        },
+        {
+          where: {
+            questioncode: questioncode,
+          },
+        }
+      )
+      .catch(function (err) {
+        console.log("question update error : ", err);
+      });
+      
       for (let i = 0; i < choiceCodes.length; i++){
         const choicetext = req.body[`${questioncode}${choiceCodes[i]}`];
         const existingChoices = await tbchoice.findOne({
@@ -403,39 +419,6 @@ const exam = {
     }
   },
   
-  editquestionandchoice: async (req, res) => {
-    const question = await tbquestion
-      .update(
-        {
-          problem: req.body.problem,
-          question: req.body.question,
-        },
-        {
-          where: {
-            questioncode: req.body.questioncode,
-          },
-        }
-      )
-      .catch(function (err) {
-        console.log("question update error : ", err);
-      });
-
-    const choice = await tbchoice
-      .update(
-        {
-          choicetext: req.body.choicetext,
-          answer: req.body.answer,
-        },
-        {
-          where: {
-            choicecode: req.body.choicecode,
-          },
-        }
-      )
-      .catch(function (err) {
-        console.log("Choice update error : ", err);
-      });
-  },
   delquestionandchoice: async (req, res) => {
     try {
       const questioncode = req.params.questioncode;

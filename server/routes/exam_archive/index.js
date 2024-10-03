@@ -39,11 +39,8 @@ routes.put("/editcefrlevel", async(req,res, next) => {
   res.send(await exam.editcefrlevel(req,res, next));
 })
 routes.put("/editquestionandchoice", async(req,res) => {
-  res.send(await exam.editquestionandchoice(req,res));
-})
-routes.put("/editchoice", async(req,res) => {
   try {
-    const result = await exam.editchoice(req);
+    const result = await exam.editquestionandchoice(req);
     return res.status(200).json(result);
   } catch (error) {
     console.error("Error in editchoice route:", error.message || error);
