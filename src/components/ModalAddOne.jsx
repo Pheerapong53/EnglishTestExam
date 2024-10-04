@@ -48,10 +48,12 @@ function ModalAddOne(dropdown) {
 
   //Hook and Logic
   //State for selecting cerfcode
-  const [selectedCerfCode, setSelectedCerfCode] = useState("");
+  const [selectedCerfCode, setSelectedCerfCode] = useState(
+    dropdown?.dropdown.length === 1 ? dropdown.dropdown[0] : ""
+  );
   //State for storing the data of cerfcode
   const [autoFilledData, setAutoFilledData] = useState({});
-  console.log(autoFilledData);
+  //console.log(autoFilledData);
   //State for validate data in form
   const [isCorrect, setIsCorrect] = useState(false);
 
@@ -156,10 +158,16 @@ function ModalAddOne(dropdown) {
 
   const handleClose = () => {
     setValues([]);
+    setSelectedCerfCode("");
+    setAutoFilledData("");
+    setFileProblem("");
+    setFileProblemPreview("");
+    setFileQuestion("");
+    setFileQuestionPreview("");
     setOpen(false);
   };
 
-  const handleCefrLevelChange = (e) => {
+  const handleCerfCodeChange = (e) => {
     setSelectedCerfCode(e.target.value);
   };
 
@@ -213,11 +221,11 @@ function ModalAddOne(dropdown) {
         setFileQuestion(e.target.files[0]);
         setValues({
           ...values,
-          problem: e.target.files[0].name,
+          question: e.target.files[0].name,
         });
         setFormValues({
           ...formValues,
-          problem: {
+          question: {
             ...formValues,
             value: e.target.files[0].name,
           },
@@ -504,20 +512,20 @@ function ModalAddOne(dropdown) {
                       name="cerfcode"
                       value={dropdown["dropdown"] || ""}
                       required
-                      onChange={(e) => {
-                        handleCefrLevelChange(e);
-                        handleChangeWithValidate(e);
-                        setIsCorrect(true);
-                        if ([formValues.cerfcode] != "") {
-                          setFormValues((prevState) => ({
-                            ...prevState,
-                            cerfcode: {
-                              ...prevState.cerfcode,
-                              error: false,
-                            },
-                          }));
-                        }
-                      }}
+                      // onChange={(e) => {
+                      //   handleCerfCodeChange(e);
+                      //   handleChangeWithValidate(e);
+                      //   setIsCorrect(true);
+                      //   if ([formValues.cerfcode] != "") {
+                      //     setFormValues((prevState) => ({
+                      //       ...prevState,
+                      //       cerfcode: {
+                      //         ...prevState.cerfcode,
+                      //         error: false,
+                      //       },
+                      //     }));
+                      //   }
+                      // }}
                       error={formValues.cerfcode.error}
                       helperText={
                         formValues.cerfcode.error &&
@@ -549,7 +557,7 @@ function ModalAddOne(dropdown) {
                       value={values.cerfcode || ""}
                       required
                       onChange={(e) => {
-                        handleCefrLevelChange(e);
+                        handleCerfCodeChange(e);
                         handleChangeWithValidate(e);
                         setIsCorrect(true);
                         if ([formValues.cerfcode] != "") {
@@ -585,7 +593,7 @@ function ModalAddOne(dropdown) {
                 <TextField
                   sx={{ margin: "10px" }}
                   id="outlined-basic"
-                  label="ระดับความยากง่ายตามกรอบ CEFR"
+                  label="ระดับความยากง่ายตามกรอบ CERF"
                   name="cerfdifficultylevel"
                   value={autoFilledData.cerfdifficultylevel || ""}
                   variant="outlined"
@@ -596,7 +604,7 @@ function ModalAddOne(dropdown) {
                 <TextField
                   sx={{ margin: "10px" }}
                   id="outlined-basic"
-                  label="คำอธิบายระดับความยากง่ายตามกรอบ CEFR"
+                  label="คำอธิบายระดับความยากง่ายตามกรอบ CERF"
                   name="cerfdifficultyleveldesc"
                   value={autoFilledData.cerfdifficultyleveldesc || ""}
                   variant="outlined"
@@ -760,7 +768,7 @@ function ModalAddOne(dropdown) {
                       ? ".txt"
                       : ".mp3"
                   }
-                  id="contained-button-file"
+                  id="file-problem"
                   label="ไฟล์โจทย์ (นามสกุล .txt, .mp3)"
                   // style={{ display: 'none' }}
                   component="span"
@@ -770,7 +778,7 @@ function ModalAddOne(dropdown) {
                   type="file"
                   onChange={handleFileChange}
                 />
-                <label htmlFor="contained-button-file">
+                <label htmlFor="file-problem">
                   <Button component="span" variant="outlined" fullWidth>
                     อัพโหลดไฟล์โจทย์ (นามสกุล .txt, .mp3)
                   </Button>
@@ -845,6 +853,39 @@ function ModalAddOne(dropdown) {
                   fullWidth
                   variant="outlined"
                 />
+
+                {fileQuestionPreview && (
+                  <>
+                    <p>Sound Preview</p>
+                    <audio controls>
+                      <source
+                        src={`data:audio/mp3;base64,${fileQuestionPreview}`}
+                        type="audio/mp3"
+                      />
+                      Your browser does not support the audio element.
+                    </audio>
+                  </>
+                )}
+
+                {["L2B2", "L2C1"].includes(selectedCerfCode) && (
+                  <>
+                    <input
+                      accept=".mp3"
+                      id="file-question"
+                      label="ไฟล์คำถาม (นามสกุล .mp3)"
+                      component="span"
+                      multiple
+                      name="file"
+                      type="file"
+                      onChange={handleQuestionChange}
+                    />
+                    <label htmlFor="file-question">
+                      <Button component="span" variant="outlined" fullWidth>
+                        อัพโหลดไฟล์คำถาม (นามสกุล .mp3)
+                      </Button>
+                    </label>
+                  </>
+                )}
 
                 <TextField
                   sx={{ margin: "10px" }}
