@@ -175,6 +175,7 @@ function ContentPageExamArchive() {
               cerfcode={params.row["id"]}
               cerfdifficultylevel={params.row["cerfdifficultylevel"]}
               cerfdifficultyleveldesc={params.row["cerfdifficultyleveldesc"]}
+              cerfleveltype={params.row["cerfleveltype"]}
             />
 
             <ThemeProvider theme={theme}>
@@ -321,10 +322,6 @@ function ContentPageExamArchive() {
     setOpen(false);
   };
 
-  //open-close Dialog เพิ่มประเภทข้อสอบ
-  const handleOpenS = () => setOpenS(true);
-  const handleCloseS = () => setOpenS(false);
-
   //Render
   return (
     <>
@@ -355,6 +352,7 @@ function ContentPageExamArchive() {
             >
               เพิ่มโจทย์ข้อสอบ
             </Button>
+
             <ModalAddTypeExam />
           </div>
         </div>

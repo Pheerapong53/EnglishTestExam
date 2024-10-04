@@ -1,38 +1,44 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
-import Typography from "@mui/material/Typography";
-import Dialog from "@mui/material/Dialog";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import AddIcon from "@mui/icons-material/Add";
+import {
+  Box,
+  Button,
+  TextField,
+  Typography,
+  Dialog,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  DialogActions,
+} from "@mui/material";
+import { Add } from "@mui/icons-material";
 import { addCefrLevelHandler } from "./functions/cefrLevel";
 import { useNavigate } from "react-router-dom";
 import { logout } from "../../src/store/userSilce";
 import { toast } from "react-toastify";
-import { confirmAlert } from "react-confirm-alert";
-import "react-confirm-alert/src/react-confirm-alert.css";
 
 function ModalAddTypeExam() {
+  //Component Declaration
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.user);
   const token = user.token;
+  const initialstate = {
+    cerfcode: "",
+    cerfdifficultylevel: "",
+    cerfdifficultyleveldesc: "",
+    cerfleveltype: "",
+  };
+
+  //Hook and Logics
+  const formRef = useRef(null);
+  const [values, setValues] = useState(initialstate);
   //open-close Dialog
   const [open, setOpen] = React.useState(false);
   const [scroll, setScroll] = React.useState("paper");
 
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setValues(initialstate);
-    setOpen(false);
-  };
+  const [openDialog, setOpenDialog] = useState(false);
 
   const descriptionElementRef = React.useRef(null);
   React.useEffect(() => {
@@ -44,15 +50,23 @@ function ModalAddTypeExam() {
     }
   }, [open]);
 
-  //กำหนดค่าเริ่มต้น for เพิ่มประเภทข้อสอบ
-  const initialstate = {
-    cerfcode: "",
-    cerfdifficultylevel: "",
-    cerfdifficultyleveldesc: "",
-    cerfleveltype: "",
+  //Event Handle
+  const handleClickOpen = () => {
+    setOpen(true);
   };
 
-  const [values, setValues] = useState(initialstate);
+  const handleClose = () => {
+    setValues(initialstate);
+    setOpen(false);
+  };
+
+  const handleOpenDialog = () => {
+    setOpenDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+  };
 
   //handleChange in text TextField
   const handleChange = (e) => {
@@ -62,10 +76,17 @@ function ModalAddTypeExam() {
     });
   };
 
+  const handleConfirmSubmit = () => {
+    if (formRef.current) {
+      formRef.current.requestSubmit();
+    }
+    handleCloseDialog();
+  };
+
   //handleSubmit to add tbcefrdifficultylevel
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const data = await new FormData(event.currentTarget);
+    const data = await new FormData(event.target);
     // eslint-disable-next-line no-console
     const addTypeExam = await {
       cerfcode: data.get("cerfcode"),
@@ -73,55 +94,33 @@ function ModalAddTypeExam() {
       cerfdifficultyleveldesc: data.get("cerfdifficultyleveldesc"),
       cerfleveltype: data.get("cerfleveltype"),
     };
-    handleClose();
 
-    confirmAlert({
-      title: "ยืนยันการบันทึก",
-      message: `คุณต้องการที่เพิ่มระดับความยากง่าย ${addTypeExam.cerfcode} จะแก้ไขข้อมูลใช่หรือไม่`,
-      buttons: [
-        {
-          label: "Yes",
-          onClick: () => {
-            addCefrLevelHandler(addTypeExam, token)
-              .then((res) => {
-                toast.success(res.data.msg, { onClose: () => navigate(0) });
-              })
-              .catch((error) => {
-                if (
-                  error.response.status === 401 ||
-                  error.response.status === 404
-                ) {
-                  dispatch(logout());
-                  navigate("/notfound404", {
-                    state: {
-                      statusCode: error.response.status,
-                      txt: error.response.data,
-                    },
-                  });
-                } else {
-                  toast.error(error.response.data.message);
-                }
-              });
+    try {
+      const res = await addCefrLevelHandler(addTypeExam, token);
+      toast.success(res.data.msg, { onClose: () => navigate(0) });
+    } catch (error) {
+      if (error.response.status === 401 || error.response.status === 404) {
+        dispatch(logout());
+        navigate("/notfound404", {
+          state: {
+            statusCode: error.response.status,
+            txt: error.response.data,
           },
-        },
-        {
-          label: "No",
-          onClick: () => {
-            navigate(0);
-          },
-        },
-      ],
-    });
-
+        });
+      } else {
+        toast.error(error.response.data.message);
+      }
+    }
   };
 
+  //Render
   return (
     <>
       <Button
         variant="contained"
         onClick={handleClickOpen}
         sx={{ marginLeft: "10px" }}
-        startIcon={<AddIcon />}
+        startIcon={<Add />}
       >
         เพิ่มประเภทข้อสอบ
       </Button>
@@ -140,7 +139,7 @@ function ModalAddTypeExam() {
             ref={descriptionElementRef}
             tabIndex={-1}
           >
-            <Box component="form" onSubmit={handleSubmit}>
+            <Box component="form" ref={formRef} onSubmit={handleSubmit}>
               <Typography
                 id="modal-modal-title"
                 sx={{
@@ -202,17 +201,6 @@ function ModalAddTypeExam() {
                 <TextField
                   sx={{ margin: "10px" }}
                   id="outlined-basic"
-                  label="ลักษณะข้อสอบ"
-                  variant="outlined"
-                  value="ไม่มีการเก็บค่าใน tbcefrdifficultylevel"
-                  error
-                  fullWidth
-                  disabled
-                />
-
-                <TextField
-                  sx={{ margin: "10px" }}
-                  id="outlined-basic"
                   label="ประเภทการวัดข้อสอบ"
                   name="cerfleveltype"
                   value={values.cerfleveltype}
@@ -231,11 +219,40 @@ function ModalAddTypeExam() {
                 }}
               >
                 <Box sx={{ paddingRight: "20px" }}>
-                  <Button type="submit" variant="contained">
+                  <Button
+                    variant="contained"
+                    onClick={handleOpenDialog}
+                    // type="submit"
+                  >
                     บันทึก
                   </Button>
                 </Box>
               </Box>
+
+              <Dialog open={openDialog} onClose={handleCloseDialog}>
+                <DialogTitle>ยืนยันการบันทึก</DialogTitle>
+                <DialogContent>
+                  <DialogContentText>
+                    ยืนยันการบันทึก กรุณาตรวจสอบความถูกต้องก่อนการดำเนินการ
+                  </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                  <Button
+                    variant="contained"
+                    onClick={handleCloseDialog}
+                    color="error"
+                  >
+                    ยกเลิก
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={handleConfirmSubmit}
+                  >
+                    ยืนยัน
+                  </Button>
+                </DialogActions>
+              </Dialog>
             </Box>
           </DialogContentText>
         </DialogContent>

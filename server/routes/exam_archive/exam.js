@@ -347,6 +347,7 @@ const exam = {
           {
             cerfdifficultylevel: req.body.cerfdifficultylevel,
             cerfdifficultyleveldesc: req.body.cerfdifficultyleveldesc,
+            cerfleveltype : req.body.cerfleveltype,
           },
           {
             where: {
@@ -366,6 +367,7 @@ const exam = {
         .json({ msg: "err from editcefrlevel" + error });
     }
   },
+
   editquestionandchoice: async (req) => {
     const questioncode = req.body.questioncode;
     const choiceCodes = ["CH01", "CH02", "CH03", "CH04"];
@@ -456,6 +458,49 @@ const exam = {
   delcefrlevel: async (req, res) => {
     try {
       const cerfcode = req.params.id;
+      //Find questions with cerfcode
+      const questions = await tbquestion.findAll({
+        where: {
+          cerfcode: cerfcode,
+        },
+        attributes: ['questioncode','problem','question','formcode'],
+      });
+
+      //Delete the associated MP3 files for each question
+      questions.forEach((question) => {
+        const fileQuestion = question.question.includes(".mp3");
+        const fileExtension = question.problem.split('.').pop();
+        let filePath = '';
+        let fileQuestionPath = '';
+        if(fileExtension === "mp3"){
+          filePath = path.join(__dirname,'..', `/fileproblem/sound/${question.formcode}/${question.problem}`);
+        }
+
+        if(fileExtension === "txt"){
+          filePath = path.join(__dirname,'..', `/fileproblem/sound/${question.formcode}/${question.problem}`);
+        }
+
+        if(fileQuestion){
+          fileQuestionPath = path.join(__dirname,'..', `/fileproblem/sound/${question.formcode}/${question.question}`);
+        }
+
+        if (filePath && fs.existsSync(filePath)) {
+          try {
+            fs.unlinkSync(filePath); // Deleting the file
+            console.log(`File deleted: ${filePath}`);
+          } catch (err) {
+            console.error(`Error deleting file: ${filePath}`, err);
+          }
+        }
+        if (fileQuestionPath && fs.existsSync(fileQuestionPath)) {
+          try {
+            fs.unlinkSync(fileQuestionPath); // Deleting the file
+            console.log(`File Question deleted: ${fileQuestionPath}`);
+          } catch (err) {
+            console.error(`Error deleting file question: ${fileQuestionPath}`, err);
+          }
+        }
+      })
 
       const answerDelByLevel = await tbchoice
         .destroy({
@@ -489,7 +534,7 @@ const exam = {
 
       res
         .status(StatusCodes.CREATED)
-        .json({ msg: "CefrLevel, Questions and Choices has been delete" });
+        .json({ msg: "CefrLevel,File, Questions and Choices has been delete" });
     } catch (error) {
       res
         .status(StatusCodes.CREATED)
