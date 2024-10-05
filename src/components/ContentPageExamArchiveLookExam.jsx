@@ -192,46 +192,6 @@ function ContentPageExamArchiveLookExam() {
     },
   ];
 
-  const columns_old = [
-    { field: "id", headerName: "ลำดับ", width: 100 },
-    { field: "questioncode", headerName: "รหัสโจทย์", width: 200 },
-    { field: "problem", headerName: "ไฟล์โจทย์", width: 200 },
-    { field: "question", headerName: "โจทย์", width: 400 },
-    { field: "choicetext", headerName: "ตัวเลือก", width: 400 },
-    { field: "answer", headerName: "คำตอบถูก(1)/ผิด(0)", width: 150 },
-    { field: "cerfcode", headerName: "รหัสความสามารถ", width: 150 },
-    { field: "formcode", headerName: "รหัสฟอร์ม", width: 150 },
-    {
-      field: "checkbookingdate",
-      headerName: "การจัดการ",
-      width: 300,
-      renderCell: (params) => {
-        return (
-          <strong>
-            {/* แก้ไขโจทย์ข้อสอบ */}
-            <ModalEditExamByCerfcode params={params} />
-
-            <ThemeProvider theme={theme}>
-              <Button
-                variant="contained"
-                color="primary"
-                size="small"
-                style={{ marginLeft: 16 }}
-                startIcon={<DeleteForever />}
-                onClick={() => {
-                  handleDeleteClick(params);
-                  //toDeleteQuestionAndChoice(params);
-                }}
-              >
-                DELETE
-              </Button>
-            </ThemeProvider>
-          </strong>
-        );
-      },
-    },
-  ];
-
   const DetailRow = ({ label, value, labelWidth }) => (
     <Grid container spacing={2} sx={{ mb: 1 }}>
       <Grid item xs={labelWidth}>
@@ -299,10 +259,8 @@ function ContentPageExamArchiveLookExam() {
       }));
   };
 
-  const choice = filterData(location.state.id, choiceLists, true);
+  //const choice = filterData(location.state.id, choiceLists, true);
   const question = filterData(location.state.id, questionLists, false);
-  // console.log("Choice :", choice);
-  // console.log("Question :", question);
 
   //Event Handlers
   const handleError = (error) => {
@@ -351,8 +309,8 @@ function ContentPageExamArchiveLookExam() {
 
     Axios(config)
       .then((response) => {
-        setChoiceLists(
-          choiceLists.filter((val) => {
+        setQuestionLists(
+          questionLists.filter((val) => {
             return val["questioncode"] !== questioncode;
           })
         );
