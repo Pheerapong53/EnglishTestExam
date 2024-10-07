@@ -228,6 +228,15 @@ function App() {
             </UserLoginRoute>
           }
         />
+        {/* Add New Page 071067 */}
+        <Route
+          path="/PageExamArchiveByForm"
+          element={
+            <UserLoginRoute>
+              <Sidebar />
+            </UserLoginRoute>
+          }
+        />
         <Route
           path="/PageLookLab"
           element={

@@ -1,52 +1,51 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable react-hooks/exhaustive-deps */
-/* Update 23/9/67 */
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  Typography,
   Box,
+  Card,
+  Typography,
+  Grid,
   Button,
   Dialog,
-  DialogContent,
   DialogTitle,
+  DialogContent,
   IconButton,
+  InputLabel,
+  Select,
+  MenuItem,
+  FormControl,
 } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import {
   DataGrid,
-  GridLinkOperator,
   GridToolbarQuickFilter,
+  GridLinkOperator,
 } from "@mui/x-data-grid";
-import { styled, createTheme, ThemeProvider } from "@mui/material/styles";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { blue, red, yellow } from "@mui/material/colors";
-import { Close, Add, RemoveRedEye, DeleteForever } from "@mui/icons-material";
-import ModalEditExamArchive from "../components/ModalEditExamArchive";
-import Footer from "../components/Footer";
-import { Link, useNavigate } from "react-router-dom";
-import Axios from "axios";
+import {
+  DeleteForever,
+  Close,
+  ArrowBack,
+  ControlPoint,
+  Edit,
+} from "@mui/icons-material";
+import ModalEditExamArchiveLookExam from "../components/ModalEditExamArchiveLookExam";
+import ModalEditExamByCerfcodeNew from "./ModalEditExamByCerfcodeNew";
+import PropTypes from "prop-types";
 import ModalAddMultiple from "../components/ModalAddMultiple";
 import ModalAddOne from "../components/ModalAddOne";
-import PropTypes from "prop-types";
-import ModalAddTypeExam from "./ModalAddTypeExam";
+import { useLocation, useNavigate, Link } from "react-router-dom";
+import Axios from "axios";
+import ModalEditExamByCerfcode from "./ModalEditExamByCerfcode";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../src/store/userSilce";
 import { toast } from "react-toastify";
+import ToPrintPageExamArchiveByForm from "./ToPrintPageExamArchiveByForm";
+
+//confirmDialog
 import { confirmAlert } from "react-confirm-alert";
 import "react-confirm-alert/src/react-confirm-alert.css";
-import ToPrintPageExamArchive from "./ToPrintPageExamArchive";
 
-const style = {
-  position: "absolute",
-  top: "50%",
-  left: "50%",
-  transform: "translate(-50%, -50%)",
-  width: "50%",
-  bgcolor: "background.paper",
-  border: "2px solid #000",
-  boxShadow: 24,
-  p: 4,
-};
-
-//set up dialog for addExam
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   "& .MuiDialogContent-root": {
     padding: theme.spacing(2),
@@ -99,15 +98,6 @@ const theme = createTheme({
   },
 });
 
-const DrawerHeader = styled("div")(({ theme }) => ({
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "flex-end",
-  padding: theme.spacing(0, 1),
-  // necessary for content to be below app bar
-  ...theme.mixins.toolbar,
-}));
-
 function QuickSearchToolbar() {
   return (
     <Box
@@ -128,55 +118,57 @@ function QuickSearchToolbar() {
   );
 }
 
-function ContentPageExamArchive() {
+const DrawerHeader = styled("div")(({ theme }) => ({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "flex-end",
+  padding: theme.spacing(0, 1),
+  // necessary for content to be below app bar
+  ...theme.mixins.toolbar,
+}));
+
+function ContentPageExamArchiveByForm() {
   //Component Declaration
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.user);
   const token = user.token;
   const navigate = useNavigate();
+  const location = useLocation();
+
   const columns = [
-    { field: "id", headerName: "รหัสความสามารถทางภาษาอังกฤษสากล", width: 250 },
+    { field: "id", headerName: "ลำดับ", width: 100 },
     {
-      field: "cerfdifficultylevel",
-      headerName: "ระดับความยากง่ายตามกรอบ CEFR",
-      width: 230,
+      field: "questioncode",
+      headerName: "รหัสโจทย์",
+      width: 200,
     },
+    { field: "problem", headerName: "ไฟล์โจทย์", width: 200 },
+    { field: "question", headerName: "โจทย์", width: 400 },
+    { field: "cerfcode", headerName: "รหัสความยากง่าย", width: 200 },
+    { field: "formcode", headerName: "รหัสฟอร์ม", width: 150 },
     {
-      field: "cerfdifficultyleveldesc",
-      headerName: "ลักษณะข้อสอบ",
-      width: 600,
-    },
-    { field: "cerfleveltype", headerName: "ประเภทของการวัดทักษะ", width: 300 },
-    { field: "n_cerfcode", headerName: "จำนวนข้อ", width: 90 },
-    {
-      field: "management",
+      field: "checkbookingdate",
       headerName: "การจัดการ",
-      width: 350,
+      width: 300,
       renderCell: (params) => {
         return (
           <strong>
+            {/* แก้ไขโจทย์ข้อสอบ */}
             <ThemeProvider theme={theme}>
               <Button
                 variant="contained"
-                color="third"
+                color="secondary"
                 size="small"
-                style={{ marginLeft: 16, color: "#fff" }}
-                startIcon={<RemoveRedEye />}
+                style={{ marginLeft: 16 }}
+                startIcon={<Edit />}
                 onClick={() => {
-                  lookExamHandler(params);
+                  setParams(params);
+                  handleOpenModal();
                 }}
               >
-                ดูข้อสอบ
+                EDIT
               </Button>
             </ThemeProvider>
-
-            {/* edit button */}
-            <ModalEditExamArchive
-              cerfcode={params.row["id"]}
-              cerfdifficultylevel={params.row["cerfdifficultylevel"]}
-              cerfdifficultyleveldesc={params.row["cerfdifficultyleveldesc"]}
-              cerfleveltype={params.row["cerfleveltype"]}
-            />
 
             <ThemeProvider theme={theme}>
               <Button
@@ -187,6 +179,7 @@ function ContentPageExamArchive() {
                 startIcon={<DeleteForever />}
                 onClick={() => {
                   handleDeleteClick(params);
+                  //toDeleteQuestionAndChoice(params);
                 }}
               >
                 DELETE
@@ -197,81 +190,77 @@ function ContentPageExamArchive() {
       },
     },
   ];
-
   //Hooks and Logic
-  //get questions from backend include [tbcefrdifficultylevel, tbquestion]
-  const [questionLists, setQuestionLists] = useState([]);
-  // console.log("questionLists: ", questionLists);
+  const [openModal, setOpenModal] = useState(false);
+  const [params, setParams] = useState();
   const [open, setOpen] = React.useState(false);
-  const [openS, setOpenS] = React.useState(false);
-  //กำหนดตัวแปร scroll ให้กับ Dialog: body->ไม่มีแถบ Scrollbar ด้านข้าง, paper->มีแถบ Scrollbar ด้านข้าง
-  const [scroll, setScroll] = React.useState("paper");
+  const [questionLists, setQuestionLists] = useState([]);
+  const [formcode, setFormcode] = useState(""); // To store selected formcode
 
   useEffect(() => {
-    var config = {
+    var configQuestion = {
       method: "GET",
-      url: process.env.REACT_APP_API_URL + "/getquestioninfo",
+      url: process.env.REACT_APP_API_URL + `/getquestionlist`,
       headers: {
         authtoken: "bearer " + token,
       },
     };
-
-    Axios(config)
-      .then((response) => {
-        setQuestionLists(response.data);
+    Axios(configQuestion)
+      .then((res) => {
+        setQuestionLists(res.data);
       })
-      .catch((error) => {
-        if (error.response.status === 401 || error.response.status === 404) {
-          dispatch(logout());
-          navigate("/notfound404", {
-            state: {
-              statusCode: error.response.status,
-              txt: error.response.data,
-            },
-          });
-        } else {
-          toast.error(error.response.data.message);
-        }
-      });
+      .catch(handleError);
   }, []);
 
-  const descriptionElementRef = React.useRef(null);
-  React.useEffect(() => {
-    if (openS) {
-      const { current: descriptionElement } = descriptionElementRef;
-      if (descriptionElement !== null) {
-        descriptionElement.focus();
-      }
-    }
-  }, [openS]);
+  const filterData = (key, myArray) => {
+    return myArray
+      .filter((item) => item.formcode === key)
+      .map((item, index) => ({
+        id: index + 1,
+        questioncode: item.questioncode,
+        question: item.question,
+        problem: item.problem,
+        cerfcode: item.cerfcode,
+        formcode: item.formcode,
+      }));
+  };
 
-  //ย้ายไปไว้ที่ ModalAddOne
-  //Create Dropdown Lists
-  var cerfcodeDropdown = [];
-  for (let i = 0; i < questionLists.length; i++) {
-    cerfcodeDropdown.push(questionLists[i].id);
-  }
+  // Fileter questions based on selected formcode
+  const question = filterData(formcode, questionLists);
+
+  // Extract unique formcodes for the dropdown options
+  const uniqueFormcodes = [
+    ...new Set(questionLists.map((item) => item.formcode)),
+  ];
+
+  const cerfcodeDropdown = [
+    ...new Set(questionLists.map((item) => item.cerfcode)),
+  ];
 
   //Event Handlers
-  const lookExamHandler = (clickedexam) => {
-    navigate("/PageExamArchiveLookExam", {
-      state: {
-        id: clickedexam.row.id,
-        cerfdifficultylevel: clickedexam.row.cerfdifficultylevel,
-        cerfdifficultyleveldesc: clickedexam.row.cerfdifficultyleveldesc,
-        cerfleveltype: clickedexam.row.cerfleveltype,
-      },
-    });
+  const handleError = (error) => {
+    if (error.response?.status === 401 || error.response?.status === 404) {
+      dispatch(logout());
+      navigate("/notfound404", {
+        state: {
+          statusCode: error.response.status,
+          txt: error.response.data,
+        },
+      });
+    } else {
+      toast.error(error.response.data.message);
+    }
   };
 
   const handleDeleteClick = (clickedexam) => {
+    //console.log(clickedMember);
     confirmAlert({
       title: "ยืนยันการลบ",
-      message: `คุณต้องการที่จะลบ ${clickedexam.row.id} ใช่หรือไม่`,
+      message: `คุณต้องการที่จะลบ ${clickedexam.row.questioncode} ใช่หรือไม่`,
       buttons: [
         {
           label: "Yes",
-          onClick: () => toDeleteCefrLevel(clickedexam),
+          onClick: () => toDeleteQuestionAndChoice(clickedexam),
         },
         {
           label: "No",
@@ -281,22 +270,23 @@ function ContentPageExamArchive() {
     });
   };
 
-  //Delete CefrLevel
-  const toDeleteCefrLevel = (clickedexam) => {
-    const id = clickedexam.row.id;
-
+  //Delete QuestionAndChoice
+  const toDeleteQuestionAndChoice = (clickedexam) => {
+    const questioncode = clickedexam.row.questioncode;
     var config = {
       method: "DELETE",
-      url: process.env.REACT_APP_API_URL + `/delcefrlevel/${id}`,
+      url:
+        process.env.REACT_APP_API_URL + `/delquestionandchoice/${questioncode}`,
       headers: {
         authtoken: "bearer " + token,
       },
     };
+
     Axios(config)
       .then((response) => {
         setQuestionLists(
           questionLists.filter((val) => {
-            return val["id"] !== id;
+            return val["questioncode"] !== questioncode;
           })
         );
         toast.success(response.data.msg);
@@ -316,15 +306,24 @@ function ContentPageExamArchive() {
       });
   };
 
-  //open-close Dialog เพิ่มโจทย์ข้อสอบ
-  const handleOpen = () => setOpen(true);
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
   const handleClose = () => {
     setOpen(false);
   };
+  const handleOpenModal = () => setOpenModal(true);
+  const handleCloseModal = () => setOpenModal(false);
 
   //Render
   return (
     <>
+      <ModalEditExamByCerfcodeNew
+        params={params}
+        open={openModal}
+        handleClose={handleCloseModal}
+      />
+
       <Typography component="div">
         <Box sx={{ textAlign: "center", fontSize: 24, fontWeight: 500 }}>
           คลังข้อสอบ
@@ -340,33 +339,43 @@ function ContentPageExamArchive() {
             marginBottom: "10px",
           }}
         >
-          {/* Left-aligned print button */}
-          <ToPrintPageExamArchive toprint={questionLists} />
-
-          {/* Right-aligned add button and modal */}
-          <div style={{ display: "flex", gap: "10px" }}>
-            <Link
-              to="/PageExamArchiveByForm"
-              style={{ textDecoration: "none" }}
-            >
-              <Button
-                variant="contained"
-                startIcon={<RemoveRedEye />}
-                //onClick={() => toast.success("กรุณาเลือกฟอร์มข้อสอบ")}
+          <Link to="/PageExamArchive" style={{ textDecoration: "none" }}>
+            <Button variant="outlined" startIcon={<ArrowBack />}>
+              BACK
+            </Button>
+          </Link>
+          <Box display="flex" alignItems="center" gap="20px">
+            <FormControl style={{ width: 200 }}>
+              <InputLabel id="formcode-select-label" sx={{ fontSize: "18px" }}>
+                กรุณาเลือกฟอร์ม
+              </InputLabel>
+              <Select
+                labelId="formcode-select-label"
+                id="formcode-select"
+                value={formcode}
+                label="Select Formcode"
+                onChange={(e) => setFormcode(e.target.value)}
               >
-                แบ่งตามฟอร์มข้อสอบ
-              </Button>
-            </Link>
-
+                <MenuItem value="">
+                  <em>Select Formcode</em>
+                </MenuItem>
+                {uniqueFormcodes.map((code, index) => (
+                  <MenuItem key={index} value={code}>
+                    {code}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <ToPrintPageExamArchiveByForm toprint={question} />
+          </Box>
+          <div style={{ display: "flex", gap: "10px" }}>
             <Button
-              variant="contained"
-              startIcon={<Add />}
-              onClick={handleOpen}
+              variant="outlined"
+              startIcon={<ControlPoint />}
+              onClick={handleClickOpen}
             >
               เพิ่มโจทย์ข้อสอบ
             </Button>
-
-            <ModalAddTypeExam />
           </div>
         </div>
 
@@ -380,7 +389,7 @@ function ContentPageExamArchive() {
             id="customized-dialog-title"
             onClose={handleClose}
           >
-            เพิ่มโจทย์ข้อสอบ
+            เพิ่มคลังข้อสอบ
           </BootstrapDialogTitle>
 
           <DialogContent dividers>
@@ -403,11 +412,11 @@ function ContentPageExamArchive() {
         </BootstrapDialog>
 
         <DataGrid
-          rows={questionLists}
+          sx={{ marginTop: "30px" }}
+          rows={question}
           columns={columns}
           pageSize={5}
           rowsPerPageOptions={[5]}
-          components={{ Toolbar: QuickSearchToolbar }}
           initialState={{
             filter: {
               filterModel: {
@@ -416,12 +425,11 @@ function ContentPageExamArchive() {
               },
             },
           }}
+          components={{ Toolbar: QuickSearchToolbar }}
         />
       </div>
-      <DrawerHeader />
-      <Footer />
     </>
   );
 }
 
-export default ContentPageExamArchive;
+export default ContentPageExamArchiveByForm;

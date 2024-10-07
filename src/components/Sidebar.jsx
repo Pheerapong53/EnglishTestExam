@@ -45,6 +45,7 @@ import ContentPageExamArchive from "./ContentPageExamArchive";
 // import ContentPageAdmin from "./ContentPageAdmin";
 import ContentPageCheckApproval from "./ContentPageCheckApproval";
 import ContentPageExamArchiveLookExam from "./ContentPageExamArchiveLookExam";
+import ContentPageExamArchiveByForm from "./ContentPageExamArchiveByForm"; //Add New Page 071067
 import ContentPagePublicRelationsManagement from "./ContentPagePublicRelationsManagement";
 import ContentLookLab from "./ContentLookLab";
 import PageManageMembers from "../pages/PageManageMembers";
@@ -653,6 +654,8 @@ function Sidebar() {
           ) : //new path
           location.pathname.match(/^\/PageMemberInformation\/[^]+$/) ? (
             <ContentPageMemberInformation />
+          ) : location.pathname === "/PageExamArchiveByForm" ? (
+            <ContentPageExamArchiveByForm />
           ) : (
             ""
           )}
