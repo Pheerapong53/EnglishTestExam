@@ -238,6 +238,14 @@ function App() {
           }
         />
         <Route
+          path="/PageAddManyExam"
+          element={
+            <UserLoginRoute>
+              <Sidebar />
+            </UserLoginRoute>
+          }
+        />
+        <Route
           path="/PageLookLab"
           element={
             <UserLoginRoute>
