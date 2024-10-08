@@ -1,15 +1,15 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable eqeqeq */
-import React, { useCallback, useState, useEffect } from "react";
-import Modal from "@mui/material/Modal";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
-import { Link } from "react-router-dom";
-import Typography from "@mui/material/Typography";
-import ControlPointIcon from "@mui/icons-material/ControlPoint";
-import FileDownloadIcon from "@mui/icons-material/FileDownload";
+import React, { useCallback, useState } from "react";
+import { Modal, Box, Button, Typography } from "@mui/material";
+import {
+  ControlPoint,
+  FileDownload,
+  DeleteForever,
+  Description,
+} from "@mui/icons-material";
+import { Link, useNavigate } from "react-router-dom";
 import { useDropzone } from "react-dropzone";
 import {
   DataGrid,
@@ -18,17 +18,12 @@ import {
 } from "@mui/x-data-grid";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { blue, red, yellow } from "@mui/material/colors";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
-import ModalEditExamArchiveLookExam from "../components/ModalEditExamArchiveLookExam";
-import DescriptionIcon from "@mui/icons-material/Description";
+import ModalEditExamArchiveLookExam from "./ModalEditExamArchiveLookExam";
 import * as XLSX from "xlsx";
 import { addManyExam } from "./functions/cefrLevel";
 import { toast } from "react-toastify";
-import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
-import { logout } from "../../src/store/userSilce";
-import { useNavigate } from "react-router-dom";
+import { logout } from "../store/userSilce";
 
 //กำหนด theme สี
 const theme = createTheme({
@@ -44,50 +39,6 @@ const theme = createTheme({
     },
   },
 });
-
-//Row ใน Datagrid หลังจากกดบันทึก
-const rowsSS = [
-  {
-    id: 1,
-    examination: "who is he?",
-    choicetrue: "bro",
-    choicefalseone: "mother",
-    choicefalsetwo: "sis",
-    choicefalsethree: "father",
-    code: "L1A1",
-    note: "มีแล้วจะไม่ถูกบันทึก",
-  },
-  {
-    id: 2,
-    examination: "who is he?",
-    choicetrue: "bro",
-    choicefalseone: "mother",
-    choicefalsetwo: "sis",
-    choicefalsethree: "father",
-    code: "L1A1",
-    note: "มีแล้วจะไม่ถูกบันทึก",
-  },
-  {
-    id: 3,
-    examination: "who is he?",
-    choicetrue: "bro",
-    choicefalseone: "mother",
-    choicefalsetwo: "sis",
-    choicefalsethree: "father",
-    code: "L1A1",
-    note: "มีแล้วจะไม่ถูกบันทึก",
-  },
-  {
-    id: 4,
-    examination: "who is he?",
-    choicetrue: "bro",
-    choicefalseone: "mother",
-    choicefalsetwo: "sis",
-    choicefalsethree: "father",
-    code: "L1A1",
-    note: "มีแล้วจะไม่ถูกบันทึก",
-  },
-];
 
 //กำหนด style
 const style = {
@@ -124,11 +75,12 @@ function QuickSearchToolbar() {
 }
 
 //เพิ่มหลายข้อ
-function ModalAddMultiple_old(props) {
+function ModalAddMultipleOld(props) {
+  //Component Declaration
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => ({ ...state }));
-  const token = user.user.token;
+  const { user } = useSelector((state) => state.user);
+  const token = user.token;
 
   //แก้ไขข้อมูลในแต่ละแถว
   const editRow = (newvalue) => {
@@ -200,7 +152,7 @@ function ModalAddMultiple_old(props) {
                 color="primary"
                 size="small"
                 style={{ marginLeft: 16 }}
-                startIcon={<DeleteForeverIcon />}
+                startIcon={<DeleteForever />}
                 onClick={() => {
                   deleteRow(params.row.id);
                 }}
@@ -214,6 +166,11 @@ function ModalAddMultiple_old(props) {
     },
   ];
 
+  //Hook and Logic
+  const [fileExcel, setFileExcel] = useState();
+  const [fileName, setFileName] = useState();
+  //open-close Datagrid when press button
+  const [check, setCheck] = React.useState(false);
   const onDrop = useCallback((acceptedFiles) => {
     const fileExtension = acceptedFiles[0].name.split(".").pop();
     //console.log(acceptedFiles[0].name);
@@ -285,10 +242,6 @@ function ModalAddMultiple_old(props) {
     }
   });
 
-  const [fileExcel, setFileExcel] = useState();
-
-  const [fileName, setFileName] = useState();
-
   //const { acceptedFiles, getRootProps, getInputProps } = useDropzone();
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
@@ -302,9 +255,6 @@ function ModalAddMultiple_old(props) {
     setCheck(false);
     setOpen(false);
   };
-
-  //open-close Datagrid when press button
-  const [check, setCheck] = React.useState(false);
 
   // const [confirm, SetConfirm] = React.useState(false);
   const handleClickCheck = () => {
@@ -383,7 +333,7 @@ function ModalAddMultiple_old(props) {
         sx={{ width: "200px" }}
         variant="contained"
         onClick={handleOpen}
-        startIcon={<ControlPointIcon />}
+        startIcon={<ControlPoint />}
       >
         เพิ่มหลายโจทย์
       </Button>
@@ -421,7 +371,7 @@ function ModalAddMultiple_old(props) {
                 <div>
                   <p>
                     อัพโหลดไฟล์
-                    <DescriptionIcon
+                    <Description
                       sx={{
                         color: "#ffeb3b",
                         fontSize: "24px",
@@ -434,7 +384,7 @@ function ModalAddMultiple_old(props) {
                     sx={{ width: "150px" }}
                     variant="contained"
                     onClick={handleDownloadFile}
-                    startIcon={<FileDownloadIcon />}
+                    startIcon={<FileDownload />}
                   >
                     Download
                   </Button>
@@ -562,4 +512,4 @@ function ModalAddMultiple_old(props) {
   );
 }
 
-export default ModalAddMultiple_old;
+export default ModalAddMultipleOld;
