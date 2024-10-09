@@ -1,6 +1,3 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable eqeqeq */
 import React, { useCallback, useState } from "react";
 import { Modal, Box, Button, Typography } from "@mui/material";
 import {
@@ -127,12 +124,13 @@ function ModalAddMultipleOld(props) {
     { field: "choiceTextF2", headerName: "ตัวเลือก", width: 200 },
     { field: "choicecodeF3", headerName: "รหัสตัวเลือก", width: 150 },
     { field: "choiceTextF3", headerName: "ตัวเลือก", width: 200 },
+    { field: "formcode", headerName: "รหัสฟอร์มข้อสอบ", width: 200 },
     {
       field: "cerfcode",
       headerName: "รหัสความสามารถทางภาษาอังกฤษสากล",
       width: 100,
     },
-    { field: "formcode", headerName: "รหัสฟอร์มข้อสอบ", width: 200 },
+
     {
       field: "manage",
       headerName: "การจัดการ",
@@ -171,6 +169,8 @@ function ModalAddMultipleOld(props) {
   const [fileName, setFileName] = useState();
   //open-close Datagrid when press button
   const [check, setCheck] = React.useState(false);
+
+  //Event Handler
   const onDrop = useCallback((acceptedFiles) => {
     const fileExtension = acceptedFiles[0].name.split(".").pop();
     //console.log(acceptedFiles[0].name);
@@ -182,9 +182,14 @@ function ModalAddMultipleOld(props) {
         const sheetName = workbook.SheetNames[0];
         const workSheet = workbook.Sheets[sheetName];
         const excelData = XLSX.utils
-          .sheet_to_json(workSheet, { header: 1 })
+          .sheet_to_json(workSheet, { header: 1, blankrows: false })
           .slice(2);
-        //console.log(excelData);
+        const formcode = XLSX.utils
+          .sheet_to_json(workSheet, { header: 1, blankrows: false })
+          .slice(0, 1);
+        console.log("excelData : ", excelData);
+        console.log("formcode : ", formcode[0][1]);
+
         setFileName(acceptedFiles[0].name);
 
         var dataQuestion = [];
@@ -203,7 +208,7 @@ function ModalAddMultipleOld(props) {
               choicecodeF3: excelData[i][9],
               choiceTextF3: excelData[i][10],
               cerfcode: excelData[i][11],
-              formcode: excelData[i][12],
+              formcode: formcode[0][1],
               id: excelData[i][13],
             });
           }
@@ -236,7 +241,7 @@ function ModalAddMultipleOld(props) {
           );
         }
       };
-      reader.readAsBinaryString(acceptedFiles[0]);
+      reader.readAsArrayBuffer(acceptedFiles[0]);
     } else {
       toast.error("accept only File .xlsx");
     }
@@ -252,6 +257,8 @@ function ModalAddMultipleOld(props) {
   const [open, setOpen] = React.useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => {
+    setFileName();
+    setFileExcel();
     setCheck(false);
     setOpen(false);
   };

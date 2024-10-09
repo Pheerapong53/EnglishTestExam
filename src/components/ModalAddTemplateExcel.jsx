@@ -1,15 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
   Box,
   Button,
-  Typography,
   TextField,
   Dialog,
   DialogContent,
   DialogContentText,
 } from "@mui/material";
-import { ControlPoint, CloudUpload } from "@mui/icons-material";
+import { CloudUpload } from "@mui/icons-material";
 import { logout } from "../store/userSilce";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -38,9 +37,6 @@ function ModalAddTemplateExcel() {
   //State for holding the new Template file selected by the user
   const [fileTemplate, setFileTemplate] = useState("");
 
-  //State for holding the preview content of the currently selected files (before submission)
-  const [fileTemplatePreview, setFileTemplatePreview] = useState("");
-
   //Event Handler
   const handleOpen = () => setOpen(true);
   const handleClose = () => {
@@ -48,8 +44,19 @@ function ModalAddTemplateExcel() {
     setOpen(false);
   };
   const handleFileChange = (e) => {
-    const selectedFile = e.target.files[0];
-    setFileTemplate(selectedFile);
+    const selectedFile = e.target.files[0]; // Get the selected file
+
+    const fileExtension = selectedFile.name.split(".").pop(); // Extract file extension
+
+    // Validate file extension
+    if (fileExtension === "xlsx") {
+      setFileTemplate(selectedFile); // Set the file if valid
+      //console.log("Valid Excel file selected");
+    } else {
+      toast.error("กรุณาอัปโหลดไฟล์ นามสกุล .xlsx", {
+        onClose: setFileTemplate(""),
+      }); // Show error for invalid file type
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -105,7 +112,7 @@ function ModalAddTemplateExcel() {
           >
             <Box component="form" onSubmit={handleSubmit}>
               <TextField
-                label="ไฟล์ Template"
+                label="ชื่อไฟล์"
                 sx={{ margin: "10px" }}
                 id="outlined-basic"
                 name="problem"
@@ -117,7 +124,7 @@ function ModalAddTemplateExcel() {
 
               <input
                 label="ไฟล์ Template"
-                accept=".xlsx, .xls"
+                accept=".xlsx"
                 id="file-template"
                 component="span"
                 multiple
