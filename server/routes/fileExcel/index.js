@@ -3,6 +3,7 @@ const routes = express.Router();
 const multer = require('multer');
 const app = express();
 const path = require('path');
+const fs = require('fs');
 const { verifyToken } = require("../../middleware/VerifyToken");
 
 const storageFile = multer.diskStorage({
@@ -17,8 +18,11 @@ const uploadFile = multer({storage: storageFile});
 
 routes.get("/download", async(req, res) => {
     const file = path.join(__dirname,'Template.xlsx');
+    if(!fs.existsSync(file)){
+        return res.status(500).json({message: "Template not found."});
+    }
     res.download(file, 'Template.xlsx');
-})
+});
 routes.post("/uploadtemplate", verifyToken, function(req, res){
     uploadFile.single("file")(req, res, (err) => {
         if (err instanceof multer.MulterError) {

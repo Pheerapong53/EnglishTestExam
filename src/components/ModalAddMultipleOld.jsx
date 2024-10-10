@@ -21,6 +21,7 @@ import { addManyExam } from "./functions/cefrLevel";
 import { toast } from "react-toastify";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../store/userSilce";
+import axios from "axios";
 
 //กำหนด theme สี
 const theme = createTheme({
@@ -78,37 +79,6 @@ function ModalAddMultipleOld(props) {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.user);
   const token = user.token;
-
-  //แก้ไขข้อมูลในแต่ละแถว
-  const editRow = (newvalue) => {
-    for (let i = 0; i < fileExcel.length; i++) {
-      if (fileExcel[i].id === newvalue.id) {
-        fileExcel[i].questioncode = newvalue.questioncode;
-        fileExcel[i].problem = newvalue.problem;
-        fileExcel[i].question = newvalue.question;
-        fileExcel[i].choicecodeT = newvalue.choicecodeT;
-        fileExcel[i].choiceTextT = newvalue.choiceTextT;
-        fileExcel[i].choicecodeF1 = newvalue.choicecodeF1;
-        fileExcel[i].choiceTextF1 = newvalue.choiceTextF1;
-        fileExcel[i].choicecodeF2 = newvalue.choicecodeF2;
-        fileExcel[i].choiceTextF2 = newvalue.choiceTextF2;
-        fileExcel[i].choicecodeF3 = newvalue.choicecodeF3;
-        fileExcel[i].choiceTextF3 = newvalue.choiceTextF3;
-        fileExcel[i].cerfcode = newvalue.cerfcode;
-        fileExcel[i].formcode = newvalue.formcode;
-      }
-    }
-  };
-
-  //ลบข้อมูลในแต่ละแถว
-  const deleteRow = (params) => {
-    setFileExcel(
-      fileExcel.filter((val) => {
-        return val.id != params;
-      })
-    );
-    console.log(params);
-  };
 
   //column ใน Data Grid หลังจากกดบันทึก
   const columnSS = [
@@ -171,6 +141,37 @@ function ModalAddMultipleOld(props) {
   const [check, setCheck] = React.useState(false);
 
   //Event Handler
+  //แก้ไขข้อมูลในแต่ละแถว
+  const editRow = (newvalue) => {
+    for (let i = 0; i < fileExcel.length; i++) {
+      if (fileExcel[i].id === newvalue.id) {
+        fileExcel[i].questioncode = newvalue.questioncode;
+        fileExcel[i].problem = newvalue.problem;
+        fileExcel[i].question = newvalue.question;
+        fileExcel[i].choicecodeT = newvalue.choicecodeT;
+        fileExcel[i].choiceTextT = newvalue.choiceTextT;
+        fileExcel[i].choicecodeF1 = newvalue.choicecodeF1;
+        fileExcel[i].choiceTextF1 = newvalue.choiceTextF1;
+        fileExcel[i].choicecodeF2 = newvalue.choicecodeF2;
+        fileExcel[i].choiceTextF2 = newvalue.choiceTextF2;
+        fileExcel[i].choicecodeF3 = newvalue.choicecodeF3;
+        fileExcel[i].choiceTextF3 = newvalue.choiceTextF3;
+        fileExcel[i].cerfcode = newvalue.cerfcode;
+        fileExcel[i].formcode = newvalue.formcode;
+      }
+    }
+  };
+
+  //ลบข้อมูลในแต่ละแถว
+  const deleteRow = (params) => {
+    setFileExcel(
+      fileExcel.filter((val) => {
+        return val.id != params;
+      })
+    );
+    console.log(params);
+  };
+
   const onDrop = useCallback((acceptedFiles) => {
     const fileExtension = acceptedFiles[0].name.split(".").pop();
     //console.log(acceptedFiles[0].name);
@@ -198,7 +199,7 @@ function ModalAddMultipleOld(props) {
             dataQuestion.push({
               questioncode: excelData[i][0],
               problem: excelData[i][1],
-              question: excelData[i][2],
+              question: excelData[i][2] ? excelData[i][2] : "none",
               choicecodeT: excelData[i][3],
               choiceTextT: excelData[i][4],
               choicecodeF1: excelData[i][5],
@@ -284,6 +285,7 @@ function ModalAddMultipleOld(props) {
   //Insert Data in Many Row
   const handleConfirm = () => {
     if (fileExcel !== undefined && fileExcel.length !== 0) {
+      //console.log("fileExcel : ", fileExcel);
       addManyExam(fileExcel, token)
         .then((res) => {
           toast.success(res.data.msg, { onClose: () => navigate(0) });
@@ -301,39 +303,42 @@ function ModalAddMultipleOld(props) {
             toast.error(error.response.data.message);
           }
         });
-      // addManyExam(fileExcel).then((res) => {
-      //   console.log(res);
-      // });
-      // // handleClose();
-      // // SetConfirm(value => !value)
-      // window.location.replace("/PageExamArchive");
     } else {
       toast.error("Please Select New File");
     }
   };
 
-  const handleDownloadFile = () => {
-    const fileUrl = process.env.REACT_APP_API_URL + "/download";
-    const a = document.createElement("a");
-    a.href = fileUrl;
-    a.click();
+  const handleDownloadFile = async () => {
+    try {
+      var config = {
+        method: "GET",
+        url: process.env.REACT_APP_API_URL + `/download`,
+        headers: {
+          authtoken: "bearer " + token,
+        },
+        responseType: "blob",
+      };
+      const response = await axios(config);
+
+      //If response is successful, initiate the download
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "Template.xlsx");
+      document.body.appendChild(link);
+      link.click();
+    } catch (error) {
+      if (error.response && error.response.status === 500) {
+        // If file is not found, show an error toast
+        toast.error("File not found. Please upload the template.");
+      } else {
+        // Handle other errors
+        toast.error("An error occurred while downloading the template");
+      }
+    }
   };
 
-  //ยังไม่ได้ใช้
-  // const handleFileChange = (event) => {
-  //   const files = event.target.files;
-  //   const reader = new FileReader();
-  //   reader.onload = (e) => {
-  //     const data = e.target.result;
-  //     const workbook = XLSX.read(data, { type: "binary" });
-  //     const sheetName = workbook.SheetNames[0];
-  //     const workSheet = workbook.Sheets[sheetName];
-  //     const excelData = XLSX.utils.sheet_to_json(workSheet, { header: 1 });
-  //     console.log(excelData);
-  //   };
-  //   reader.readAsBinaryString(files[0]);
-  // };
-
+  //Render
   return (
     <>
       <Button
@@ -396,8 +401,6 @@ function ModalAddMultipleOld(props) {
                     Download
                   </Button>
                 </div>
-
-                {/* <input type="file" onChange={handleFileChange} /> */}
 
                 {/* DROPZONE */}
                 <div>
@@ -477,8 +480,8 @@ function ModalAddMultipleOld(props) {
                 <DataGrid
                   rows={fileExcel}
                   columns={columnSS}
-                  pageSize={5}
-                  rowsPerPageOptions={[5]}
+                  pageSize={10}
+                  rowsPerPageOptions={[10]}
                   initialState={{
                     filter: {
                       filterModel: {
