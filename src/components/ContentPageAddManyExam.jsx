@@ -6,6 +6,7 @@ import { styled, createTheme, ThemeProvider } from "@mui/material/styles";
 import { blue, red, yellow } from "@mui/material/colors";
 import ModalAddMultipleOld from "./ModalAddMultipleOld";
 import ModalAddTemplateExcel from "./ModalAddTemplateExcel";
+import ModalAddManyProblem from "./ModalAddManyProblem";
 import * as XLSX from "xlsx";
 
 const theme = createTheme({
@@ -76,20 +77,7 @@ function ContentPageAddManyExam() {
           <ModalAddTemplateExcel />
 
           {/* Button to upload MP3 file */}
-          <Button
-            variant="contained"
-            component="label"
-            startIcon={<CloudUpload />}
-            color="secondary"
-          >
-            Upload MP3
-            <input
-              type="file"
-              accept=".mp3"
-              hidden
-              onChange={handleFileUpload("MP3")}
-            />
-          </Button>
+          <ModalAddManyProblem />
 
           {/* Button to upload TXT file */}
           <Button
