@@ -5,7 +5,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { useDropzone } from "react-dropzone";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { blue, red, yellow } from "@mui/material/colors";
-import { addManyExam } from "./functions/cefrLevel";
 import { toast } from "react-toastify";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../store/userSilce";
@@ -49,15 +48,19 @@ function ModalAddManyProblem() {
 
   //Hook and Logic
   const [files, setFiles] = useState([]);
+  const [folderName, setFolderName] = useState(""); // State to store folder name
   console.log(files);
-
-  const [fileName, setFileName] = useState();
-  //open-close Datagrid when press button
-  const [check, setCheck] = React.useState(false);
+  console.log("folderName : ", folderName);
 
   //Event Handler
   const onDrop = useCallback((acceptedFiles) => {
     const mp3Files = acceptedFiles.filter((file) => file.type === "audio/mpeg");
+    if (mp3Files.length > 0) {
+      // Extract folder name from the first file's relative path
+      const firstFilePath = mp3Files[0].webkitRelativePath;
+      const folder = firstFilePath.split("/")[0]; // Get folder name
+      setFolderName(folder);
+    }
     setFiles(mp3Files);
   }, []);
 
@@ -74,7 +77,7 @@ function ModalAddManyProblem() {
 
     try {
       const res = await axios.post(
-        process.env.REACT_APP_API_URL + "/uploadmanyfiles",
+        process.env.REACT_APP_API_URL + `/uploadmanyfiles/`,
         formData,
         {
           headers: {
@@ -98,54 +101,8 @@ function ModalAddManyProblem() {
   const [open, setOpen] = React.useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => {
-    setFileName();
     setFiles([]);
-    setCheck(false);
     setOpen(false);
-  };
-
-  // const [confirm, SetConfirm] = React.useState(false);
-  const handleClickCheck = () => {
-    if (files === undefined) {
-      toast.error("Please Select File");
-    } else if (fileName !== undefined) {
-      const fileExtension = fileName.split(".").pop();
-      if (fileExtension === "xlsx") {
-        setCheck(true);
-      } else {
-        toast.error("accept only File .xlsx");
-      }
-    } else if (files !== undefined) {
-      setCheck(true);
-    } else {
-      setCheck(false);
-    }
-  };
-
-  //Insert Data in Many Row
-  const handleConfirm = () => {
-    if (files !== undefined && files.length !== 0) {
-      //console.log("fileExcel : ", fileExcel);
-      addManyExam(files, token)
-        .then((res) => {
-          toast.success(res.data.msg, { onClose: () => navigate(0) });
-        })
-        .catch((error) => {
-          if (error.response.status === 401 || error.response.status === 404) {
-            dispatch(logout());
-            navigate("/notfound404", {
-              state: {
-                statusCode: error.response.status,
-                txt: error.response.data,
-              },
-            });
-          } else {
-            toast.error(error.response.data.message);
-          }
-        });
-    } else {
-      toast.error("Please Select New File");
-    }
   };
 
   //Render

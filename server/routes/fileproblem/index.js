@@ -114,4 +114,42 @@ routes.post("/uploadtextfile/:formcode", verifyToken, function (req, res) {
   });
 });
 
+const storageManyFiles = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const formcode = `sound/${req.params.formcode}/`;
+    const uploadDir = path.join(__dirname, formcode);
+
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.originalname);
+  },
+});
+
+const uploadManyFiles = multer({
+  storage: storageManyFiles,
+}).array("files", 100);
+routes.post("/uploadmanyfiles/:formcode", verifyToken, function (req, res) {
+  uploadManyFiles(req, res, function (err) {
+    if (err instanceof multer.MulterError) {
+      // A Multer error occurred when uploading.
+      return res.status(500).json({ message: "Multer error: " + err.message });
+    } else if (err) {
+      // An unknown error occurred when uploading.
+      return res.status(500).json({ message: "Error: " + err.message });
+    }
+
+    // Check if files were uploaded
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ message: "No files uploaded." });
+    }
+
+    res.status(200).json({ message: "Files uploaded successfully!" });
+  });
+});
+
 module.exports = routes;
