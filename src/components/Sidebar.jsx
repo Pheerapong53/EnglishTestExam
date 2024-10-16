@@ -612,17 +612,7 @@ function Sidebar() {
             <ContentPageTestManagement />
           ) : location.pathname === "/PageExamArchive" ? (
             <ContentPageExamArchive />
-          ) : // ) : location.pathname === "/PageExamInformation" ? (
-          //   <ContentPageExamInformation />
-          // ) : location.pathname === "/PageExaminer" ? (
-          //   <ContentPageExaminer />
-          // ) : location.pathname === "/PageCoorDinaTor" ? (
-          //   <ContentPageCoorDinaTor />
-          // ) : location.pathname === "/PageSuperVisor" ? (
-          //   <ContentPageSuperVisor />
-          // ) : location.pathname === "/PageAdmin" ? (
-          //   <ContentPageAdmin />
-          location.pathname === "/PageCheckApproval" ? (
+          ) : location.pathname === "/PageCheckApproval" ? (
             <ContentPageCheckApproval />
           ) : location.pathname === "/PageExamArchiveLookExam" ? (
             <ContentPageExamArchiveLookExam />

@@ -2,239 +2,343 @@ import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
-  TextField,
-  Typography,
   Dialog,
   DialogContent,
+  DialogTitle,
+  DialogActions,
   DialogContentText,
+  Typography,
+  TextField,
 } from "@mui/material";
 import { Edit } from "@mui/icons-material";
-import { createTheme, ThemeProvider } from "@mui/material/styles";
-import { yellow } from "@mui/material/colors";
-import { useNavigate, Link } from "react-router-dom";
-import { editQuestionAndChoice } from "./functions/cefrLevel";
-import { useSelector, useDispatch } from "react-redux";
-import { logout } from "../../src/store/userSilce";
-import { toast } from "react-toastify";
 import axios from "axios";
+import { useSelector, useDispatch } from "react-redux";
+import { logout } from "../store/userSilce";
+import { editQuestionAndChoice } from "./functions/cefrLevel";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
-const theme = createTheme({
-  palette: {
-    secondary: {
-      main: yellow[500],
-    },
-  },
-});
-
-function ModalEditExamByCerfcode(params) {
-  //Component Declaration
+function ModalEditExamByCerfcode({ params, open, handleClose }) {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { user } = useSelector((state) => state.user);
   const token = user.token;
-  const navigate = useNavigate();
-  const initialstate = {
-    id: params.params.row.id,
-    questioncode: params.params.row.questioncode,
-    problem: params.params.row.problem,
-    question: params.params.row.question,
-    cerfcode: params.params.row.cerfcode,
-    formcode: params.params.row.formcode,
-  };
+  //console.log("params.row : ", params?.row);
 
   //Hook and Logic
-  //Get Choice From tbchoice by questioncode
-  const [choiceLists, setChoiceLists] = useState();
-  console.log(choiceLists);
+  //State for storing the list of choices
+  const [choiceLists, setChoiceLists] = useState({});
+  //State for holding the existing file URLs for problem and question
+  const [fileUrl, setFileUrl] = useState("");
+  const [fileQuestion, setFileQuestion] = useState("");
+  //State for holding the preview content of the currently selected files (before submission)
+  const [filePreview, setFilePreview] = useState("");
+  const [fileQuestionPreview, setFileQuestionPreview] = useState("");
+  //State for holding the new files (problem and question) selected by the user
+  const [newFile, setNewFile] = useState("");
+  const [newFileQuestion, setNewFileQuestion] = useState("");
+  //State for openning dialog confirmation
+  const [openDialog, setOpenDialog] = useState(false);
 
   useEffect(() => {
-    if (!params?.params?.row?.questioncode) return;
-    var configChoice = {
-      method: "GET",
-      url:
-        process.env.REACT_APP_API_URL +
-        `/getchoicebyquestioncode/${params.params.row.questioncode}`,
-      headers: { authtoken: "bearer " + token },
-    };
-    axios(configChoice)
-      .then((res) => {
-        const fetchChoices = res.data;
-        const initialstate = {
-          id: params.params.row.id,
-          questioncode: params.params.row.questioncode,
-          problem: params.params.row.problem,
-          question: params.params.row.question,
-          cerfcode: params.params.row.cerfcode,
-          formcode: params.params.row.formcode,
+    let isMounted = true; // Flag to prevent setting state if component unmounts
+    // Function to fetch choices based on the question code
+    const fetchChoices = async () => {
+      if (!params?.row?.questioncode) return;
+      try {
+        var configChoice = {
+          method: "GET",
+          url:
+            process.env.REACT_APP_API_URL +
+            `/getchoicebyquestioncode/${params.row.questioncode}`,
+          headers: { authtoken: "bearer " + token },
         };
-        fetchChoices.forEach((choice) => {
-          initialstate[choice.choicecode] = choice.choicetext;
-        });
+        const { data } = await axios(configChoice);
+        if (isMounted) {
+          const initialstate = {
+            id: params.row.id,
+            questioncode: params.row.questioncode,
+            problem: params.row.problem,
+            question: params.row.question,
+            cerfcode: params.row.cerfcode,
+            formcode: params.row.formcode,
+          };
 
-        setChoiceLists(initialstate);
-      })
-      .catch((error) => {
+          data.forEach((choice) => {
+            initialstate[choice.choicecode] = choice.choicetext;
+          });
+
+          setChoiceLists(initialstate);
+        }
+      } catch (error) {
         console.error("Error fetching choice data:", error);
-      });
-  }, [params]);
-  //open-close Dialog & set scroll type paper
-  const [open, setOpen] = useState(false);
-  const [scroll, setScroll] = React.useState("paper");
-  const [values, setValues] = useState(initialstate);
-  //console.log(values);
+      }
+    };
+    fetchChoices();
 
-  const [fileProblem, setFileProblem] = useState("");
-  //wait for change
-  const [formValues, setFormValues] = useState({
-    id: {
-      value: params.params.row.id,
-    },
-    questioncode: {
-      value: params.params.row.questioncode,
-    },
-    problem: {
-      value: params.params.row.problem,
-      error: false,
-      errorMessage: "You must Upload file or enter file name",
-    },
-    question: {
-      value: params.params.row.question,
-      error: false,
-      errorMessage: "You must enter a Question",
-    },
-    cerfcode: {
-      value: params.params.row.cerfcode,
-    },
-    formcode: {
-      value: params.params.row.formcode,
-    },
-  });
+    return () => {
+      isMounted = false;
+    };
+  }, [params]);
+
+  useEffect(() => {
+    let isMounted = true; // Flag to prevent setting state if component unmounts
+
+    // Function to fetch the question's file URL (e.g., audio file for the question)
+    const fetchQuestionUrl = async () => {
+      if (!params?.row.problem) return;
+
+      try {
+        const configFile = {
+          method: "GET",
+          url: `${process.env.REACT_APP_API_URL}/getfilesound/${params.row.formcode}/${params.row.question}`,
+          headers: { authtoken: "bearer " + token },
+        };
+
+        const response = await axios(configFile);
+        if (isMounted) {
+          setFileQuestion(response.data);
+        }
+      } catch (error) {
+        console.error("Error fetching fileUrl data:", error);
+      }
+    };
+
+    // Function to fetch the problem's file URL (could be sound or text)
+    const fetchFileUrl = async () => {
+      if (!params?.row.problem) return;
+
+      try {
+        // Extract file extension to determine if the file is .mp3 or .txt
+        const fileExtension = params["row"]["problem"].split(".").pop();
+        const isMP3 = fileExtension === "mp3";
+        const isTXT = fileExtension === "txt";
+
+        // API config based on the file type (sound or text)
+        const configFile = {
+          method: "GET",
+          url: isMP3
+            ? `${process.env.REACT_APP_API_URL}/getfilesound/${params.row.formcode}/${params.row.problem}`
+            : `${process.env.REACT_APP_API_URL}/getfiletext/${params.row.formcode}/${params.row.problem}`,
+          headers: { authtoken: "bearer " + token },
+        };
+
+        const response = await axios(configFile);
+        if (isMounted) {
+          setFileUrl(response.data);
+        }
+      } catch (error) {
+        console.error("Error fetching fileUrl data:", error);
+      }
+    };
+
+    // Fetch the file URL when the component mounts or when `params` change
+    fetchFileUrl();
+
+    // Conditionally fetch the question file URL if the cerfcode matches
+    if (["L2B2", "L2C1"].includes(params?.row.cerfcode)) {
+      fetchQuestionUrl();
+    }
+
+    // Cleanup function to reset states and prevent memory leaks
+    return () => {
+      isMounted = false;
+      setFileUrl(""); // Clear file URL state
+      setFilePreview(""); // Clear file preview state
+      setFileQuestion(""); // Clear question file URL state
+      setFileQuestionPreview(""); // Clear question file preview state
+    };
+  }, [params]);
 
   //Event Handler
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
-  const handleClose = () => {
-    setOpen(false);
-    setValues(initialstate);
+  const handleOpenDialog = () => setOpenDialog(true);
+  const handleCloseDialog = () => setOpenDialog(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setOpenDialog(false); //Close the dialog before proceeding
+    // Handle the file upload for "problem" (can be text or mp3)
+    if (newFile !== "") {
+      // Rename the uploaded file
+      const renamedFile = new File([newFile], `${choiceLists.problem}`, {
+        type: newFile.type,
+      });
+      const formData = new FormData(); // Create a FormData object for the file upload
+      formData.append("file", renamedFile);
+
+      var extendName = params.row.problem.split(".")[1];
+      // Handle text file upload
+      if (extendName.toString() === "txt") {
+        try {
+          const res = await axios.post(
+            process.env.REACT_APP_API_URL +
+              `/uploadtextfile/${params.row.formcode}`,
+            formData,
+            {
+              headers: {
+                authtoken: "bearer " + token,
+              },
+            }
+          );
+          toast.success(res.data.message); // Show success toast notification
+        } catch (error) {
+          console.error("Error uploading text file:", error);
+        }
+      }
+      // Handle mp3 file upload
+      else if (extendName.toString() === "mp3") {
+        try {
+          const res = await axios.post(
+            process.env.REACT_APP_API_URL +
+              `/uploadsoundfile/${params.row.formcode}`,
+            formData,
+            {
+              headers: {
+                authtoken: "bearer " + token,
+              },
+            }
+          );
+          toast.success(res.data.message); // Show success toast notification
+        } catch (error) {
+          console.error("Error uploading sound file:", error);
+        }
+      }
+    }
+
+    // Handle the file upload for "question" (only mp3 allowed)
+    if (newFileQuestion !== "") {
+      // Rename the uploaded file
+      const renamedFile = new File(
+        [newFileQuestion],
+        `${choiceLists?.question}`,
+        {
+          type: newFile.type,
+        }
+      );
+      const formData = new FormData(); // Create a FormData object for the file upload
+      formData.append("file", renamedFile);
+      try {
+        const res = await axios.post(
+          process.env.REACT_APP_API_URL +
+            `/uploadsoundfile/${params.row.formcode}`,
+          formData,
+          {
+            headers: {
+              authtoken: "bearer " + token,
+            },
+          }
+        );
+        toast.success(res.data.message);
+      } catch (error) {
+        console.error("Error uploading sound file:", error);
+      }
+    }
+
+    // Edit the choice list after file uploads
+    try {
+      const res = await editQuestionAndChoice(choiceLists, token);
+      toast.success(res.data.msg, { onClose: () => navigate(0) });
+    } catch (error) {
+      if (error.response.status === 401 || error.response.status === 404) {
+        dispatch(logout());
+        navigate("/notfound404", {
+          state: {
+            statusCode: error.response.status,
+            txt: error.response.data,
+          },
+        });
+      } else {
+        toast.error(error.response.data.message);
+      }
+    }
   };
 
-  //handleChange in text TextField
   const handleChange = (e) => {
-    setValues({
-      ...values,
+    e.preventDefault();
+    setChoiceLists((prevState) => ({
+      ...prevState,
       [e.target.name]: e.target.value,
-    });
-    setChoiceLists({
-      ...values,
-      [e.target.name]: e.target.value,
-    });
+    }));
   };
 
   const handleFileChange = (e) => {
-    const selectedFile = e.target.files[0].name;
+    const selectedFile = e.target.files[0];
+    //console.log("selectedFile:", selectedFile);
+
+    setFilePreview(""); // Clear the previous file preview
+
     if (selectedFile) {
-      const fileExtension = selectedFile.split(".").pop();
+      const fileExtension = selectedFile.name.split(".").pop().toLowerCase(); // Extract the file extension
+
+      //console.log("fileExtension:", fileExtension);
+
       if (fileExtension === "mp3" || fileExtension === "txt") {
-        setFileProblem(e.target.files[0]);
-        setValues({
-          ...values,
-          problem: e.target.files[0].name,
-        });
+        setNewFile(e.target.files[0]);
+        const reader = new FileReader();
+
+        reader.onerror = () => {
+          toast.error("Error reading file");
+        };
+
+        // Handle text files
+        if (fileExtension === "txt") {
+          reader.onloadend = () => {
+            setFilePreview(reader.result); // Set the file preview directly to the text content
+          };
+          reader.readAsText(selectedFile); // Read the file as text
+        }
+
+        // Handle mp3 files
+        if (fileExtension === "mp3") {
+          reader.onloadend = () => {
+            setFilePreview(reader.result.split(",")[1]); // Set the base64 data (removing the data URL prefix)
+          };
+          reader.readAsDataURL(selectedFile); // Read the file as a base64-encoded data URL
+        }
       } else {
-        toast.error("accept only File .txt or .mp3 ");
+        toast.error("Accept only .txt or .mp3 files");
         return;
       }
     }
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
+  const handleQuestionChange = (e) => {
+    const selectedFile = e.target.files[0];
+    //console.log("selectedFile:", selectedFile);
 
-    const data = await new FormData(event.currentTarget);
-    // eslint-disable-next-line no-console
-    const questionAndChoice = await {
-      questioncode: params.params.row.questioncode,
-      problem: data.get("problem"),
-      question: data.get("question"),
-      cerfcode: params.params.row.cerfcode,
-      formcode: params.params.row.formcode,
-    };
+    setFileQuestionPreview(""); // Clear the previous file preview
 
-    if (fileProblem !== "") {
-      const formData = await new FormData();
-      formData.append("file", fileProblem);
+    if (selectedFile) {
+      const fileExtension = selectedFile.name.split(".").pop().toLowerCase(); // Extract the file extension
+      if (fileExtension === "mp3") {
+        setNewFileQuestion(e.target.files[0]);
+        const reader = new FileReader();
 
-      var extendName = values.problem.split(".")[1];
-      if (extendName.toString() === "txt") {
-        axios
-          .post(process.env.REACT_APP_API_URL + "/upload", formData, {
-            headers: {
-              authtoken: "bearer " + token,
-            },
-          })
-          .then((res) => {
-            toast.success(res.data.msg);
-          });
-      } else if (extendName.toString() === "mp3") {
-        axios
-          .post(process.env.REACT_APP_API_URL + "/uploadsound", formData, {
-            headers: {
-              authtoken: "bearer " + token,
-            },
-          })
-          .then((res) => {
-            toast.success(res.data.msg);
-          });
+        reader.onerror = () => {
+          toast.error("Error reading file");
+        };
+        reader.onloadend = () => {
+          setFileQuestionPreview(reader.result.split(",")[1]); // Set the base64 data (removing the data URL prefix)
+        };
+        reader.readAsDataURL(selectedFile); // Read the file as a base64-encoded data URL
+      } else {
+        toast.error("Accept only .mp3 files");
+        return;
       }
     }
-
-    editQuestionAndChoice(questionAndChoice, token)
-      .then((res) => {
-        toast.success(res.data.msg, { onClose: () => navigate(0) });
-      })
-      .catch((error) => {
-        if (error.response.status === 401 || error.response.status === 404) {
-          dispatch(logout());
-          navigate("/notfound404", {
-            state: {
-              statusCode: error.response.status,
-              txt: error.response.data,
-            },
-          });
-        } else {
-          toast.error(error.response.data.message);
-        }
-      });
-    //navigate(0);
-    //handleClose();
   };
 
+  //Render
   return (
     <>
-      <ThemeProvider theme={theme}>
-        <Button
-          variant="contained"
-          color="secondary"
-          size="small"
-          style={{ marginLeft: 16 }}
-          startIcon={<Edit />}
-          onClick={() => {
-            handleClickOpen();
-          }}
-        >
-          EDIT
-        </Button>
-      </ThemeProvider>
-
-      {/* Dialog Edit โจทย์ข้อสอบรายบรรทัด */}
       <Dialog
         open={open}
         onClose={handleClose}
-        scroll={scroll}
+        scroll="paper"
         aria-labelledby="scroll-dialog-title"
         aria-describedby="scroll-dialog-description"
       >
-        <DialogContent dividers={scroll === "paper"} sx={{ width: "600px" }}>
+        <DialogContent dividers={true} sx={{ width: "600px" }}>
           <DialogContentText id="scroll-dialog-description" tabIndex={-1}>
             <Box component="form" onSubmit={handleSubmit}>
               <Typography
@@ -250,17 +354,14 @@ function ModalEditExamByCerfcode(params) {
                 แก้ไขโจทย์ข้อสอบ
               </Typography>
 
-              <Box>
-                <Typography
-                  id="modal-modal-title"
-                  sx={{ textAlign: "start", fontWeight: "bold" }}
-                  variant="h6"
-                  component="h2"
-                >
-                  ประเภทข้อสอบ
-                </Typography>
-              </Box>
-
+              <Typography
+                id="modal-modal-title"
+                sx={{ textAlign: "start", fontWeight: "bold" }}
+                variant="h6"
+                component="h2"
+              >
+                ประเภทข้อสอบ
+              </Typography>
               <Box
                 sx={{
                   display: "flex",
@@ -271,89 +372,190 @@ function ModalEditExamByCerfcode(params) {
                 }}
               >
                 <TextField
-                  sx={{ margin: "10px" }}
-                  id="outlined-basic"
                   label="ลำดับ"
+                  sx={{ margin: "10px" }}
+                  id="outlined-basic"
                   name="id"
-                  value={values?.id || ""}
-                  required
+                  value={params?.row.id || ""}
                   fullWidth
                   variant="outlined"
                   disabled
                 />
-
                 <TextField
-                  sx={{ margin: "10px" }}
-                  id="outlined-basic"
                   label="รหัสโจทย์"
+                  sx={{ margin: "10px" }}
+                  id="outlined-basic"
                   name="questioncode"
-                  value={values?.questioncode || ""}
-                  required
+                  value={params?.row.questioncode || ""}
                   fullWidth
                   variant="outlined"
                   disabled
                 />
 
                 <TextField
+                  label="ไฟล์โจทย์"
                   sx={{ margin: "10px" }}
                   id="outlined-basic"
-                  label="ไฟล์โจทย์"
                   name="problem"
-                  value={values?.problem || ""}
+                  value={choiceLists?.problem || ""}
                   required
-                  onChange={handleChange}
                   fullWidth
                   variant="outlined"
+                  onChange={handleChange}
                 />
+                {filePreview ? (
+                  <>
+                    {["R1A1", "R1A2", "R1B1", "R1B2", "R1C1"].includes(
+                      params?.row.cerfcode
+                    ) ? (
+                      <>
+                        <p>Text Preview</p>
+                        <pre
+                          style={{
+                            whiteSpace: "pre-wrap",
+                            border: "1px solid #ccc",
+                            padding: "10px",
+                            backgroundColor: "#f9f9f9",
+                            borderRadius: "5px",
+                            overflow: "auto",
+                          }}
+                        >
+                          {filePreview}
+                        </pre>
+                      </>
+                    ) : (
+                      <>
+                        <p>Sound Preview</p>
+                        <audio controls>
+                          <source
+                            src={`data:audio/mp3;base64,${filePreview}`}
+                            type="audio/mp3"
+                          />
+                          Your browser does not support the audio element.
+                        </audio>
+                      </>
+                    )}
+                  </>
+                ) : fileUrl ? (
+                  <>
+                    {["R1A1", "R1A2", "R1B1", "R1B2", "R1C1"].includes(
+                      params?.row.cerfcode
+                    ) ? (
+                      <pre
+                        style={{
+                          whiteSpace: "pre-wrap",
+                          border: "1px solid #ccc",
+                          padding: "10px",
+                          backgroundColor: "#f9f9f9",
+                          borderRadius: "5px",
+                          overflow: "auto",
+                        }}
+                      >
+                        {fileUrl}
+                      </pre>
+                    ) : (
+                      <audio controls>
+                        <source
+                          src={`data:audio/mp3;base64,${fileUrl}`}
+                          type="audio/mp3"
+                        />
+                        Your browser does not support the audio element.
+                      </audio>
+                    )}
+                  </>
+                ) : (
+                  <>No File</>
+                )}
+
                 <input
+                  label="ไฟล์โจทย์ (นามสกุล .txt, .mp3)"
                   accept={
-                    values?.cerfcode === "R1A1" ||
-                    values?.cerfcode === "R1A2" ||
-                    values?.cerfcode === "R1B1" ||
-                    values?.cerfcode === "R1B2" ||
-                    values?.cerfcode === "R1C1"
+                    ["R1A1", "R1A2", "R1B1", "R1B2", "R1C1"].includes(
+                      params?.row.cerfcode
+                    )
                       ? ".txt"
                       : ".mp3"
                   }
-                  id="contained-button-file"
-                  label="ไฟล์โจทย์ (นามสกุล .txt, .mp3)"
+                  id="file-problem"
                   component="span"
                   multiple
                   name="file"
                   type="file"
                   onChange={handleFileChange}
                 />
-                <label htmlFor="contained-button-file">
-                  <Button component="span" variant="outlined" fullWidth>
+                <label htmlFor="file-problem">
+                  <Button
+                    sx={{ margin: "10px" }}
+                    component="span"
+                    variant="outlined"
+                    fullWidth
+                  >
                     อัพโหลดไฟล์โจทย์ (นามสกุล .txt, .mp3)
                   </Button>
                 </label>
 
                 <TextField
+                  label="โจทย์"
                   sx={{ margin: "10px" }}
                   id="outlined-basic"
-                  label="โจทย์"
                   name="question"
-                  value={values?.question || ""}
+                  value={choiceLists?.question || ""}
                   required
                   onChange={handleChange}
                   fullWidth
                   variant="outlined"
+                  multiline
                 />
-                {values?.cerfcode === "L2C1" && (
+                {fileQuestionPreview ? (
+                  // If a new file is uploaded, show the sound preview of the newly uploaded file
+                  <>
+                    <p>Sound Preview</p>
+                    <audio controls>
+                      <source
+                        src={`data:audio/mp3;base64,${fileQuestionPreview}`}
+                        type="audio/mp3"
+                      />
+                      Your browser does not support the audio element.
+                    </audio>
+                  </>
+                ) : fileQuestion ? (
+                  // If there's no new file but an existing file, show the existing file preview
+                  <>
+                    <audio controls>
+                      <source
+                        src={`data:audio/mp3;base64,${fileQuestion}`}
+                        type="audio/mp3"
+                      />
+                      Your browser does not support the audio element.
+                    </audio>
+                  </>
+                ) : (
+                  // If no file is available and the cerfcode matches specific conditions
+                  ["L2B2", "L2C1"].includes(params?.row.cerfcode) && (
+                    <p>No File</p>
+                  )
+                )}
+
+                {/* Show the input for file upload if cerfcode matches specific conditions */}
+                {["L2B2", "L2C1"].includes(params?.row.cerfcode) && (
                   <>
                     <input
-                      accept=".mp3"
-                      id="contained-button-file"
-                      label="ไฟล์โจทย์ (นามสกุล .txt, .mp3)"
+                      accept={".mp3"}
+                      id="file-question"
+                      label="ไฟล์คำถาม (นามสกุล .mp3)"
                       component="span"
                       multiple
-                      name="file"
+                      name="file-question"
                       type="file"
-                      onChange={handleFileChange}
+                      onChange={handleQuestionChange}
                     />
-                    <label htmlFor="contained-button-file">
-                      <Button component="span" variant="outlined" fullWidth>
+                    <label htmlFor="file-question">
+                      <Button
+                        sx={{ margin: "10px" }}
+                        component="span"
+                        variant="outlined"
+                        fullWidth
+                      >
                         อัพโหลดไฟล์โจทย์ (นามสกุล .mp3)
                       </Button>
                     </label>
@@ -363,10 +565,14 @@ function ModalEditExamByCerfcode(params) {
                 <TextField
                   sx={{ margin: "10px" }}
                   id="outlined-basic"
-                  label="ตัวเลือก (ถูก)"
-                  name={`${params.params.row.questioncode}CH01`}
+                  label={`ตัวเลือก (ถูก): ${
+                    params?.row?.questioncode
+                      ? `${params.row.questioncode}CH01`
+                      : "N/A"
+                  }`}
+                  name={`${params?.row?.questioncode}CH01`}
                   value={
-                    choiceLists?.[`${params.params.row.questioncode}CH01`] || ""
+                    choiceLists?.[`${params?.row?.questioncode}CH01`] || ""
                   }
                   required
                   onChange={handleChange}
@@ -376,10 +582,14 @@ function ModalEditExamByCerfcode(params) {
                 <TextField
                   sx={{ margin: "10px" }}
                   id="outlined-basic"
-                  label="ตัวเลือก"
-                  name={`${params.params.row.questioncode}CH02`}
+                  label={`ตัวเลือก2 : ${
+                    params?.row?.questioncode
+                      ? `${params.row.questioncode}CH02`
+                      : "N/A"
+                  }`}
+                  name={`${params?.row?.questioncode}CH02`}
                   value={
-                    choiceLists?.[`${params.params.row.questioncode}CH02`] || ""
+                    choiceLists?.[`${params?.row?.questioncode}CH02`] || ""
                   }
                   required
                   onChange={handleChange}
@@ -389,10 +599,14 @@ function ModalEditExamByCerfcode(params) {
                 <TextField
                   sx={{ margin: "10px" }}
                   id="outlined-basic"
-                  label="ตัวเลือก"
-                  name={`${params.params.row.questioncode}CH03`}
+                  label={`ตัวเลือก3 : ${
+                    params?.row?.questioncode
+                      ? `${params.row.questioncode}CH03`
+                      : "N/A"
+                  }`}
+                  name={`${params?.row?.questioncode}CH03`}
                   value={
-                    choiceLists?.[`${params.params.row.questioncode}CH03`] || ""
+                    choiceLists?.[`${params?.row?.questioncode}CH03`] || ""
                   }
                   required
                   onChange={handleChange}
@@ -402,10 +616,14 @@ function ModalEditExamByCerfcode(params) {
                 <TextField
                   sx={{ margin: "10px" }}
                   id="outlined-basic"
-                  label="ตัวเลือก"
-                  name={`${params.params.row.questioncode}CH04`}
+                  label={`ตัวเลือก4 : ${
+                    params?.row?.questioncode
+                      ? `${params.row.questioncode}CH04`
+                      : "N/A"
+                  }`}
+                  name={`${params?.row?.questioncode}CH04`}
                   value={
-                    choiceLists?.[`${params.params.row.questioncode}CH04`] || ""
+                    choiceLists?.[`${params?.row?.questioncode}CH04`] || ""
                   }
                   required
                   onChange={handleChange}
@@ -413,24 +631,22 @@ function ModalEditExamByCerfcode(params) {
                   variant="outlined"
                 />
                 <TextField
-                  sx={{ margin: "10px" }}
-                  id="outlined-basic"
                   label="รหัสความสามารถ"
+                  sx={{ margin: "10px" }}
+                  id="outlined-basic"
                   name="cerfcode"
-                  value={values?.cerfcode || ""}
-                  required
+                  value={params?.row.cerfcode || ""}
                   fullWidth
                   variant="outlined"
                   disabled
                 />
 
                 <TextField
+                  label="รหัสฟอร์มข้อสอบ"
                   sx={{ margin: "10px" }}
                   id="outlined-basic"
-                  label="รหัสฟอร์มข้อสอบ"
                   name="formcode"
-                  value={values?.formcode || ""}
-                  required
+                  value={params?.row.formcode || ""}
                   fullWidth
                   variant="outlined"
                   disabled
@@ -444,11 +660,41 @@ function ModalEditExamByCerfcode(params) {
                 }}
               >
                 <Box sx={{ paddingRight: "20px" }}>
-                  <Button type="submit" variant="contained">
+                  <Button
+                    //type="submit"
+                    variant="contained"
+                    onClick={handleOpenDialog}
+                  >
                     บันทึก
                   </Button>
                 </Box>
               </Box>
+
+              <Dialog open={openDialog} onClose={handleCloseDialog}>
+                <DialogTitle>ยืนยันการแก้ไข</DialogTitle>
+                <DialogContent>
+                  <DialogContentText>
+                    ยืนยันการแก้ไข กรุณาตรวจสอบความถูกต้องก่อนการดำเนินการ
+                  </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                  <Button
+                    variant="contained"
+                    onClick={handleCloseDialog}
+                    color="error"
+                  >
+                    ยกเลิก
+                  </Button>
+                  <Button
+                    variant="contained"
+                    type="submit"
+                    onClick={handleSubmit}
+                    color="primary"
+                  >
+                    ยืนยัน
+                  </Button>
+                </DialogActions>
+              </Dialog>
             </Box>
           </DialogContentText>
         </DialogContent>

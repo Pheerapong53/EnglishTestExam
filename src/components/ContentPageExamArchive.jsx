@@ -23,7 +23,7 @@ import ModalEditExamArchive from "../components/ModalEditExamArchive";
 import Footer from "../components/Footer";
 import { Link, useNavigate } from "react-router-dom";
 import Axios from "axios";
-import ModalAddMultiple from "../components/ModalAddMultiple";
+import ButtonAddMultiple from "../components/ButtonAddMultiple";
 import ModalAddOne from "../components/ModalAddOne";
 import PropTypes from "prop-types";
 import ModalAddTypeExam from "./ModalAddTypeExam";
@@ -397,7 +397,7 @@ function ContentPageExamArchive() {
               <ModalAddOne dropdown={cerfcodeDropdown} />
 
               {/* เพิ่มหลายข้อ */}
-              <ModalAddMultiple />
+              <ButtonAddMultiple />
             </Box>
           </DialogContent>
         </BootstrapDialog>

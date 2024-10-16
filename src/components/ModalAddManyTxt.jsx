@@ -48,12 +48,13 @@ const style = {
 };
 
 //เพิ่มหลายข้อ
-function ModalAddManyProblem() {
+function ModalAddManyTxt() {
   //Component Declaration
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.user);
   const token = user.token;
+
   const folderOptions = [
     "F0001",
     "F0002",
@@ -65,8 +66,6 @@ function ModalAddManyProblem() {
     "F0008",
     "F0009",
     "F0010",
-    "NO",
-    "DIR_END",
   ];
 
   //Hook and Logic
@@ -75,8 +74,10 @@ function ModalAddManyProblem() {
 
   //Event Handler
   const onDrop = useCallback((acceptedFiles) => {
-    const mp3Files = acceptedFiles.filter((file) => file.type === "audio/mpeg");
-    setFiles(mp3Files);
+    console.log("acceptedFiles : ", acceptedFiles);
+
+    const txtFiles = acceptedFiles.filter((file) => file.type === "text/plain");
+    setFiles(txtFiles);
   }, []);
 
   const handleUpload = async () => {
@@ -86,7 +87,7 @@ function ModalAddManyProblem() {
     }
 
     if (files.length === 0) {
-      toast.error("Please upload a folder containing MP3 files.");
+      toast.error("Please upload a folder containing TXT files.");
       return;
     }
 
@@ -97,7 +98,7 @@ function ModalAddManyProblem() {
 
     try {
       const res = await axios.post(
-        process.env.REACT_APP_API_URL + `/uploadmanyfiles/${selectedFolder}`,
+        process.env.REACT_APP_API_URL + `/uploadmanytxtfiles/${selectedFolder}`,
         formData,
         {
           headers: {
@@ -138,7 +139,7 @@ function ModalAddManyProblem() {
         color="secondary"
         onClick={handleOpen}
       >
-        UPLOAD MP3
+        UPLOAD TXT
       </Button>
 
       {/* เพิ่มโจทย์ข้อสอบใช้วิธีโยนไฟล์ */}
@@ -161,7 +162,7 @@ function ModalAddManyProblem() {
             variant="h6"
             component="h2"
           >
-            UPLOAD MP3
+            UPLOAD TXT
           </Typography>
           {/* Folder Selection */}
           <FormControl fullWidth sx={{ marginTop: 2 }}>
@@ -235,4 +236,4 @@ function ModalAddManyProblem() {
   );
 }
 
-export default ModalAddManyProblem;
+export default ModalAddManyTxt;

@@ -26,14 +26,12 @@ import {
   ControlPoint,
   Edit,
 } from "@mui/icons-material";
-import ModalEditExamArchiveLookExam from "../components/ModalEditExamArchiveLookExam";
-import ModalEditExamByCerfcodeNew from "./ModalEditExamByCerfcodeNew";
+import ModalEditExamByCerfcode from "./ModalEditExamByCerfcode";
 import PropTypes from "prop-types";
-import ModalAddMultiple from "../components/ModalAddMultiple";
+import ButtonAddMultiple from "../components/ButtonAddMultiple";
 import ModalAddOne from "../components/ModalAddOne";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import Axios from "axios";
-import ModalEditExamByCerfcode from "./ModalEditExamByCerfcode";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../src/store/userSilce";
 import { toast } from "react-toastify";
@@ -341,7 +339,7 @@ function ContentPageExamArchiveLookExam() {
   //Render
   return (
     <>
-      <ModalEditExamByCerfcodeNew
+      <ModalEditExamByCerfcode
         params={params}
         open={openModal}
         handleClose={handleCloseModal}
@@ -405,7 +403,7 @@ function ContentPageExamArchiveLookExam() {
             <ModalAddOne dropdown={cerfcodeDropdown} />
 
             {/* เพิ่มหลายข้อ */}
-            <ModalAddMultiple />
+            <ButtonAddMultiple />
           </Box>
         </DialogContent>
       </BootstrapDialog>

@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from "react";
 import {
   Box,
-  Card,
   Typography,
-  Grid,
   Button,
   Dialog,
   DialogTitle,
@@ -29,14 +27,12 @@ import {
   ControlPoint,
   Edit,
 } from "@mui/icons-material";
-import ModalEditExamArchiveLookExam from "../components/ModalEditExamArchiveLookExam";
-import ModalEditExamByCerfcodeNew from "./ModalEditExamByCerfcodeNew";
+import ModalEditExamByCerfcode from "./ModalEditExamByCerfcode";
 import PropTypes from "prop-types";
-import ModalAddMultiple from "../components/ModalAddMultiple";
+import ButtonAddMultiple from "../components/ButtonAddMultiple";
 import ModalAddOne from "../components/ModalAddOne";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import Axios from "axios";
-import ModalEditExamByCerfcode from "./ModalEditExamByCerfcode";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../src/store/userSilce";
 import { toast } from "react-toastify";
@@ -270,6 +266,10 @@ function ContentPageExamArchiveByForm() {
     });
   };
 
+  const handleDeleteForm = () => {
+    toast.error("อยู่ระหว่างดำเนินการ");
+  };
+
   //Delete QuestionAndChoice
   const toDeleteQuestionAndChoice = (clickedexam) => {
     const questioncode = clickedexam.row.questioncode;
@@ -318,7 +318,7 @@ function ContentPageExamArchiveByForm() {
   //Render
   return (
     <>
-      <ModalEditExamByCerfcodeNew
+      <ModalEditExamByCerfcode
         params={params}
         open={openModal}
         handleClose={handleCloseModal}
@@ -367,6 +367,19 @@ function ContentPageExamArchiveByForm() {
               </Select>
             </FormControl>
             <ToPrintPageExamArchiveByForm toprint={question} />
+            <ThemeProvider theme={theme}>
+              <Button
+                variant="contained"
+                color="primary"
+                size="medium"
+                startIcon={<DeleteForever />}
+                onClick={() => {
+                  handleDeleteForm();
+                }}
+              >
+                DELETE FORM
+              </Button>
+            </ThemeProvider>
           </Box>
           <div style={{ display: "flex", gap: "10px" }}>
             <Button
@@ -406,7 +419,7 @@ function ContentPageExamArchiveByForm() {
               <ModalAddOne dropdown={cerfcodeDropdown} />
 
               {/* เพิ่มหลายข้อ */}
-              <ModalAddMultiple />
+              <ButtonAddMultiple />
             </Box>
           </DialogContent>
         </BootstrapDialog>

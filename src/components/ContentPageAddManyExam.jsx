@@ -4,10 +4,10 @@ import { ArrowBack, CloudUpload } from "@mui/icons-material";
 import { Box, Button, Typography } from "@mui/material";
 import { styled, createTheme, ThemeProvider } from "@mui/material/styles";
 import { blue, red, yellow } from "@mui/material/colors";
-import ModalAddMultipleOld from "./ModalAddMultipleOld";
+import ModalAddMultiple from "./ModalAddMultiple";
 import ModalAddTemplateExcel from "./ModalAddTemplateExcel";
 import ModalAddManyProblem from "./ModalAddManyProblem";
-import * as XLSX from "xlsx";
+import ModalAddManyTxt from "./ModalAddManyTxt";
 
 const theme = createTheme({
   palette: {
@@ -34,23 +34,9 @@ const DrawerHeader = styled("div")(({ theme }) => ({
 
 function ContentPageAddManyExam() {
   //Component Declaration
-  const [selectedExcelTemplate, setSelectedExcelTemplate] = useState(null);
-
-  const handleExcelTemplateUpload = (fileType) => (event) => {
-    const file = event.target.files[0];
-    if (file && fileType === "Excel") {
-      setSelectedExcelTemplate(file);
-    }
-  };
-
-  const handleFileUpload = (fileType) => (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      console.log(`Uploaded ${fileType} file:`, file.name);
-      // Handle file upload logic here
-    }
-  };
-
+  //Hook and Logic
+  //Event Handler
+  //Render
   return (
     <>
       <ThemeProvider theme={theme}>
@@ -71,53 +57,19 @@ function ContentPageAddManyExam() {
 
         {/* File upload buttons */}
         <Box sx={{ display: "flex", justifyContent: "center", gap: 2, mt: 3 }}>
-          <ModalAddMultipleOld />
+          {/* Button to upload Multiple Question */}
+          <ModalAddMultiple />
 
-          {/* Button to upload Excel file */}
+          {/* Button to upload Template Excel file */}
           <ModalAddTemplateExcel />
 
           {/* Button to upload MP3 file */}
           <ModalAddManyProblem />
 
           {/* Button to upload TXT file */}
-          <Button
-            variant="contained"
-            component="label"
-            startIcon={<CloudUpload />}
-            color="third"
-          >
-            Upload TXT
-            <input
-              type="file"
-              accept=".txt"
-              hidden
-              onChange={handleFileUpload("TXT")}
-            />
-          </Button>
+          <ModalAddManyTxt />
         </Box>
       </ThemeProvider>
-      {/* Display preview of Excel data in a table */}
-      {selectedExcelTemplate && (
-        <div>
-          <p>Selected File: {selectedExcelTemplate.name}</p>
-          {/* "บันทึก" (Save) Button */}
-          <Button
-            variant="contained"
-            color="success"
-            style={{ marginTop: "20px" }}
-            onClick={() => setSelectedExcelTemplate(null)}
-          >
-            บันทึก
-          </Button>
-          <Button
-            variant="contained"
-            style={{ marginTop: "20px" }}
-            onClick={() => setSelectedExcelTemplate(null)}
-          >
-            ยกเลิก
-          </Button>
-        </div>
-      )}
     </>
   );
 }
