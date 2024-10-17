@@ -347,7 +347,7 @@ const exam = {
           {
             cerfdifficultylevel: req.body.cerfdifficultylevel,
             cerfdifficultyleveldesc: req.body.cerfdifficultyleveldesc,
-            cerfleveltype : req.body.cerfleveltype,
+            cerfleveltype: req.body.cerfleveltype,
           },
           {
             where: {
@@ -373,54 +373,56 @@ const exam = {
     const choiceCodes = ["CH01", "CH02", "CH03", "CH04"];
     try {
       let updateStatus = false;
-      // Update question before 
+      // Update question before
       const question = await tbquestion
-      .update(
-        {
-          problem: req.body.problem,
-          question: req.body.question,
-        },
-        {
-          where: {
-            questioncode: questioncode,
+        .update(
+          {
+            problem: req.body.problem,
+            question: req.body.question,
           },
-        }
-      )
-      .catch(function (err) {
-        console.log("question update error : ", err);
-      });
-      
-      for (let i = 0; i < choiceCodes.length; i++){
+          {
+            where: {
+              questioncode: questioncode,
+            },
+          }
+        )
+        .catch(function (err) {
+          console.log("question update error : ", err);
+        });
+
+      for (let i = 0; i < choiceCodes.length; i++) {
         const choicetext = req.body[`${questioncode}${choiceCodes[i]}`];
         const existingChoices = await tbchoice.findOne({
           where: {
             choicecode: `${questioncode}${choiceCodes[i]}`,
           },
         });
-        
-        if(existingChoices){
+
+        if (existingChoices) {
           await tbchoice.update(
             { choicetext: choicetext },
             { where: { choicecode: `${questioncode}${choiceCodes[i]}` } }
           );
-          updateStatus = true
-        }else {
-          await tbchoice.create({
-            choicecode: `${questioncode}${choiceCodes[i]}`,
-            choicetext: choicetext,
-            answer: choiceCodes[i] === 'CH01' ? 1 : 0, // Correct answer for CH01
-            questioncode: questioncode,
-          },
-        {ignoreDuplicates : true});
+          updateStatus = true;
+        } else {
+          await tbchoice.create(
+            {
+              choicecode: `${questioncode}${choiceCodes[i]}`,
+              choicetext: choicetext,
+              answer: choiceCodes[i] === "CH01" ? 1 : 0, // Correct answer for CH01
+              questioncode: questioncode,
+            },
+            { ignoreDuplicates: true }
+          );
         }
       }
-      return { msg: updateStatus ? 'แก้ไขคำตอบแล้ว' : 'เพิ่มคำตอบแล้ว' };
+      return { msg: updateStatus ? "แก้ไขคำตอบแล้ว" : "เพิ่มคำตอบแล้ว" };
     } catch (error) {
       console.error("Error in editing choices:", error.message || error);
       throw error;
     }
   },
-  
+
   delquestionandchoice: async (req, res) => {
     try {
       const questioncode = req.params.questioncode;
@@ -429,25 +431,37 @@ const exam = {
         where: {
           questioncode: questioncode,
         },
-        attributes: ['questioncode','problem','question','formcode'],
+        attributes: ["questioncode", "problem", "question", "formcode"],
       });
 
       //Delete the associated MP3 files for each question
       questions.forEach((question) => {
         const fileQuestion = question.question.includes(".mp3");
-        const fileExtension = question.problem.split('.').pop();
-        let filePath = '';
-        let fileQuestionPath = '';
-        if(fileExtension === "mp3"){
-          filePath = path.join(__dirname,'..', `/fileproblem/sound/${question.formcode}/${question.problem}`);
+        const fileExtension = question.problem.split(".").pop();
+        let filePath = "";
+        let fileQuestionPath = "";
+        if (fileExtension === "mp3") {
+          filePath = path.join(
+            __dirname,
+            "..",
+            `/fileproblem/sound/${question.formcode}/${question.problem}`
+          );
         }
 
-        if(fileExtension === "txt"){
-          filePath = path.join(__dirname,'..', `/fileproblem/sound/${question.formcode}/${question.problem}`);
+        if (fileExtension === "txt") {
+          filePath = path.join(
+            __dirname,
+            "..",
+            `/fileproblem/sound/${question.formcode}/${question.problem}`
+          );
         }
 
-        if(fileQuestion){
-          fileQuestionPath = path.join(__dirname,'..', `/fileproblem/sound/${question.formcode}/${question.question}`);
+        if (fileQuestion) {
+          fileQuestionPath = path.join(
+            __dirname,
+            "..",
+            `/fileproblem/sound/${question.formcode}/${question.question}`
+          );
         }
 
         if (filePath && fs.existsSync(filePath)) {
@@ -463,10 +477,13 @@ const exam = {
             fs.unlinkSync(fileQuestionPath); // Deleting the file
             console.log(`File Question deleted: ${fileQuestionPath}`);
           } catch (err) {
-            console.error(`Error deleting file question: ${fileQuestionPath}`, err);
+            console.error(
+              `Error deleting file question: ${fileQuestionPath}`,
+              err
+            );
           }
         }
-      })
+      });
 
       const choiceDelByQuestionCode = await tbchoice
         .destroy({
@@ -506,25 +523,37 @@ const exam = {
         where: {
           cerfcode: cerfcode,
         },
-        attributes: ['questioncode','problem','question','formcode'],
+        attributes: ["questioncode", "problem", "question", "formcode"],
       });
 
       //Delete the associated MP3 files for each question
       questions.forEach((question) => {
         const fileQuestion = question.question.includes(".mp3");
-        const fileExtension = question.problem.split('.').pop();
-        let filePath = '';
-        let fileQuestionPath = '';
-        if(fileExtension === "mp3"){
-          filePath = path.join(__dirname,'..', `/fileproblem/sound/${question.formcode}/${question.problem}`);
+        const fileExtension = question.problem.split(".").pop();
+        let filePath = "";
+        let fileQuestionPath = "";
+        if (fileExtension === "mp3") {
+          filePath = path.join(
+            __dirname,
+            "..",
+            `/fileproblem/sound/${question.formcode}/${question.problem}`
+          );
         }
 
-        if(fileExtension === "txt"){
-          filePath = path.join(__dirname,'..', `/fileproblem/sound/${question.formcode}/${question.problem}`);
+        if (fileExtension === "txt") {
+          filePath = path.join(
+            __dirname,
+            "..",
+            `/fileproblem/text/${question.formcode}/${question.problem}`
+          );
         }
 
-        if(fileQuestion){
-          fileQuestionPath = path.join(__dirname,'..', `/fileproblem/sound/${question.formcode}/${question.question}`);
+        if (fileQuestion) {
+          fileQuestionPath = path.join(
+            __dirname,
+            "..",
+            `/fileproblem/sound/${question.formcode}/${question.question}`
+          );
         }
 
         if (filePath && fs.existsSync(filePath)) {
@@ -540,10 +569,13 @@ const exam = {
             fs.unlinkSync(fileQuestionPath); // Deleting the file
             console.log(`File Question deleted: ${fileQuestionPath}`);
           } catch (err) {
-            console.error(`Error deleting file question: ${fileQuestionPath}`, err);
+            console.error(
+              `Error deleting file question: ${fileQuestionPath}`,
+              err
+            );
           }
         }
-      })
+      });
 
       const answerDelByLevel = await tbchoice
         .destroy({
@@ -582,6 +614,95 @@ const exam = {
       res
         .status(StatusCodes.CREATED)
         .json({ msg: "err from delcefrlevel" + error });
+    }
+  },
+  delform: async (req, res) => {
+    try {
+      const formcode = req.params.formcode;
+      //Find questions with cerfcode
+      const questions = await tbquestion.findAll({
+        where: {
+          formcode: formcode,
+        },
+        attributes: ["questioncode", "problem", "question", "formcode"],
+      });
+
+      //Delete the associated MP3 files for each question
+      questions.forEach((question) => {
+        const fileQuestion = question.question.includes(".mp3");
+        const fileExtension = question.problem.split(".").pop();
+        let filePath = "";
+        let fileQuestionPath = "";
+        if (fileExtension === "mp3") {
+          filePath = path.join(
+            __dirname,
+            "..",
+            `/fileproblem/sound/${question.formcode}/${question.problem}`
+          );
+        }
+
+        if (fileExtension === "txt") {
+          filePath = path.join(
+            __dirname,
+            "..",
+            `/fileproblem/text/${question.formcode}/${question.problem}`
+          );
+        }
+
+        if (fileQuestion) {
+          fileQuestionPath = path.join(
+            __dirname,
+            "..",
+            `/fileproblem/sound/${question.formcode}/${question.question}`
+          );
+        }
+
+        if (filePath && fs.existsSync(filePath)) {
+          try {
+            fs.unlinkSync(filePath); // Deleting the file
+            console.log(`File deleted: ${filePath}`);
+          } catch (err) {
+            console.error(`Error deleting file: ${filePath}`, err);
+          }
+        }
+        if (fileQuestionPath && fs.existsSync(fileQuestionPath)) {
+          try {
+            fs.unlinkSync(fileQuestionPath); // Deleting the file
+            console.log(`File Question deleted: ${fileQuestionPath}`);
+          } catch (err) {
+            console.error(
+              `Error deleting file question: ${fileQuestionPath}`,
+              err
+            );
+          }
+        }
+      });
+
+      const answerDelByForm = await tbchoice
+        .destroy({
+          where: {
+            questioncode: { [Op.substring]: formcode.toString() },
+          },
+        })
+        .catch(function (err) {
+          console.log("choiceDelbyForm delete error : ", err);
+        });
+
+      const questionDelByForm = await tbquestion
+        .destroy({
+          where: {
+            formcode: formcode,
+          },
+        })
+        .catch(function (err) {
+          console.log("questionDelbyForm delete error : ", err);
+        });
+
+      res
+        .status(StatusCodes.CREATED)
+        .json({ msg: "File, Questions and Choices has been delete" });
+    } catch (error) {
+      res.status(StatusCodes.CREATED).json({ msg: "err from delform" + error });
     }
   },
 

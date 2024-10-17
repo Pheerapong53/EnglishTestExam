@@ -50,8 +50,11 @@ routes.put("/editquestionandchoice", async(req,res) => {
 routes.delete("/delcefrlevel/:id",verifyToken, async(req,res) =>{
     res.send(await exam.delcefrlevel(req, res));
 })
-routes.delete("/delquestionandchoice/:questioncode", async(req,res) =>{
+routes.delete("/delquestionandchoice/:questioncode",verifyToken, async(req,res) =>{
   res.send(await exam.delquestionandchoice(req, res));
+})
+routes.delete("/delform/:formcode",verifyToken, async(req,res) =>{
+  res.send(await exam.delform(req, res));
 })
 routes.post("/addexamone",verifyToken, async(req,res,next) => {
     res.send(await exam.addexamone(req,res,next));

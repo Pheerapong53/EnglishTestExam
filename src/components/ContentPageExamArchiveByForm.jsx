@@ -191,6 +191,8 @@ function ContentPageExamArchiveByForm() {
   const [params, setParams] = useState();
   const [open, setOpen] = React.useState(false);
   const [questionLists, setQuestionLists] = useState([]);
+  console.log(questionLists);
+
   const [formcode, setFormcode] = useState(""); // To store selected formcode
 
   useEffect(() => {
@@ -267,7 +269,26 @@ function ContentPageExamArchiveByForm() {
   };
 
   const handleDeleteForm = () => {
-    toast.error("อยู่ระหว่างดำเนินการ");
+    if (formcode === "") {
+      toast.error("กรุณาเลือกฟอร์ม");
+      return;
+    }
+    confirmAlert({
+      title: "ยืนยันการลบ",
+      message: `คุณต้องการที่จะลบฟอร์ม ${formcode} ใช่หรือไม่`,
+      buttons: [
+        {
+          label: "Yes",
+          onClick: () => {
+            toDeleteForm();
+          },
+        },
+        {
+          label: "No",
+          onClick: () => {},
+        },
+      ],
+    });
   };
 
   //Delete QuestionAndChoice
@@ -287,6 +308,39 @@ function ContentPageExamArchiveByForm() {
         setQuestionLists(
           questionLists.filter((val) => {
             return val["questioncode"] !== questioncode;
+          })
+        );
+        toast.success(response.data.msg);
+      })
+      .catch((error) => {
+        if (error.response.status === 401 || error.response.status === 404) {
+          dispatch(logout());
+          navigate("/notfound404", {
+            state: {
+              statusCode: error.response.status,
+              txt: error.response.data,
+            },
+          });
+        } else {
+          toast.error(error.response.data.message);
+        }
+      });
+  };
+
+  const toDeleteForm = () => {
+    var config = {
+      method: "DELETE",
+      url: process.env.REACT_APP_API_URL + `/delform/${formcode}`,
+      headers: {
+        authtoken: "bearer " + token,
+      },
+    };
+
+    Axios(config)
+      .then((response) => {
+        setQuestionLists(
+          questionLists.filter((val) => {
+            return val["formcode"] !== formcode;
           })
         );
         toast.success(response.data.msg);
