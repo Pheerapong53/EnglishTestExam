@@ -18,7 +18,6 @@ import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../src/store/userSilce";
 import { militaryData } from "../data/militaryData";
-import Footer from "./Footer";
 import { searchHandler } from "./functions/user";
 import { toast } from "react-toastify";
 import { addMemberAndRightHandler } from "./functions/addMember";
@@ -71,7 +70,9 @@ function ContentPageAddMember() {
           {!loading ? (
             <Box sx={{ textAlign: "center" }}>ภาพถ่ายข้าราชการ</Box>
           ) : (
-            <Box sx={{ fontSize: 20, textAlign: "center" }}>Loading...</Box>
+            <Box sx={{ fontSize: 20, textAlign: "center", color: "red" }}>
+              Loading...
+            </Box>
           )}
         </p>
         <Box sx={{ display: "flex", justifyContent: "center" }}>
@@ -203,6 +204,7 @@ function ContentPageAddMember() {
   const handleMouseDownPassword = () => setShowPassword(!showPassword);
   const handleSearch = async (e) => {
     e.preventDefault();
+    setLoading(true);
     const formFields = Object.keys(formValues);
     let newFormValues = { ...formValues };
 
@@ -246,6 +248,7 @@ function ContentPageAddMember() {
       };
       searchHandler(checkUser)
         .then((res) => {
+          setLoading(false);
           setValues(res.data);
           setImage(res.data.img_base64);
           setIdc(res.data.idcard);
@@ -290,6 +293,7 @@ function ContentPageAddMember() {
         .catch((error) => {
           if (error.response) {
             setIsregis(false);
+            setLoading(false);
             toast.error(error.response.data.message);
           }
         });
@@ -1212,9 +1216,6 @@ function ContentPageAddMember() {
           {renderButtonSubmit()}
         </Box>
       </Box>
-
-      {/*Footer*/}
-      <Footer />
     </>
   );
 }

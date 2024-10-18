@@ -243,10 +243,10 @@ const member = {
           );
         }
         return next(
-          errorHandler(StatusCodes.BAD_REQUEST, "User already exists!"),
+          errorHandler(StatusCodes.BAD_REQUEST, "มีข้อมูลผู้ใช้แล้ว!"),
           res
             .status(400)
-            .json(errorHandler(StatusCodes.BAD_REQUEST, "User already exists!"))
+            .json(errorHandler(StatusCodes.BAD_REQUEST, "มีข้อมูลผู้ใช้แล้ว!"))
         );
       }
 
@@ -354,11 +354,11 @@ const member = {
     try {
       if (!req.body.mem_email) {
         return next(
-          errorHandler(StatusCodes.BAD_REQUEST, "Email must be definded"),
+          errorHandler(StatusCodes.BAD_REQUEST, "ต้องระบุ Email"),
           res
             .status(400)
             .json(
-              errorHandler(StatusCodes.BAD_REQUEST, "Email must be definded")
+              errorHandler(StatusCodes.BAD_REQUEST, "ต้องระบุ Email")
             )
         );
       }
@@ -402,7 +402,7 @@ const member = {
           console.log("userDetail update error :", err);
         });
 
-      res.status(StatusCodes.CREATED).json({ msg: "User has been update" });
+      res.status(StatusCodes.CREATED).json({ msg: "แก้ไขข้อมูลผู้ใช้เรียบร้อยแล้ว" });
     } catch (error) {
       res
         .status(StatusCodes.CREATED)
@@ -425,7 +425,7 @@ const member = {
           },
         }
       );
-      res.status(StatusCodes.CREATED).json({ msg: "User has been delete" });
+      res.status(StatusCodes.CREATED).json({ msg: "ลบข้อมูลผู้ใช้เรียบร้อยแล้ว" });
     } catch (error) {
       res
         .status(StatusCodes.CREATED)
