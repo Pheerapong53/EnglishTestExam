@@ -7,6 +7,15 @@ import { useReactToPrint } from "react-to-print";
 
 const ComponentToPrint = forwardRef((props, ref) => {
     const { dataToPrint } = props;
+    if (!dataToPrint || dataToPrint.length === 0) {
+      return (
+        <div ref={ref}>
+          <div style={{ fontSize: 18, fontWeight: "bold", textAlign: "center" }}>
+            No data available
+          </div>
+        </div>
+      );
+    }
     return (
       <div ref={ref}>
         <Table>
