@@ -360,7 +360,7 @@ const exam = {
         });
       res
         .status(StatusCodes.CREATED)
-        .json({ msg: "Cefrlevel has been update" });
+        .json({ msg: "ปรับปรุง Cefrlevel แล้ว" });
     } catch (error) {
       res
         .status(StatusCodes.CREATED)
@@ -507,7 +507,7 @@ const exam = {
 
       res
         .status(StatusCodes.CREATED)
-        .json({ msg: "QuestionAndChoice has been delete" });
+        .json({ msg: "คำถามและคำตอบถูกลบแล้ว" });
     } catch (error) {
       res
         .status(StatusCodes.CREATED)
@@ -609,7 +609,7 @@ const exam = {
 
       res
         .status(StatusCodes.CREATED)
-        .json({ msg: "CefrLevel,File, Questions and Choices has been delete" });
+        .json({ msg: "CerfLevel, ไฟล์ที่เกี่ยวข้อง, คำถามและคำตอบถูกลบแล้ว" });
     } catch (error) {
       res
         .status(StatusCodes.CREATED)
@@ -700,7 +700,7 @@ const exam = {
 
       res
         .status(StatusCodes.CREATED)
-        .json({ msg: "File, Questions and Choices has been delete" });
+        .json({ msg: "ไฟล์ที่เกี่ยวข้อง, คำถามและคำตอบถูกลบแล้ว" });
     } catch (error) {
       res.status(StatusCodes.CREATED).json({ msg: "err from delform" + error });
     }
@@ -723,11 +723,11 @@ const exam = {
 
       if (existingQuestion) {
         return next(
-          errorHandler(StatusCodes.BAD_REQUEST, "Question already exists!"),
+          errorHandler(StatusCodes.BAD_REQUEST, "คำถามนี้มีในระบบแล้ว!"),
           res
             .status(400)
             .json(
-              errorHandler(StatusCodes.BAD_REQUEST, "Question already exists!")
+              errorHandler(StatusCodes.BAD_REQUEST, "คำถามนี้มีในระบบแล้ว!")
             )
         );
       }
@@ -819,7 +819,7 @@ const exam = {
         });
       res
         .status(StatusCodes.CREATED)
-        .json({ msg: "Question and Choices have been insert" });
+        .json({ msg: "เพิ่มคำถามและคำตอบแล้ว" });
     } catch (error) {
       return next(
         errorHandler(StatusCodes.INTERNAL_SERVER_ERROR, error),

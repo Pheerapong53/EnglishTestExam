@@ -20,7 +20,6 @@ import { styled, createTheme, ThemeProvider } from "@mui/material/styles";
 import { blue, red, yellow } from "@mui/material/colors";
 import { Close, Add, RemoveRedEye, DeleteForever } from "@mui/icons-material";
 import ModalEditExamArchive from "../components/ModalEditExamArchive";
-import Footer from "../components/Footer";
 import { Link, useNavigate } from "react-router-dom";
 import Axios from "axios";
 import ButtonAddMultiple from "../components/ButtonAddMultiple";
@@ -419,7 +418,6 @@ function ContentPageExamArchive() {
         />
       </div>
       <DrawerHeader />
-      <Footer />
     </>
   );
 }

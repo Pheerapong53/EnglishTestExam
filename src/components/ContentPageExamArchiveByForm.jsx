@@ -395,7 +395,7 @@ function ContentPageExamArchiveByForm() {
         >
           <Link to="/PageExamArchive" style={{ textDecoration: "none" }}>
             <Button variant="outlined" startIcon={<ArrowBack />}>
-              BACK
+              ย้อนกลับ
             </Button>
           </Link>
           <Box display="flex" alignItems="center" gap="20px">

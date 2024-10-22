@@ -362,7 +362,7 @@ function ContentPageExamArchiveLookExam() {
       >
         <Link to="/PageExamArchive" style={{ textDecoration: "none" }}>
           <Button variant="outlined" startIcon={<ArrowBack />}>
-            BACK
+            ย้อนกลับ
           </Button>
         </Link>
         <div style={{ display: "flex", gap: "10px" }}>
