@@ -1,26 +1,25 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
-import React from "react";
-import Card from "@mui/material/Card";
-import CardActions from "@mui/material/CardActions";
-import CardContent from "@mui/material/CardContent";
-import Button from "@mui/material/Button";
-import Typography from "@mui/material/Typography";
-import { styled } from "@mui/material/styles";
-import Modal from "@mui/material/Modal";
-import Box from "@mui/material/Box";
-import TextField from "@mui/material/TextField";
-import { createTheme, ThemeProvider } from "@mui/material/styles";
+import React, { useState, useEffect } from "react";
+import {
+  Card,
+  CardActions,
+  CardContent,
+  CardMedia,
+  Button,
+  Typography,
+  Modal,
+  Box,
+  TextField,
+  Dialog,
+  DialogActions,
+  DialogTitle,
+} from "@mui/material";
+import { styled, createTheme, ThemeProvider } from "@mui/material/styles";
 import { blue, red, yellow } from "@mui/material/colors";
-import { Link, useNavigate } from "react-router-dom";
-//import ReactPlayer from "react-player";
-import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogTitle from "@mui/material/DialogTitle";
-import CardMedia from "@mui/material/CardMedia";
 import { useSelector, useDispatch } from "react-redux";
 import { start } from "../store/TestInfoSlice";
 import { logout } from "../../src/store/userSilce";
@@ -52,12 +51,12 @@ const theme = createTheme({
 });
 
 function ContentPageDoTest() {
+  //Component Declaration
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.user);
   const token = user.token;
-
-  //create config
+  const pers_id = user?.pers_id;
   const generateConfig = (method, endpoint) => {
     return {
       method: `${method}`,
@@ -83,31 +82,26 @@ function ContentPageDoTest() {
     }
   };
 
-  //เรียกวิดีโอแนะนำการสอบจาก tbintrovideo
+  //Hooks and Logic
+  //State for video intro
   const [videoUrl, setVideoUrl] = useState("");
-  
+
   useEffect(() => {
-    // var config = generateConfig("GET", "/getvideo");
-    var config = generateConfig("GET","/testmgmt/introvideofiles")
+    var config = generateConfig("GET", "/testmgmt/introvideofiles");
     axios(config)
       .then((response) => {
-        //console.log(response);
         setVideoUrl(response.data);
       })
       .catch((error) => {
         handleError401and404(error);
       });
   }, []);
-  //console.log(videoUrl);
 
-  //เรียกข้อมูลการจองสอบจาก tbtestreservation join with tbtestscoringcriteria
-  //ตรวจสอบค่า pers_id
-  const pers_id = user?.pers_id;
   // const pers_id = "1111111111111";
 
-  //เรียกข้อมูลการจองสอบจาก pers_id from testresult ผูกกับ testresvcode
+  //State for fetches test reservation data based on 'pers_id' from 'testresult' and associates it with 'testresvcode'
   const [testResultInfo, setTestResultInfo] = useState([]);
-  //console.log(testResultInfo);
+  console.log(testResultInfo);
 
   //server/routes/test_info/test.js -> gettestresult
   useEffect(() => {
@@ -121,7 +115,7 @@ function ContentPageDoTest() {
       });
   }, []);
 
-  //ข้อมูลการจองสอบ
+  //State for testreservation data
   const [testReservationInfo, setTestReservationInfo] = useState([]);
 
   //server/routes/test_info/test.js -> gettestreservationinfo
@@ -137,10 +131,10 @@ function ContentPageDoTest() {
   }, []);
   //console.log(testReservationInfo);
 
-  //เก็บข้อมูลการจองสอบจากการใส่รหัสจองสอบที่ถูกต้อง
+  //State for testreservation data when a valid reservation code is entered
   const [testInfo, setTestInfo] = useState([]);
 
-  //เก็บข้อมูลการกรอกรหัสในการเข้าทดสอบ
+  //State for entered code used for test admission
   const [appvCode, setAppvCode] = useState([]);
 
   const handlePasswordChange = (event) => {
@@ -381,13 +375,15 @@ function ContentPageDoTest() {
               >
                 {`คุณต้องการจะเข้าสอบภารกิจ "${testInfo["tbtestscoringcriterium.mission"]}" ประเทศ "${testInfo["country"]}" `}
               </Typography>
-              <Typography
-                sx={{ fontSize: 18, textAlign: "center", fontWeight: 600 }}
-                color="text.primary"
-                gutterBottom
-              >
-                {`โดยมีระดับคะแนนขั้นต่ำต้องผ่าน ${testInfo["tbtestscoringcriterium.minscore"]} คะแนน `}
-              </Typography>
+              {testInfo["tbtestscoringcriterium.minscore"] > 0 && (
+                <Typography
+                  sx={{ fontSize: 18, textAlign: "center", fontWeight: 600 }}
+                  color="text.primary"
+                  gutterBottom
+                >
+                  {`โดยมีระดับคะแนนขั้นต่ำต้องผ่าน ${testInfo["tbtestscoringcriterium.minscore"]} คะแนน `}
+                </Typography>
+              )}
               <ThemeProvider theme={theme}>
                 <Typography
                   sx={{ fontSize: 20, textAlign: "center", fontWeight: 600 }}
