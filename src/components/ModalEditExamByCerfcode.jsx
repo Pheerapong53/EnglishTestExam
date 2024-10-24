@@ -180,7 +180,7 @@ function ModalEditExamByCerfcode({ params, open, handleClose }) {
               },
             }
           );
-          toast.success(res.data.message); // Show success toast notification
+          //toast.success(res.data.message); // Show success toast notification
         } catch (error) {
           console.error("Error uploading text file:", error);
         }
@@ -198,7 +198,7 @@ function ModalEditExamByCerfcode({ params, open, handleClose }) {
               },
             }
           );
-          toast.success(res.data.message); // Show success toast notification
+          //toast.success(res.data.message); // Show success toast notification
         } catch (error) {
           console.error("Error uploading sound file:", error);
         }
@@ -228,7 +228,7 @@ function ModalEditExamByCerfcode({ params, open, handleClose }) {
             },
           }
         );
-        toast.success(res.data.message);
+        //toast.success(res.data.message);
       } catch (error) {
         console.error("Error uploading sound file:", error);
       }
@@ -277,7 +277,7 @@ function ModalEditExamByCerfcode({ params, open, handleClose }) {
         const reader = new FileReader();
 
         reader.onerror = () => {
-          toast.error("Error reading file");
+          toast.error("เกิดข้อผิดพลาดในการอ่านไฟล์");
         };
 
         // Handle text files
@@ -296,7 +296,7 @@ function ModalEditExamByCerfcode({ params, open, handleClose }) {
           reader.readAsDataURL(selectedFile); // Read the file as a base64-encoded data URL
         }
       } else {
-        toast.error("Accept only .txt or .mp3 files");
+        toast.error("เฉพาะไฟล์นามสกุล .txt หรือ .mp3");
         return;
       }
     }
@@ -315,14 +315,14 @@ function ModalEditExamByCerfcode({ params, open, handleClose }) {
         const reader = new FileReader();
 
         reader.onerror = () => {
-          toast.error("Error reading file");
+          toast.error("เกิดข้อผิดพลาดในการอ่านไฟล์");
         };
         reader.onloadend = () => {
           setFileQuestionPreview(reader.result.split(",")[1]); // Set the base64 data (removing the data URL prefix)
         };
         reader.readAsDataURL(selectedFile); // Read the file as a base64-encoded data URL
       } else {
-        toast.error("Accept only .mp3 files");
+        toast.error("เฉพาะไฟล์นามสกุล .mp3");
         return;
       }
     }

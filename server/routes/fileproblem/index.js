@@ -169,7 +169,7 @@ routes.post("/uploadmanyfiles/:formcode", verifyToken, function (req, res) {
       return res.status(400).json({ message: "No files uploaded." });
     }
 
-    res.status(200).json({ message: "Files uploaded successfully!" });
+    res.status(200).json({ message: "อัพโหลดไฟล์สำเร็จแล้ว!" });
   });
 });
 
@@ -188,7 +188,7 @@ routes.post("/uploadmanytxtfiles/:formcode", verifyToken, function (req, res) {
       return res.status(400).json({ message: "No files uploaded." });
     }
 
-    res.status(200).json({ message: "Files uploaded successfully!" });
+    res.status(200).json({ message: "อัพโหลดไฟล์สำเร็จแล้ว!" });
   });
 });
 

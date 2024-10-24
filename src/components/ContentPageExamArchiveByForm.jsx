@@ -191,7 +191,7 @@ function ContentPageExamArchiveByForm() {
   const [params, setParams] = useState();
   const [open, setOpen] = React.useState(false);
   const [questionLists, setQuestionLists] = useState([]);
-  console.log(questionLists);
+  // console.log(questionLists);
 
   const [formcode, setFormcode] = useState(""); // To store selected formcode
 

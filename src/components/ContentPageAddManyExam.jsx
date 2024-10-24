@@ -51,7 +51,7 @@ function ContentPageAddManyExam() {
         {/* Back button */}
         <Link to="/PageExamArchive" style={{ textDecoration: "none" }}>
           <Button variant="outlined" startIcon={<ArrowBack />}>
-            BACK
+            ย้อนกลับ
           </Button>
         </Link>
 

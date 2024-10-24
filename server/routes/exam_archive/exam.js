@@ -918,7 +918,7 @@ const exam = {
       }
       res
         .status(StatusCodes.CREATED)
-        .json({ msg: "Question and Choices have been insert" });
+        .json({ msg: "เพิ่มคำถามและคำตอบแล้ว" });
     } catch (error) {
       res
         .status(StatusCodes.CREATED)

@@ -11,7 +11,6 @@ import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 
-
 const theme = createTheme({
   palette: {
     secondary: {
@@ -42,7 +41,6 @@ function ModalEditExamArchiveLookExam(params) {
     }
   }, [open]);
 
-  
   //initialstate from Datagrid
   const initialstate = {
     id: params.params.row.id,
@@ -74,7 +72,7 @@ function ModalEditExamArchiveLookExam(params) {
     event.preventDefault();
     params.onRowValueChange(values);
     handleClose();
-  }
+  };
 
   return (
     <>
@@ -105,10 +103,7 @@ function ModalEditExamArchiveLookExam(params) {
             //ref={descriptionElementRef}
             tabIndex={-1}
           >
-            <Box
-              component="form"
-              onSubmit={handleSubmit}
-            >
+            <Box component="form" onSubmit={handleSubmit}>
               <Typography
                 id="modal-modal-title"
                 sx={{
@@ -167,7 +162,6 @@ function ModalEditExamArchiveLookExam(params) {
                   //error={values.problem === undefined ? true : false}
                   fullWidth
                   variant="outlined"
-                  disabled
                 />
 
                 <TextField
@@ -285,7 +279,9 @@ function ModalEditExamArchiveLookExam(params) {
               >
                 <Box sx={{ paddingRight: "20px" }}>
                   {/* <Link to="#" style={{ textDecoration: "none" }}> */}
-                    <Button type="submit" variant="contained">บันทึก</Button>
+                  <Button type="submit" variant="contained">
+                    บันทึก
+                  </Button>
                   {/* </Link> */}
                 </Box>
               </Box>

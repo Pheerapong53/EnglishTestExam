@@ -19,7 +19,7 @@ const uploadFile = multer({storage: storageFile});
 routes.get("/download", async(req, res) => {
     const file = path.join(__dirname,'Template.xlsx');
     if(!fs.existsSync(file)){
-        return res.status(500).json({message: "Template not found."});
+        return res.status(500).json({message: "ไม่พบเทมเพลต"});
     }
     res.download(file, 'Template.xlsx');
 });
@@ -36,7 +36,7 @@ routes.post("/uploadtemplate", verifyToken, function(req, res){
           }
       
           res.json({
-            message: "File Template uploaded successfully",
+            message: "อัพโหลดไฟล์เทมเพลตสำเร็จแล้ว!",
             fileName: req.file.originalname,
           });
     });

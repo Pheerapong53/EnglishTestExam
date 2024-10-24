@@ -169,7 +169,7 @@ function ModalAddMultiple() {
         return val.id != params;
       })
     );
-    console.log(params);
+    // console.log(params);
   };
 
   const onDrop = useCallback((acceptedFiles) => {
@@ -188,8 +188,8 @@ function ModalAddMultiple() {
         const formcode = XLSX.utils
           .sheet_to_json(workSheet, { header: 1, blankrows: false })
           .slice(0, 1);
-        console.log("excelData : ", excelData);
-        console.log("formcode : ", formcode[0][1]);
+        // console.log("excelData : ", excelData);
+        // console.log("formcode : ", formcode[0][1]);
 
         setFileName(acceptedFiles[0].name);
 
@@ -244,7 +244,7 @@ function ModalAddMultiple() {
       };
       reader.readAsArrayBuffer(acceptedFiles[0]);
     } else {
-      toast.error("accept only File .xlsx");
+      toast.error("เฉพาะไฟล์นามสกุล .xlsx");
     }
   });
 
@@ -267,13 +267,13 @@ function ModalAddMultiple() {
   // const [confirm, SetConfirm] = React.useState(false);
   const handleClickCheck = () => {
     if (fileExcel === undefined) {
-      toast.error("Please Select File");
+      toast.error("กรุณาเลือกไฟล์");
     } else if (fileName !== undefined) {
       const fileExtension = fileName.split(".").pop();
       if (fileExtension === "xlsx") {
         setCheck(true);
       } else {
-        toast.error("accept only File .xlsx");
+        toast.error("เฉพาะไฟล์นามสกุล .xlsx");
       }
     } else if (fileExcel !== undefined) {
       setCheck(true);
@@ -285,6 +285,25 @@ function ModalAddMultiple() {
   //Insert Data in Many Row
   const handleConfirm = () => {
     if (fileExcel !== undefined && fileExcel.length !== 0) {
+      const invalidQuestions = fileExcel.filter(
+        (question) => question.questioncode.length !== 12
+      );
+
+      if (invalidQuestions.length > 0) {
+        // Create an error message listing all invalid questioncodes
+        const invalidCodes = invalidQuestions
+          .map((q) => q.questioncode)
+          .join(", ");
+        toast.error(
+          `รหัสคำถามต่อไปนี้ไม่ถูกต้อง: ${invalidCodes} \nรหัสคำถามต้องมี 12 หลัก เช่น F0001L1A1002`,
+          {
+            autoClose: false, // Keep toast open until manually closed
+            closeOnClick: true, // Allow user to close by clicking
+            closeButton: true, // Show close button
+          }
+        );
+        return;
+      }
       //console.log("fileExcel : ", fileExcel);
       addManyExam(fileExcel, token)
         .then((res) => {
@@ -304,7 +323,7 @@ function ModalAddMultiple() {
           }
         });
     } else {
-      toast.error("Please Select New File");
+      toast.error("กรุณาเลือกไฟล์อีกครั้ง");
     }
   };
 
@@ -330,10 +349,10 @@ function ModalAddMultiple() {
     } catch (error) {
       if (error.response && error.response.status === 500) {
         // If file is not found, show an error toast
-        toast.error("File not found. Please upload the template.");
+        toast.error("ไม่พบไฟล์ กรุณาอัปโหลดไฟล์เทมเพลต");
       } else {
         // Handle other errors
-        toast.error("An error occurred while downloading the template");
+        toast.error("เกิดข้อผิดพลาดระหว่างการดาวน์โหลด");
       }
     }
   };

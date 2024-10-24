@@ -24,8 +24,6 @@ import axios from "axios";
 import { toast } from "react-toastify";
 
 function ModalAddOne(dropdown) {
-  console.log("dropdown : ", dropdown);
-
   //Component Declaration
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.user);
@@ -287,7 +285,7 @@ function ModalAddOne(dropdown) {
           reader.readAsDataURL(selectedFile); // Read the file as a base64-encoded data URL
         }
       } else {
-        toast.error("เฉพาะไฟล์นามสกุล .txt หรือ .mp3 ");
+        toast.error("เฉพาะไฟล์นามสกุล .txt หรือ .mp3");
         return;
       }
     }
