@@ -101,7 +101,7 @@ function ContentPageDoTest() {
 
   //State for fetches test reservation data based on 'pers_id' from 'testresult' and associates it with 'testresvcode'
   const [testResultInfo, setTestResultInfo] = useState([]);
-  console.log(testResultInfo);
+  console.log("testResultInfo : ", testResultInfo);
 
   //server/routes/test_info/test.js -> gettestresult
   useEffect(() => {
@@ -117,6 +117,7 @@ function ContentPageDoTest() {
 
   //State for testreservation data
   const [testReservationInfo, setTestReservationInfo] = useState([]);
+  console.log("TestReservationInfo : ", testReservationInfo);
 
   //server/routes/test_info/test.js -> gettestreservationinfo
   useEffect(() => {
@@ -133,6 +134,7 @@ function ContentPageDoTest() {
 
   //State for testreservation data when a valid reservation code is entered
   const [testInfo, setTestInfo] = useState([]);
+  console.log("Test Info : ", testInfo);
 
   //State for entered code used for test admission
   const [appvCode, setAppvCode] = useState([]);
@@ -375,13 +377,13 @@ function ContentPageDoTest() {
               >
                 {`คุณต้องการจะเข้าสอบภารกิจ "${testInfo["tbtestscoringcriterium.mission"]}" ประเทศ "${testInfo["country"]}" `}
               </Typography>
-              {testInfo["tbtestscoringcriterium.minscore"] > 0 && (
+              {testInfo["tbtestscoringcriterium.tbcefrlevel.minscore"] > 0 && (
                 <Typography
                   sx={{ fontSize: 18, textAlign: "center", fontWeight: 600 }}
                   color="text.primary"
                   gutterBottom
                 >
-                  {`โดยมีระดับคะแนนขั้นต่ำต้องผ่าน ${testInfo["tbtestscoringcriterium.minscore"]} คะแนน `}
+                  {`โดยมีระดับคะแนนขั้นต่ำต้องผ่าน ${testInfo["tbtestscoringcriterium.tbcefrlevel.minscore"]} คะแนน `}
                 </Typography>
               )}
               <ThemeProvider theme={theme}>

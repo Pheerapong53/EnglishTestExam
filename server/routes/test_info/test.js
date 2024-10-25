@@ -8,7 +8,7 @@ const multer = require("multer");
 const Sequelize = require("sequelize");
 process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
 
-const { tbmemberinfo, tbtestresult, tbtestreservation, tbtestscoringcriteria } =
+const { tbmemberinfo, tbtestresult, tbtestreservation, tbtestscoringcriteria, tbcefrlevel } =
   db;
 
 const test = {
@@ -17,6 +17,12 @@ const test = {
       include: [
         {
           model: tbtestscoringcriteria,
+          include:[
+            {
+              model: tbcefrlevel,
+              attributes: ['minscore'],
+            }
+          ]
         },
       ],
       raw: true,

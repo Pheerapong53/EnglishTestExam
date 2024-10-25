@@ -14,6 +14,9 @@ var _tbtestreservation = require("./tbtestreservation");
 var _tbtestresult = require("./tbtestresult");
 var _tbtestscoringcriteria = require("./tbtestscoringcriteria");
 var _tbusertype = require("./tbusertype");
+/*------------------ added : 24-10-2024 -----------------*/
+var _tbcerflevel = require("./tbcefrlevel");
+/*-------------------------------------------------------*/
 
 function initModels(sequelize) {
   var tbaccessrights = _tbaccessrights(sequelize, DataTypes);
@@ -31,6 +34,9 @@ function initModels(sequelize) {
   var tbtestresult = _tbtestresult(sequelize, DataTypes);
   var tbtestscoringcriteria = _tbtestscoringcriteria(sequelize, DataTypes);
   var tbusertype = _tbusertype(sequelize, DataTypes);
+  /*------------------ added :  24-10-2024 -------------------*/
+  var tbcerflevel = _tbcerflevel(sequelize, DataTypes);
+  /*------------------------------------------------------*/
 /*
   tbquestion.belongsTo(tbcefrdifficultylevel, { as: "cerfcode_tbcefrdifficultylevel", foreignKey: "cerfcode"});
   tbcefrdifficultylevel.hasMany(tbquestion, { as: "tbquestions", foreignKey: "cerfcode"});
@@ -83,6 +89,8 @@ function initModels(sequelize) {
     tbtestresult,
     tbtestscoringcriteria,
     tbusertype,
+    /*-------- added : 24-10-2024 --------*/
+    tbcerflevel
   };
 }
 module.exports = initModels;

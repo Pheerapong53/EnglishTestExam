@@ -1,6 +1,7 @@
 const Sequelize = require('sequelize');
-module.exports = function(sequelize, DataTypes) {
-  return sequelize.define('tbtestscoringcriteria', {
+module.exports = function (sequelize, DataTypes) {
+  //return sequelize.define('tbtestscoringcriteria', {
+  const tbtestscoringcriteria = sequelize.define('tbtestscoringcriteria', {
     scoringcriteriacode: {
       type: DataTypes.STRING(4),
       allowNull: false,
@@ -12,10 +13,16 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false,
       comment: "ภารกิจของข้าราชการที่เข้าสอบ"
     },
-    minscore: {
-      type: DataTypes.INTEGER,
+    //---> updated on 24-10-2024
+    mincefrlevel: {
+      type: DataTypes.STRING(2),
+      //type: DataTypes.INTEGER, //---> updated on 24-10-2024
       allowNull: false,
-      comment: "คะแนนผ่านขั้นต่ำ"
+      comment: "คะแนนผ่านขั้นต่ำ",
+      references: {
+        model: 'tbcefrlevel',
+        key: 'cefrlevel'
+      }
     }
   }, {
     sequelize,
@@ -30,6 +37,20 @@ module.exports = function(sequelize, DataTypes) {
           { name: "scoringcriteriacode" },
         ]
       },
+      {
+        name: "mincefrlevel",
+        using: "BTREE",
+        fields: [
+          { name: "cefrlevel" },
+        ]
+      },
     ]
   });
+
+  tbtestscoringcriteria.associate = (models) => {
+    tbtestscoringcriteria.belongsTo(models.tbcefrlevel, { foreignKey: "mincefrlevel" });
+    models.tbcefrlevel.hasMany(tbtestscoringcriteria, { foreignKey: "mincefrlevel" });
+  }
+
+  return tbtestscoringcriteria;
 };
