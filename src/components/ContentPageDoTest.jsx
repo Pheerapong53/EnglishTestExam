@@ -96,6 +96,7 @@ function ContentPageDoTest() {
         handleError401and404(error);
       });
   }, []);
+  console.log("Video Intro URL: ", videoUrl);
 
   // const pers_id = "1111111111111";
 
@@ -297,7 +298,7 @@ function ContentPageDoTest() {
                 id="modal-modal-description"
                 sx={{ mt: 2, textAlign: "center" }}
               >
-                คุณต้องมีรหัสในการทำแบบทดสอบนี้ (กรอก 'test' สำหรับทดสอบระบบ)
+                คุณต้องมีรหัสในการทำแบบทดสอบนี้
               </Typography>
               <br />
               <Box
@@ -322,13 +323,13 @@ function ContentPageDoTest() {
               >
                 <ul>
                   <li style={{ cursor: "pointer" }}>
-                    ระยะเวลาการทดสอบ 60 นาที
+                    ระยะเวลาการทดสอบ 90 นาที
                   </li>
                   <li style={{ cursor: "pointer" }}>
-                    เมื่อกดปุ่ม Start เวลาจะเริ่มนับถอยหลัง
+                    เมื่อกดปุ่ม "เริ่มต้นทำแบบทดสอบ" เวลาจะเริ่มนับถอยหลัง
                   </li>
                   <li style={{ cursor: "pointer" }}>
-                    ระบบจะปิดอัตโนมัติเมื่อครบ 60 นาที
+                    ระบบจะปิดอัตโนมัติเมื่อครบ 90 นาที
                   </li>
                   <li style={{ cursor: "pointer" }}>
                     สามารถกด Submit เพิ่อส่งคำตอบ หากทำเสร็จก่อนหมดเวลา

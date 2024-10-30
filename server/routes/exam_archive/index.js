@@ -11,7 +11,7 @@ const fs = require("fs");
 routes.get("/indvform",verifyToken,async(req,res) => {
   res.send(await exam.getindvform(req));
 });
-routes.get('/introvideo',async(req, res) => {
+routes.get("/introvideo",async(req, res) => {
   await exam.introVideo(req, res);
 });
 routes.get("/getquestion", async(req, res) =>{
