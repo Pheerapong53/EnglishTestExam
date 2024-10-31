@@ -56,7 +56,7 @@ function ContentPageDoTest() {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.user);
   const token = user.token;
-  const pers_id = user?.pers_id;
+  const pers_id = user?.pers_id; //pers_id will be used to search for reservation data
   const generateConfig = (method, endpoint) => {
     return {
       method: `${method}`,
@@ -83,7 +83,7 @@ function ContentPageDoTest() {
   };
 
   //Hooks and Logic
-  //State for video intro
+  //State to store the URL of the introductory video
   const [videoUrl, setVideoUrl] = useState("");
 
   useEffect(() => {
@@ -96,13 +96,12 @@ function ContentPageDoTest() {
         handleError401and404(error);
       });
   }, []);
-  console.log("Video Intro URL: ", videoUrl);
+  //console.log("Video Intro URL: ", videoUrl);
 
-  // const pers_id = "1111111111111";
-
-  //State for fetches test reservation data based on 'pers_id' from 'testresult' and associates it with 'testresvcode'
+  //State to store testreservation data fetched based on 'pers_id' from 'testresult' and ...
+  //link it with 'testresvcode'
   const [testResultInfo, setTestResultInfo] = useState([]);
-  console.log("testResultInfo : ", testResultInfo);
+  //console.log("testResultInfo : ", testResultInfo);
 
   //server/routes/test_info/test.js -> gettestresult
   useEffect(() => {
@@ -135,7 +134,7 @@ function ContentPageDoTest() {
 
   //State for testreservation data when a valid reservation code is entered
   const [testInfo, setTestInfo] = useState([]);
-  console.log("Test Info : ", testInfo);
+  //console.log("Test Info : ", testInfo);
 
   //State for entered code used for test admission
   const [appvCode, setAppvCode] = useState([]);
@@ -176,15 +175,6 @@ function ContentPageDoTest() {
     dispatch(start(testInfo?.testresvcode));
     handleCloseDialog();
   };
-
-  const DrawerHeader = styled("div")(({ theme }) => ({
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "flex-end",
-    padding: theme.spacing(0, 1),
-    // necessary for content to be below app bar
-    ...theme.mixins.toolbar,
-  }));
 
   // เปิด-ปิด หน้ากรอกรหัสเข้าทดสอบ
   const [open, setOpen] = React.useState(false);
@@ -237,10 +227,7 @@ function ContentPageDoTest() {
               <CardMedia
                 component={"video"}
                 sx={{ height: 280 }}
-                src={
-                  // `${process.env.REACT_APP_API_URL}/testmgmt/singleintrovideofile/VDO-2576-435511.mp4`
-                  `${process.env.REACT_APP_API_URL}/introvideo`
-                }
+                src={`${process.env.REACT_APP_API_URL}/introvideo`}
                 autoPlay
                 controls
               />
@@ -393,7 +380,7 @@ function ContentPageDoTest() {
                   color="primary"
                   gutterBottom
                 >
-                  ระบบจะเริ่มสอบทันที ที่คุณกด "Start Test"
+                  ระบบจะเริ่มสอบทันที ที่คุณกด "เริ่มต้นทำแบบทดสอบ"
                 </Typography>
               </ThemeProvider>
               <Typography
@@ -425,14 +412,14 @@ function ContentPageDoTest() {
                   localStorage.clear();
                 }}
               >
-                Start Test
+                เริ่มต้นทำแบบทดสอบ
               </Button>
               <Button
                 variant="contained"
                 color="error"
                 onClick={handleCloseDialog}
               >
-                Cancel
+                ยกเลิก
               </Button>
             </DialogActions>
           </Dialog>
