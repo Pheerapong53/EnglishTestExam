@@ -1,6 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
+import { Campaign } from "@mui/icons-material";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../src/store/userSilce";
 
@@ -12,6 +13,7 @@ function TestSound({ form, filepath, order, onFinish, time }) {
   const audioFile = useRef(null);
   const [audioUrl, setAudioUrl] = useState(null);
   const [numUrl, setNumUrl] = useState(null);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   let num = order.toString();
 
@@ -71,14 +73,19 @@ function TestSound({ form, filepath, order, onFinish, time }) {
         ""
       )}
       {audioUrl ? (
-        <audio
-          src={"data:audio/mp3;base64," + audioUrl}
-          ref={audioFile}
-          // autoPlay
-          //controls
-          type="audio/mpeg"
-          onEnded={onFinish}
-        />
+        <>
+          <audio
+            src={"data:audio/mp3;base64," + audioUrl}
+            ref={audioFile}
+            type="audio/mpeg"
+            onEnded={() => {
+              onFinish();
+              setIsPlaying(false);
+            }}
+            onPlay={() => setIsPlaying(true)}
+          />
+          {isPlaying && <Campaign fontSize="large" />}
+        </>
       ) : (
         <p>Loading audio...</p>
       )}

@@ -24,7 +24,7 @@ const PostIndvForm = ({
 }) => {
   //CountDown Timer
   const [timeRemaining, setTimeRemaining] = useState(0);
-  const [timeDiv, setTimeDiv] = useState(13000);
+  const [timeDiv, setTimeDiv] = useState(17000);
   const [isCounting, setIsCounting] = useState(true);
   const [isFiftyOne, setFiftyOne] = useState(false);
   const [isFiftySeven, setFiftySeven] = useState(false);
@@ -51,7 +51,7 @@ const PostIndvForm = ({
     return () => clearInterval(timer);
   }, [isCounting, timeRemaining]);
 
-  const CounntdownProgressBar = ({ timeRemaining, timeDiv, showSound }) => {
+  const CountdownProgressBar = ({ timeRemaining, timeDiv, showSound }) => {
     return (
       showSound && (
         <Box sx={{ position: "relative", display: "inline-flex" }}>
@@ -101,7 +101,7 @@ const PostIndvForm = ({
     if (savedValue !== null) {
       setState(savedValue);
     }
-  }
+  };
 
   useEffect(() => {
     initializeStateFromLocalStorage(setShowSound, "soundBool");
@@ -115,9 +115,9 @@ const PostIndvForm = ({
     saveToLocalStorage("soundBool", showSound);
     saveToLocalStorage("51", isFiftyOne);
     saveToLocalStorage("57", isFiftySeven);
-    saveToLocalStorage("59",isFiftyNine);
-    saveToLocalStorage("endBool",isEnd);
-  }, [showSound, isFiftyOne, isFiftySeven,isFiftyNine,isEnd]);
+    saveToLocalStorage("59", isFiftyNine);
+    saveToLocalStorage("endBool", isEnd);
+  }, [showSound, isFiftyOne, isFiftySeven, isFiftyNine, isEnd]);
 
   return (
     <>
@@ -206,7 +206,7 @@ const PostIndvForm = ({
                     </Box>
                     {/* end of question */}
 
-                    <CounntdownProgressBar
+                    <CountdownProgressBar
                       timeRemaining={timeRemaining}
                       timeDiv={timeDiv}
                       showSound={showSound}
@@ -237,7 +237,7 @@ const PostIndvForm = ({
                   }}
                 >
                   <FormLabel key={question.questioncode}>
-                    {QuestionNumber} : 
+                    {QuestionNumber} :
                     {question["questionText"] === "none" ||
                     question["questionText"].includes("mp3") ? (
                       <>
@@ -286,7 +286,7 @@ const PostIndvForm = ({
                 </Box>
                 {/* end of question */}
 
-                <CounntdownProgressBar
+                <CountdownProgressBar
                   timeRemaining={timeRemaining}
                   timeDiv={timeDiv}
                   showSound={showSound}
@@ -320,7 +320,7 @@ const PostIndvForm = ({
                       }}
                     >
                       <FormLabel>
-                        {question.order} : 
+                        {question.order} :
                         {question["questionText"] === "none" ||
                         question["questionText"].includes("mp3") ? (
                           <>
@@ -385,7 +385,7 @@ const PostIndvForm = ({
                 </>
               ))}
 
-              <CounntdownProgressBar
+              <CountdownProgressBar
                 timeRemaining={timeRemaining}
                 timeDiv={timeDiv}
                 showSound={showSound}
@@ -419,7 +419,7 @@ const PostIndvForm = ({
                       }}
                     >
                       <FormLabel>
-                        {question.order} : 
+                        {question.order} :
                         {question["questionText"] === "none" ||
                         question["questionText"].includes("mp3") ? (
                           <>
@@ -494,7 +494,7 @@ const PostIndvForm = ({
                 </>
               ))}
 
-              <CounntdownProgressBar
+              <CountdownProgressBar
                 timeRemaining={timeRemaining}
                 timeDiv={timeDiv}
                 showSound={showSound}
@@ -519,9 +519,7 @@ const PostIndvForm = ({
                   }}
                 >
                   <FormLabel>
-                    <>
-                      {question.order} : 
-                    </>
+                    <>{question.order} :</>
                     {question["questionText"] === "none" ||
                     question["questionText"].includes("mp3")
                       ? " "
@@ -567,9 +565,7 @@ const PostIndvForm = ({
                   }}
                 >
                   <FormLabel>
-                    <>
-                      {question.order} : 
-                    </>
+                    <>{question.order} :</>
                     {question["questionText"] === "none" ||
                     question["questionText"].includes("mp3") ? (
                       <>ไม่มีโจทย์</>
@@ -617,9 +613,7 @@ const PostIndvForm = ({
                   }}
                 >
                   <FormLabel>
-                    <>
-                      {question.order} : 
-                    </>
+                    <>{question.order} :</>
                     {question["questionText"] === "none" ||
                     question["questionText"].includes("mp3") ? (
                       <>ไม่มีโจทย์</>
@@ -667,9 +661,7 @@ const PostIndvForm = ({
                   }}
                 >
                   <FormLabel>
-                    <>
-                      {question.order} : 
-                    </>
+                    <>{question.order} :</>
                     {question["questionText"] === "none" ||
                     question["questionText"].includes("mp3") ? (
                       <>ไม่มีโจทย์</>
@@ -717,9 +709,7 @@ const PostIndvForm = ({
                   }}
                 >
                   <FormLabel>
-                    <>
-                      {question.order} : 
-                    </>
+                    <>{question.order} :</>
                     {question["questionText"] === "none" ||
                     question["questionText"].includes("mp3") ? (
                       <>ไม่มีโจทย์</>
@@ -767,9 +757,7 @@ const PostIndvForm = ({
                   }}
                 >
                   <FormLabel>
-                    <>
-                      {question.order} : 
-                    </>
+                    <>{question.order} :</>
                     {question["questionText"] === "none" ||
                     question["questionText"].includes("mp3") ? (
                       <>ไม่มีโจทย์</>

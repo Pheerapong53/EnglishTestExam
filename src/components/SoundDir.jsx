@@ -2,10 +2,12 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
+import { Campaign } from "@mui/icons-material";
 import { logout } from "../../src/store/userSilce";
 
 function SoundDir({ dir, onFinish, time }) {
   const [dirUrl, setDirUrl] = useState(null);
+  const [isPlaying, setIsPlaying] = useState(false);
   const dispatch = useDispatch();
   const { user } = useSelector((state) => ({ ...state }));
   const token = user.user.token;
@@ -34,13 +36,17 @@ function SoundDir({ dir, onFinish, time }) {
   return (
     <div>
       {dirUrl ? (
-        <audio
-          src={"data:audio/mp3;base64," + dirUrl}
-          autoPlay
-          //controls
-          type="audio/mpeg"
-          onEnded={onFinish}
-        />
+        <>
+          <audio
+            src={"data:audio/mp3;base64," + dirUrl}
+            autoPlay
+            //controls
+            type="audio/mpeg"
+            onEnded={onFinish}
+            onPlay={() => setIsPlaying(true)}
+          />
+          {isPlaying && <Campaign fontSize="large" />}
+        </>
       ) : (
         <p>Loading audio...</p>
       )}

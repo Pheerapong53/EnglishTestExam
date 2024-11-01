@@ -66,7 +66,7 @@ function PageTest() {
 
   const [QuestionNumber, setQuestionNumber] = useState(0);
   const [QuestionIndvform, setQuestionIndvform] = useState(null);
-  // console.log(QuestionIndvform);
+  console.log("QuestionIndvform :", QuestionIndvform);
 
   //toggle for Sound File
   //false -> Play DIR_1_50
@@ -99,7 +99,8 @@ function PageTest() {
   const testreservcode = location?.state.testresvcode;
   let testresultcode;
   if (typeof testreservcode !== "undefined") {
-    const pers_id = user?.pers_id;
+    //const pers_id = user?.pers_id;
+    const pers_id = "1111111111111";
     if (typeof pers_id !== "undefined") {
       testresultcode = testreservcode.toString() + "-" + pers_id.toString();
     } else {
@@ -268,13 +269,13 @@ function PageTest() {
                 question["tbquestion.cerfcode"] === "L1A1" ||
                 question["tbquestion.cerfcode"] === "L1A2" ||
                 question["tbquestion.cerfcode"] === "L1B1"
-                  ? 13000
+                  ? 17000
                   : question["tbquestion.cerfcode"] === "L1B2" ||
                     question["tbquestion.cerfcode"] === "L1C1" ||
                     question["tbquestion.cerfcode"] === "L2A1" ||
                     question["tbquestion.cerfcode"] === "L2A2"
-                  ? 15000
-                  : 19000,
+                  ? 20000
+                  : 30000,
               A_choicecode: question["fk_choiceA.choicecode"],
               A_choicetext: question["fk_choiceA.choicetext"],
               A_answer: question["fk_choiceA.answer"],
@@ -638,27 +639,36 @@ function PageTest() {
           elevation={6}
         >
           <Box sx={{ display: "flex", justifyContent: "center", margin: "8%" }}>
-            <Box sx={{ display: "flex", flexDirection: "column" }}>
-              {!isStart && (
-                <SoundDir
-                  dir="Dir_1_50.mp3"
-                  onFinish={() => handleStart(true)}
-                  time={0}
-                />
-              )}
-              {isStart && (
-                <PostIndvForm
-                  QuestionAndChoice={QuestionIndvform}
-                  QuestionNumber={QuestionNumber + 1}
-                  EndOfListenning={(i) => setQuestionNumber(i)}
-                  ToggleCountDown={(bool) => setIsCounting(bool)}
-                  TogglePagination={(bool) => setIsReading(bool)}
-                  OnAnswerSelect={(e, value) => {
-                    updateStatusOnAnswerIndv(e.target.name, value);
-                  }}
-                />
-              )}
-            </Box>
+            {QuestionIndvform !== null && QuestionIndvform?.length !== 0 ? (
+              <Box sx={{ display: "flex", flexDirection: "column" }}>
+                {!isStart && (
+                  <SoundDir
+                    dir="Dir_1_50.mp3"
+                    onFinish={() => handleStart(true)}
+                    time={0}
+                  />
+                )}
+                {isStart && (
+                  <PostIndvForm
+                    QuestionAndChoice={QuestionIndvform}
+                    QuestionNumber={QuestionNumber + 1}
+                    EndOfListenning={(i) => setQuestionNumber(i)}
+                    ToggleCountDown={(bool) => setIsCounting(bool)}
+                    TogglePagination={(bool) => setIsReading(bool)}
+                    OnAnswerSelect={(e, value) => {
+                      updateStatusOnAnswerIndv(e.target.name, value);
+                    }}
+                  />
+                )}
+              </Box>
+            ) : (
+              <Typography
+                variant="h6"
+                sx={{ color: "#d32f2f", fontWeight: "bold" }}
+              >
+                ไม่พบชุดข้อสอบ กรุณาตรวจสอบผลการจองทดสอบ
+              </Typography>
+            )}
           </Box>
         </Card>
 

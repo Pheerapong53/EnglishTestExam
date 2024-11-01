@@ -117,7 +117,7 @@ function ContentPageDoTest() {
 
   //State for testreservation data
   const [testReservationInfo, setTestReservationInfo] = useState([]);
-  console.log("TestReservationInfo : ", testReservationInfo);
+  // console.log("TestReservationInfo : ", testReservationInfo);
 
   //server/routes/test_info/test.js -> gettestreservationinfo
   useEffect(() => {
