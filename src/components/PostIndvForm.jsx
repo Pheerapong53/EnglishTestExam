@@ -154,31 +154,39 @@ const PostIndvForm = ({
                       }}
                     >
                       <FormLabel key={question.questioncode}>
-                        {QuestionNumber} :
-                        {question["questionText"] === "none" ||
-                        question["questionText"].includes("mp3") ? (
-                          <>
-                            {showSound && (
-                              <TestSound
-                                form={question["form"]}
-                                filepath={question["filepath"]}
-                                // order={question["order"].padStart(3, "0")}
-                                order={question["order"]}
-                                time={5000}
-                                onFinish={() => {
-                                  setTimeDiv(question["time"]);
-                                  setTimeRemaining(question["time"]);
-                                  setTimeout(() => {
-                                    setTimeRemaining(0);
-                                    EndOfListenning(QuestionNumber++);
-                                  }, question["time"]);
-                                }}
-                              />
-                            )}
-                          </>
-                        ) : (
-                          `${question["questionText"]}`
-                        )}
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            height: "40px",
+                          }}
+                        >
+                          {QuestionNumber} :
+                          {question["questionText"] === "none" ||
+                          question["questionText"].includes("mp3") ? (
+                            <>
+                              {showSound && (
+                                <TestSound
+                                  form={question["form"]}
+                                  filepath={question["filepath"]}
+                                  // order={question["order"].padStart(3, "0")}
+                                  order={question["order"]}
+                                  time={5000}
+                                  onFinish={() => {
+                                    setTimeDiv(question["time"]);
+                                    setTimeRemaining(question["time"]);
+                                    setTimeout(() => {
+                                      setTimeRemaining(0);
+                                      EndOfListenning(QuestionNumber++);
+                                    }, question["time"]);
+                                  }}
+                                />
+                              )}
+                            </>
+                          ) : (
+                            `${question["questionText"]}`
+                          )}
+                        </div>
                       </FormLabel>
 
                       <RadioGroup
@@ -237,31 +245,39 @@ const PostIndvForm = ({
                   }}
                 >
                   <FormLabel key={question.questioncode}>
-                    {QuestionNumber} :
-                    {question["questionText"] === "none" ||
-                    question["questionText"].includes("mp3") ? (
-                      <>
-                        {showSound && (
-                          <TestSound
-                            form={question["form"]}
-                            filepath={question["filepath"]}
-                            // order={question["order"].padStart(3, "0")}
-                            order={question["order"]}
-                            time={5000}
-                            onFinish={() => {
-                              setTimeDiv(question["time"]);
-                              setTimeRemaining(question["time"]);
-                              setTimeout(() => {
-                                setTimeRemaining(0);
-                                EndOfListenning(QuestionNumber++);
-                              }, question["time"]);
-                            }}
-                          />
-                        )}
-                      </>
-                    ) : (
-                      `${question["questionText"]}`
-                    )}
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        height: "40px",
+                      }}
+                    >
+                      {QuestionNumber} :
+                      {question["questionText"] === "none" ||
+                      question["questionText"].includes("mp3") ? (
+                        <>
+                          {showSound && (
+                            <TestSound
+                              form={question["form"]}
+                              filepath={question["filepath"]}
+                              // order={question["order"].padStart(3, "0")}
+                              order={question["order"]}
+                              time={5000}
+                              onFinish={() => {
+                                setTimeDiv(question["time"]);
+                                setTimeRemaining(question["time"]);
+                                setTimeout(() => {
+                                  setTimeRemaining(0);
+                                  EndOfListenning(QuestionNumber++);
+                                }, question["time"]);
+                              }}
+                            />
+                          )}
+                        </>
+                      ) : (
+                        `${question["questionText"]}`
+                      )}
+                    </div>
                   </FormLabel>
 
                   <RadioGroup

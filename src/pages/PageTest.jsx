@@ -66,10 +66,11 @@ function PageTest() {
 
   const [QuestionNumber, setQuestionNumber] = useState(0);
   const [QuestionIndvform, setQuestionIndvform] = useState(null);
-  console.log("QuestionIndvform :", QuestionIndvform);
+  //console.log("QuestionIndvform :", QuestionIndvform);
 
   //toggle for Sound File
   //false -> Play DIR_1_50
+  //First State
   const [isStart, setIsStart] = useState(false);
 
   //toggle button pagination

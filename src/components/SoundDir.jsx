@@ -42,7 +42,10 @@ function SoundDir({ dir, onFinish, time }) {
             autoPlay
             //controls
             type="audio/mpeg"
-            onEnded={onFinish}
+            onEnded={() => {
+              onFinish(); // Call onFinish function
+              setIsPlaying(false); // Set isPlaying to false
+            }}
             onPlay={() => setIsPlaying(true)}
           />
           {isPlaying && <Campaign fontSize="large" />}

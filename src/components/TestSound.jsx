@@ -14,6 +14,8 @@ function TestSound({ form, filepath, order, onFinish, time }) {
   const [audioUrl, setAudioUrl] = useState(null);
   const [numUrl, setNumUrl] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  //Updated 06112024
+  const [playEnabled, setPlayEnabled] = useState(true);
 
   let num = order.toString();
 
@@ -58,16 +60,18 @@ function TestSound({ form, filepath, order, onFinish, time }) {
     };
     fetchData();
   }, []);
+
   return (
-    <div>
+    <div style={{ display: "flex", alignItems: "center", height: "40px" }}>
       {numUrl ? (
         <audio
           src={"data:audio/mp3;base64," + numUrl}
           ref={audioNum}
           autoPlay
-          //controls
+          controls={playEnabled}
           type="audio/mpeg"
           onEnded={() => audioFile.current.play()}
+          onPlay={() => setPlayEnabled(false)}
         />
       ) : (
         ""
