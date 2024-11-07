@@ -161,7 +161,9 @@ const PostIndvForm = ({
                             height: "40px",
                           }}
                         >
-                          {QuestionNumber} :
+                          <span style={{ marginRight: "8px" }}>
+                            {QuestionNumber} :
+                          </span>
                           {question["questionText"] === "none" ||
                           question["questionText"].includes("mp3") ? (
                             <>
@@ -182,6 +184,11 @@ const PostIndvForm = ({
                                   }}
                                 />
                               )}
+                              <CountdownProgressBar
+                                timeRemaining={timeRemaining}
+                                timeDiv={timeDiv}
+                                showSound={showSound}
+                              />
                             </>
                           ) : (
                             `${question["questionText"]}`
@@ -213,12 +220,6 @@ const PostIndvForm = ({
                       </RadioGroup>
                     </Box>
                     {/* end of question */}
-
-                    <CountdownProgressBar
-                      timeRemaining={timeRemaining}
-                      timeDiv={timeDiv}
-                      showSound={showSound}
-                    />
                   </Box>
                 ))}
               </FormControl>
@@ -252,7 +253,9 @@ const PostIndvForm = ({
                         height: "40px",
                       }}
                     >
-                      {QuestionNumber} :
+                      <span style={{ marginRight: "8px" }}>
+                        {QuestionNumber} :
+                      </span>
                       {question["questionText"] === "none" ||
                       question["questionText"].includes("mp3") ? (
                         <>
@@ -273,6 +276,11 @@ const PostIndvForm = ({
                               }}
                             />
                           )}
+                          <CountdownProgressBar
+                            timeRemaining={timeRemaining}
+                            timeDiv={timeDiv}
+                            showSound={showSound}
+                          />
                         </>
                       ) : (
                         `${question["questionText"]}`
@@ -301,12 +309,6 @@ const PostIndvForm = ({
                   </RadioGroup>
                 </Box>
                 {/* end of question */}
-
-                <CountdownProgressBar
-                  timeRemaining={timeRemaining}
-                  timeDiv={timeDiv}
-                  showSound={showSound}
-                />
               </Box>
             ))}
           </FormControl>
@@ -336,43 +338,60 @@ const PostIndvForm = ({
                       }}
                     >
                       <FormLabel>
-                        {question.order} :
-                        {question["questionText"] === "none" ||
-                        question["questionText"].includes("mp3") ? (
-                          <>
-                            {question["order"].toString() === "57"
-                              ? showSound && (
-                                  <SoundTwoQuestions
-                                    form={question["form"]}
-                                    filepath={question["filepath"]}
-                                    Num1="057"
-                                    Num2="058"
-                                    filepath1={
-                                      question["questioncode"].includes("057")
-                                        ? `${question.questioncode}_57`
-                                        : `${question.form}${question.cerfcode}057_58`
-                                    }
-                                    filepath2={
-                                      question["questioncode"].includes("057")
-                                        ? `${question.questioncode}_58`
-                                        : `${question.form}${question.cerfcode}057_57`
-                                    }
-                                    onStart={() => {
-                                      setTimeDiv(38000);
-                                      setTimeRemaining(38000);
-                                    }}
-                                    onFinish={() =>
-                                      setTimeout(() => {
-                                        EndOfListenning((QuestionNumber += 2));
-                                      }, 0)
-                                    }
-                                  />
-                                )
-                              : ""}
-                          </>
-                        ) : (
-                          `${question["questionText"]}`
-                        )}
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            height: "40px",
+                          }}
+                        >
+                          <span style={{ marginRight: "8px" }}>
+                            {question["order"]} :
+                          </span>
+                          {question["questionText"] === "none" ||
+                          question["questionText"].includes("mp3") ? (
+                            <>
+                              {question["order"].toString() === "57"
+                                ? showSound && (
+                                    //First play sound question from url: question["filepath"]
+                                    //Next play sound Num 57 and then play sound question 57 from url: filepath1
+                                    //After sound 57 end show time countdown for 30 seconds
+                                    //When time is 0 play sound Num 58 and then play sound question 58 from url: filepath2
+                                    //After sound 58 end show time countdown for 30 seconds when time is 0 go to next question
+                                    <SoundTwoQuestions
+                                      form={question["form"]}
+                                      filepath={question["filepath"]}
+                                      Num1="057"
+                                      Num2="058"
+                                      filepath1={
+                                        question["questioncode"].includes("057")
+                                          ? `${question.questioncode}_57`
+                                          : `${question.form}${question.cerfcode}057_58`
+                                      }
+                                      filepath2={
+                                        question["questioncode"].includes("057")
+                                          ? `${question.questioncode}_58`
+                                          : `${question.form}${question.cerfcode}057_57`
+                                      }
+                                      onStart={() => {
+                                        setTimeDiv(38000);
+                                        setTimeRemaining(38000);
+                                      }}
+                                      onFinish={() =>
+                                        setTimeout(() => {
+                                          EndOfListenning(
+                                            (QuestionNumber += 2)
+                                          );
+                                        }, 0)
+                                      }
+                                    />
+                                  )
+                                : ""}
+                            </>
+                          ) : (
+                            `${question["questionText"]}`
+                          )}
+                        </div>
                       </FormLabel>
                       <RadioGroup
                         key={question.order}

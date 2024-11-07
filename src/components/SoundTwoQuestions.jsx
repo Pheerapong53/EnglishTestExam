@@ -1,6 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
+import { Campaign, PlayCircleOutline } from "@mui/icons-material";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../src/store/userSilce";
 
@@ -34,7 +35,7 @@ function SoundTwoQuestions({
   useEffect(() => {
     const axiosConfig = {
       baseURL: process.env.REACT_APP_API_URL,
-      headers: {authtoken: "bearer " + token},
+      headers: { authtoken: "bearer " + token },
     };
     const axiosInstance = axios.create(axiosConfig);
     const fetchData = async () => {
@@ -101,22 +102,29 @@ function SoundTwoQuestions({
   }, []);
 
   return (
-    <div>
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        height: "40px",
+      }}
+    >
       {audioQuestionUrl ? (
         <audio
           src={"data:audio/mp3;base64," + audioQuestionUrl}
           autoPlay
-          //controls
+          controls
           type="audio/mpeg"
-          onEnded={() => setTimeout(() => {
-            onStart()
-            audioNum1.current.play();
-          },0)}
+          onEnded={() =>
+            setTimeout(() => {
+              onStart();
+              audioNum1.current.play();
+            }, 0)
+          }
         />
       ) : (
         <p>Loading audio...</p>
       )}
-
       {numOneUrl ? (
         <audio
           src={"data:audio/mp3;base64," + numOneUrl}
@@ -124,14 +132,11 @@ function SoundTwoQuestions({
           // autoPlay
           //controls
           type="audio/mpeg"
-          onEnded={() => 
-            audioAsk1.current.play()
-          }
+          onEnded={() => audioAsk1.current.play()}
         />
       ) : (
         ""
       )}
-
       {audioAskOneUrl ? (
         <audio
           src={"data:audio/mp3;base64," + audioAskOneUrl}
@@ -139,9 +144,11 @@ function SoundTwoQuestions({
           // autoPlay
           //controls
           type="audio/mpeg"
-          onEnded={() => setTimeout(() => {
-            audioNum2.current.play()
-          },10000)}
+          onEnded={() =>
+            setTimeout(() => {
+              audioNum2.current.play();
+            }, 10000)
+          }
         />
       ) : (
         <p>Loading audio...</p>
@@ -165,9 +172,11 @@ function SoundTwoQuestions({
           // autoPlay
           //controls
           type="audio/mpeg"
-          onEnded={() => setTimeout(() => {
-            onFinish();
-          },15000)}
+          onEnded={() =>
+            setTimeout(() => {
+              onFinish();
+            }, 15000)
+          }
         />
       ) : (
         <p>Loading audio...</p>
@@ -177,4 +186,3 @@ function SoundTwoQuestions({
 }
 
 export default SoundTwoQuestions;
-

@@ -1,7 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { Campaign } from "@mui/icons-material";
+import { Campaign, PlayCircleOutline } from "@mui/icons-material";
+import IconButton from "@mui/material/IconButton";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../../src/store/userSilce";
 
@@ -63,12 +64,22 @@ function TestSound({ form, filepath, order, onFinish, time }) {
 
   return (
     <div style={{ display: "flex", alignItems: "center", height: "40px" }}>
+      {playEnabled && (
+        <IconButton
+          onClick={() => {
+            audioNum.current.play();
+            setPlayEnabled(false);
+          }}
+        >
+          <PlayCircleOutline fontSize="large" />
+        </IconButton>
+      )}
       {numUrl ? (
         <audio
           src={"data:audio/mp3;base64," + numUrl}
           ref={audioNum}
           autoPlay
-          controls={playEnabled}
+          //controls={playEnabled}
           type="audio/mpeg"
           onEnded={() => audioFile.current.play()}
           onPlay={() => setPlayEnabled(false)}

@@ -9,8 +9,8 @@ function SoundDir({ dir, onFinish, time }) {
   const [dirUrl, setDirUrl] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => ({ ...state }));
-  const token = user.user.token;
+  const { user } = useSelector((state) => state.user);
+  const token = user.token;
   useEffect(() => {
     const axiosConfig = {
       baseURL: process.env.REACT_APP_API_URL,
@@ -40,7 +40,7 @@ function SoundDir({ dir, onFinish, time }) {
           <audio
             src={"data:audio/mp3;base64," + dirUrl}
             autoPlay
-            //controls
+            controls={!isPlaying}
             type="audio/mpeg"
             onEnded={() => {
               onFinish(); // Call onFinish function
