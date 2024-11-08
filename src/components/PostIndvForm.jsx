@@ -13,6 +13,7 @@ import {
 import SoundTwoQuestions from "./SoundTwoQuestions";
 import TestSound from "./TestSound";
 import SoundDir from "./SoundDir";
+import SoundProblem from "./SoundProblem";
 
 const PostIndvForm = ({
   QuestionAndChoice,
@@ -27,10 +28,13 @@ const PostIndvForm = ({
   const [timeDiv, setTimeDiv] = useState(17000);
   const [isCounting, setIsCounting] = useState(true);
   const [isFiftyOne, setFiftyOne] = useState(false);
-  const [isFiftySeven, setFiftySeven] = useState(false);
+  //ChangeStateForTest
+  const [isFiftySeven, setFiftySeven] = useState(true);
   const [isFiftyNine, setFiftyNine] = useState(false);
   const [isEnd, setEnd] = useState(false);
   const [showSound, setShowSound] = useState(true);
+  const [startSTQ, setStartSTQ] = useState(false);
+  const [toggleNext, setToggleNext] = useState(false);
   //console.log(QuestionNumber);
   //console.log(QuestionAndChoice);
 
@@ -345,48 +349,75 @@ const PostIndvForm = ({
                             height: "40px",
                           }}
                         >
+                          {question["order"].toString() === "57" &&
+                            !startSTQ &&
+                            showSound && (
+                              <SoundProblem
+                                form={question["form"]}
+                                filepath={question["filepath"]}
+                                time={5000}
+                                onFinish={() => setStartSTQ(true)}
+                              />
+                            )}
+                        </div>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            height: "40px",
+                          }}
+                        >
                           <span style={{ marginRight: "8px" }}>
                             {question["order"]} :
                           </span>
+
                           {question["questionText"] === "none" ||
                           question["questionText"].includes("mp3") ? (
                             <>
-                              {question["order"].toString() === "57"
-                                ? showSound && (
-                                    //First play sound question from url: question["filepath"]
-                                    //Next play sound Num 57 and then play sound question 57 from url: filepath1
-                                    //After sound 57 end show time countdown for 30 seconds
-                                    //When time is 0 play sound Num 58 and then play sound question 58 from url: filepath2
-                                    //After sound 58 end show time countdown for 30 seconds when time is 0 go to next question
-                                    <SoundTwoQuestions
-                                      form={question["form"]}
-                                      filepath={question["filepath"]}
-                                      Num1="057"
-                                      Num2="058"
-                                      filepath1={
-                                        question["questioncode"].includes("057")
-                                          ? `${question.questioncode}_57`
-                                          : `${question.form}${question.cerfcode}057_58`
-                                      }
-                                      filepath2={
-                                        question["questioncode"].includes("057")
-                                          ? `${question.questioncode}_58`
-                                          : `${question.form}${question.cerfcode}057_57`
-                                      }
-                                      onStart={() => {
-                                        setTimeDiv(38000);
-                                        setTimeRemaining(38000);
-                                      }}
-                                      onFinish={() =>
-                                        setTimeout(() => {
-                                          EndOfListenning(
-                                            (QuestionNumber += 2)
-                                          );
-                                        }, 0)
-                                      }
-                                    />
-                                  )
-                                : ""}
+                              {question["questionText"]}
+                              {question["order"].toString() === "57" &&
+                                showSound &&
+                                startSTQ && (
+                                  <TestSound
+                                    form={question["form"]}
+                                    filepath={question["questionText"]}
+                                    // order={question["order"].padStart(3, "0")}
+                                    order={question["order"]}
+                                    time={0}
+                                    onFinish={() => {
+                                      setTimeDiv(question["time"]);
+                                      setTimeRemaining(question["time"]);
+                                      setTimeout(() => {
+                                        setTimeRemaining(0);
+                                        //EndOfListenning(QuestionNumber++);
+                                        setToggleNext(true);
+                                      }, question["time"]);
+                                    }}
+                                  />
+                                )}
+
+                              {question["order"].toString() === "58" &&
+                                showSound &&
+                                startSTQ &&
+                                toggleNext && (
+                                  <TestSound
+                                    form={question["form"]}
+                                    filepath={question["questionText"]}
+                                    // order={question["order"].padStart(3, "0")}
+                                    order={question["order"]}
+                                    time={0}
+                                    onFinish={() => {
+                                      setTimeDiv(question["time"]);
+                                      setTimeRemaining(question["time"]);
+                                      setTimeout(() => {
+                                        setTimeRemaining(0);
+                                        setToggleNext(false);
+                                        setStartSTQ(false);
+                                        EndOfListenning(QuestionNumber++);
+                                      }, question["time"]);
+                                    }}
+                                  />
+                                )}
                             </>
                           ) : (
                             `${question["questionText"]}`
@@ -419,7 +450,6 @@ const PostIndvForm = ({
                   ))}
                 </>
               ))}
-
               <CountdownProgressBar
                 timeRemaining={timeRemaining}
                 timeDiv={timeDiv}
@@ -454,53 +484,101 @@ const PostIndvForm = ({
                       }}
                     >
                       <FormLabel>
-                        {question.order} :
-                        {question["questionText"] === "none" ||
-                        question["questionText"].includes("mp3") ? (
-                          <>
-                            {question["order"].toString() === "59"
-                              ? showSound && (
-                                  <SoundTwoQuestions
-                                    form={question["form"]}
-                                    filepath={question["filepath"]}
-                                    Num1="059"
-                                    Num2="060"
-                                    filepath1={
-                                      question["questioncode"].includes("059")
-                                        ? `${question.questioncode}_59`
-                                        : `${question.form}${question.cerfcode}059_60`
-                                    }
-                                    filepath2={
-                                      question["questioncode"].includes("059")
-                                        ? `${question.questioncode}_60`
-                                        : `${question.form}${question.cerfcode}059_59`
-                                    }
-                                    onStart={() => {
-                                      setTimeDiv(38000);
-                                      setTimeRemaining(38000);
-                                    }}
-                                    onFinish={() => setEnd(true)}
-                                  />
-                                )
-                              : ""}
-                            {isEnd && showSound && (
-                              <SoundDir
-                                dir="END.mp3"
-                                onFinish={() =>
-                                  setTimeout(() => {
-                                    setShowSound(false);
-                                    ToggleCountDown(true);
-                                    TogglePagination(false);
-                                    EndOfListenning((QuestionNumber += 2));
-                                  }, 0)
-                                }
-                                time={0}
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            height: "40px",
+                          }}
+                        >
+                          {question["order"].toString() === "59" &&
+                            !startSTQ &&
+                            showSound && (
+                              <SoundProblem
+                                form={question["form"]}
+                                filepath={question["filepath"]}
+                                time={5000}
+                                onFinish={() => setStartSTQ(true)}
                               />
                             )}
-                          </>
-                        ) : (
-                          `${question["questionText"]}`
-                        )}
+                        </div>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            height: "40px",
+                          }}
+                        >
+                          <span style={{ marginRight: "8px" }}>
+                            {question["order"]} :
+                          </span>
+                          {question["questionText"] === "none" ||
+                          question["questionText"].includes("mp3") ? (
+                            <>
+                              {question["questionText"]}
+                              {question["order"].toString() === "59" &&
+                                showSound &&
+                                startSTQ && (
+                                  <TestSound
+                                    form={question["form"]}
+                                    filepath={question["questionText"]}
+                                    // order={question["order"].padStart(3, "0")}
+                                    order={question["order"]}
+                                    time={0}
+                                    onFinish={() => {
+                                      setTimeDiv(question["time"]);
+                                      setTimeRemaining(question["time"]);
+                                      setTimeout(() => {
+                                        setTimeRemaining(0);
+                                        //EndOfListenning(QuestionNumber++);
+                                        setToggleNext(true);
+                                      }, question["time"]);
+                                    }}
+                                  />
+                                )}
+
+                              {question["order"].toString() === "60" &&
+                                showSound &&
+                                startSTQ &&
+                                toggleNext && (
+                                  <TestSound
+                                    form={question["form"]}
+                                    filepath={question["questionText"]}
+                                    // order={question["order"].padStart(3, "0")}
+                                    order={question["order"]}
+                                    time={0}
+                                    onFinish={() => {
+                                      setTimeDiv(question["time"]);
+                                      setTimeRemaining(question["time"]);
+                                      setTimeout(() => {
+                                        setTimeRemaining(0);
+                                        setToggleNext(false);
+                                        setEnd(true);
+                                      }, question["time"]);
+                                    }}
+                                  />
+                                )}
+
+                              {isEnd && showSound && (
+                                <SoundDir
+                                  dir="END.mp3"
+                                  onFinish={() =>
+                                    setTimeout(() => {
+                                      setStartSTQ(false);
+                                      setShowSound(false);
+                                      ToggleCountDown(true);
+                                      TogglePagination(false);
+                                      EndOfListenning(QuestionNumber++);
+                                    }, 0)
+                                  }
+                                  time={0}
+                                />
+                              )}
+                            </>
+                          ) : (
+                            `${question["questionText"]}`
+                          )}
+                        </div>
                       </FormLabel>
                       <RadioGroup
                         key={question.order}

@@ -113,7 +113,7 @@ function SoundTwoQuestions({
         <audio
           src={"data:audio/mp3;base64," + audioQuestionUrl}
           autoPlay
-          controls
+          //controls
           type="audio/mpeg"
           onEnded={() =>
             setTimeout(() => {
