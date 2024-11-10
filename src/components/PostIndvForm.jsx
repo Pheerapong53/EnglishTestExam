@@ -10,7 +10,6 @@ import {
   CircularProgress,
 } from "@mui/material";
 
-import SoundTwoQuestions from "./SoundTwoQuestions";
 import TestSound from "./TestSound";
 import SoundDir from "./SoundDir";
 import SoundProblem from "./SoundProblem";
@@ -28,11 +27,12 @@ const PostIndvForm = ({
   const [timeDiv, setTimeDiv] = useState(17000);
   const [isCounting, setIsCounting] = useState(true);
   const [isFiftyOne, setFiftyOne] = useState(false);
-  //ChangeStateForTest
-  const [isFiftySeven, setFiftySeven] = useState(true);
+  const [isFiftySeven, setFiftySeven] = useState(false);
   const [isFiftyNine, setFiftyNine] = useState(false);
   const [isEnd, setEnd] = useState(false);
   const [showSound, setShowSound] = useState(true);
+  
+  //add new state for question 57-58 and 59-60
   const [startSTQ, setStartSTQ] = useState(false);
   const [toggleNext, setToggleNext] = useState(false);
   //console.log(QuestionNumber);
@@ -113,6 +113,8 @@ const PostIndvForm = ({
     initializeStateFromLocalStorage(setFiftySeven, "57");
     initializeStateFromLocalStorage(setFiftyNine, "59");
     initializeStateFromLocalStorage(setEnd, "endBool");
+    initializeStateFromLocalStorage(setStartSTQ, "boolStartSTQ");
+    initializeStateFromLocalStorage(setToggleNext, "boolToggleNext");
   }, []);
 
   useEffect(() => {
@@ -121,7 +123,17 @@ const PostIndvForm = ({
     saveToLocalStorage("57", isFiftySeven);
     saveToLocalStorage("59", isFiftyNine);
     saveToLocalStorage("endBool", isEnd);
-  }, [showSound, isFiftyOne, isFiftySeven, isFiftyNine, isEnd]);
+    saveToLocalStorage("boolStartSTQ", startSTQ);
+    saveToLocalStorage("boolToggleNext", toggleNext);
+  }, [
+    showSound,
+    isFiftyOne,
+    isFiftySeven,
+    isFiftyNine,
+    isEnd,
+    startSTQ,
+    toggleNext,
+  ]);
 
   return (
     <>
@@ -355,7 +367,7 @@ const PostIndvForm = ({
                               <SoundProblem
                                 form={question["form"]}
                                 filepath={question["filepath"]}
-                                time={5000}
+                                time={1000}
                                 onFinish={() => setStartSTQ(true)}
                               />
                             )}
@@ -374,10 +386,10 @@ const PostIndvForm = ({
                           {question["questionText"] === "none" ||
                           question["questionText"].includes("mp3") ? (
                             <>
-                              {question["questionText"]}
                               {question["order"].toString() === "57" &&
                                 showSound &&
-                                startSTQ && (
+                                startSTQ &&
+                                !toggleNext && (
                                   <TestSound
                                     form={question["form"]}
                                     filepath={question["questionText"]}
@@ -497,7 +509,7 @@ const PostIndvForm = ({
                               <SoundProblem
                                 form={question["form"]}
                                 filepath={question["filepath"]}
-                                time={5000}
+                                time={1000}
                                 onFinish={() => setStartSTQ(true)}
                               />
                             )}
@@ -515,10 +527,10 @@ const PostIndvForm = ({
                           {question["questionText"] === "none" ||
                           question["questionText"].includes("mp3") ? (
                             <>
-                              {question["questionText"]}
                               {question["order"].toString() === "59" &&
                                 showSound &&
-                                startSTQ && (
+                                startSTQ &&
+                                !toggleNext && (
                                   <TestSound
                                     form={question["form"]}
                                     filepath={question["questionText"]}
@@ -552,7 +564,7 @@ const PostIndvForm = ({
                                       setTimeRemaining(question["time"]);
                                       setTimeout(() => {
                                         setTimeRemaining(0);
-                                        setToggleNext(false);
+
                                         setEnd(true);
                                       }, question["time"]);
                                     }}
@@ -568,6 +580,7 @@ const PostIndvForm = ({
                                       setShowSound(false);
                                       ToggleCountDown(true);
                                       TogglePagination(false);
+                                      setToggleNext(false);
                                       EndOfListenning(QuestionNumber++);
                                     }, 0)
                                   }

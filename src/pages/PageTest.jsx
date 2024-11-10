@@ -64,16 +64,14 @@ function PageTest() {
     }
   }, []);
 
-  //ChangeStateForTest
-  const [QuestionNumber, setQuestionNumber] = useState(57);
+  const [QuestionNumber, setQuestionNumber] = useState(0);
   const [QuestionIndvform, setQuestionIndvform] = useState(null);
   //console.log("QuestionIndvform :", QuestionIndvform);
 
   //toggle for Sound File
   //false -> Play DIR_1_50
   //First State
-  //ChangeStateForTest
-  const [isStart, setIsStart] = useState(true);
+  const [isStart, setIsStart] = useState(false);
 
   //toggle button pagination
   //false -> Enable Button
